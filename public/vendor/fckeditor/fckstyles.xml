@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<Styles>
+	<Style name="Normal" element="p" />
+	
+	<Style name="Titulo 1" element="h1" />
+	<Style name="Titulo 2" element="h2" />
+	<Style name="Titulo 3" element="h3" />
+	<Style name="Titulo 4" element="h4" />
+	<Style name="Titulo 5" element="h5" />
+	<Style name="Titulo 6" element="h6" />
+	
+	<Style name="Normal (div)" element="div" />
+	<Style name="Formatado" element="pre" />
+	<Style name="Endereço" element="address" />
+<!--
+	<Style name="Image on Left" element="img">
+		<Attribute name="style" value="padding: 5px; margin-right: 5px" />
+		<Attribute name="border" value="2" />
+		<Attribute name="align" value="left" />
+	</Style>
+-->
+
+</Styles>

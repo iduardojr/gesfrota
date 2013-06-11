@@ -1,0 +1,8 @@
+{
+	"name":"iduardojunior/sigmate",
+	"require": {
+		"php": ">=5.3.2",
+		"doctrine/orm": "2.*",
+		"iduardojunior/php-bootstrap": "1.*"
+	}
+}

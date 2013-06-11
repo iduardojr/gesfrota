@@ -1,0 +1,45 @@
+<?php
+namespace Sigmat\Common\Logging;
+
+use Doctrine\ORM\EntityManager;
+
+/**
+ * Registrador de logs
+ */
+class Logger {
+	
+	/**
+	 * @var EntityManager
+	 */
+	protected static $em;
+	
+	/**
+	 * Construtor
+	 */
+	protected function __construct() {}
+	
+	/**
+	 * Configuração do log
+	 * 
+	 * @param array $config
+	 */
+	public static function configure( array $config ) {
+		self::$em = isset($config['em']) ? $config['em'] : null; 
+	}
+
+	/**
+	 * Registra o log
+	 * 
+	 * @param LogEvent $log
+	 * @return boolean
+	 */
+	public static function register( LogEvent $log ) {
+		if ( self::$em ) {
+			self::$em->persist($log);
+			self::$em->flush();
+			return true;
+		}
+		return false;
+	}
+}
+?>
