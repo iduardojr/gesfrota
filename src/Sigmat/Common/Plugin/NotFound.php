@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\Plugin;
+namespace Sigmat\Common\Plugin;
 
 use PHPBootstrap\Mvc\Plugin;
 use PHPBootstrap\Mvc\Routing\Dispatcher;
@@ -8,16 +8,25 @@ use PHPBootstrap\Mvc\Http\HttpRequest;
 use Sigmat\View\Layout;
 
 /**
- * Erro
+ * P�gina nao encontrada
  */
-class Error implements Plugin {
+class NotFound implements Plugin {
 
 	/** 
 	 * 
 	 * @see Plugin::preDispatch()
 	 */
 	public function preDispatch( HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null ) {
-		
+		if ( $response->isNotFound() ) {
+			$layout = new Layout();
+			$layout->setTemplate('layout/404.phtml');
+			$uri = $request->getUri();
+			if ( preg_match('|^[^\?#]*|', $uri, $match) ) {
+				$layout->uri = '/' . trim($match[0], "/ \t\n\r\0\x0B");
+			}
+			$response->setBody($layout);
+			return false;
+		} 
 	}
 	
 	/**
@@ -25,14 +34,7 @@ class Error implements Plugin {
 	 * @see Plugin::postDispatch()
 	 */
 	public function postDispatch( HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null ) {
-		if ( $response->isServerError() ) {
-			$layout = new Layout();
-			$layout->setTemplate('layout/500.phtml');
-			if ( $dispatcher ) {
-				$layout->exception = $dispatcher->getException();
-			}
-			$response->setBody($layout);
-		}
+
 	}
 }
 ?>

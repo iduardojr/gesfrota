@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title>Sistema de Gestão de Materiais</title>
         <link rel="stylesheet" href="/vendor/bootstrap/bootstrap-2.3.2.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/vendor/bootstrap/bootstrap-responsive-2.3.2.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/vendor/bootstrap-datepicker/bootstrap-datepicker.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/vendor/bootstrap-timepicker/bootstrap-timepicker-0.2.3.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/vendor/bootstrap-colorpicker/bootstrap-colorpicker.css" type="text/css" media="all" />
@@ -20,8 +21,8 @@
 		<script type="text/javascript" src="/vendor/fckeditor/fckeditor.js"></script>
     </head>
     <body>
-    	<?php echo $this->__MENUBAR__; ?>
-        <div class="container-fluid">
+    	<?php $this->__NAVBAR__->render(); ?>
+        <div class="container">
             <?php echo $this->__CONTENT__; ?>
             <hr>
             <footer>

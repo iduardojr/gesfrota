@@ -19,7 +19,7 @@ class Logger {
 	protected function __construct() {}
 	
 	/**
-	 * Configuração do log
+	 * Configuraï¿½ï¿½o do log
 	 * 
 	 * @param array $config
 	 */
@@ -30,10 +30,10 @@ class Logger {
 	/**
 	 * Registra o log
 	 * 
-	 * @param LogEvent $log
+	 * @param Log $log
 	 * @return boolean
 	 */
-	public static function register( LogEvent $log ) {
+	public static function register( Log $log ) {
 		if ( self::$em ) {
 			self::$em->persist($log);
 			self::$em->flush();

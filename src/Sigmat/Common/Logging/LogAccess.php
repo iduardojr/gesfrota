@@ -2,10 +2,10 @@
 namespace Sigmat\Common\Logging;
 
 /**
- * Logs de acesso a aplicação
+ * Logs de acesso a aplicaÃ§Ã£o
  * 
  * @Entity 
  */
-class LogAccess extends LogEvent {
+class LogAccess extends Log {
 }
 ?>

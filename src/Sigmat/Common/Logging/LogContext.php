@@ -29,7 +29,7 @@ class LogContext {
 	 */
 	protected $value;
 	/**
-	 * @ManyToOne(targetEntity="LogEvent", inversedBy="context")
+	 * @ManyToOne(targetEntity="Log", inversedBy="context")
 	 * @JoinColumn(name="log_id", referencedColumnName="id")
 	 * @var Log
 	 */
@@ -38,11 +38,11 @@ class LogContext {
 	/**
 	 * Construtor
 	 * 
-	 * @param LogEvent $log
+	 * @param Log $log
 	 * @param string $key
 	 * @param mixed $value
 	 */
-	public function __construct( LogEvent $log, $key, $value ) {
+	public function __construct( Log $log, $key, $value ) {
 		$this->log = $log;
 		$this->key = $key;
 		$this->value = $value;
@@ -78,7 +78,7 @@ class LogContext {
 	/**
 	 * Obtem o log
 	 * 
-	 * @return LogEvent
+	 * @return Log
 	 */
 	public function getLog() {
 		return $this->log;

@@ -1,5 +1,7 @@
 <?php
 use PHPBootstrap\Mvc\Routing\Router;
 
-return new Router('/[:controller[/:action]]', array(), array('__NAMESPACE__' => 'Sigmat\\Controller'));
+$router = new Router('/', array(), array('__NAMESPACE__' => 'Sigmat\\Controller'));
+$router->addRoute(new Router('[:controller[/:action]]'));
+return $router;
 ?>

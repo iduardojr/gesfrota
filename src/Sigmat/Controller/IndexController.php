@@ -21,8 +21,9 @@ class IndexController extends Controller{
 	 * @return Layout
 	 */
 	public function indexAction() {
-		throw new \Exception('Error');
-		//return new Layout();
+		$view = new Layout();
+		$view->setTemplate('index/index.phtml');
+		return $view;
 	}
 }
 ?>

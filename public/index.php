@@ -3,8 +3,9 @@ use Sigmat\Common\Logging\Logger;
 use Doctrine\ORM\EntityManager;
 use PHPBootstrap\Mvc\Application;
 use Doctrine\ORM\Tools\Setup;
-use Sigmat\Plugin\NotFound;
-use Sigmat\Plugin\Error;
+use Sigmat\Common\Plugin\NotFound;
+use Sigmat\Common\Plugin\Error;
+use PHPBootstrap\Widget\Action\Action;
 
 // MODE
 $isDevMode = getenv('APPLICATION_ENV') == 'development';
@@ -49,11 +50,15 @@ $paths = array_merge($paths, $config['paths'], array(dirname(__DIR__), dirname(_
 set_include_path(implode(PATH_SEPARATOR, $paths));
 $doctrine = Setup::createAnnotationMetadataConfiguration($config['doctrine']['paths'], $isDevMode, $config['doctrine']['proxies']);
 
+// ROUTER
+$router = include 'src/config/router.php';
+Action::setRouter($router);
+
 // LOGGER 
 Logger::configure(array('em' => EntityManager::create($config['doctrine']['connection'], $doctrine)));
 
 // EXECUTE
-$application = new Application(include 'src/config/router.php');
+$application = new Application($router);
 $application->attach(new NotFound());
 $application->attach(new Error());
 $application->config = $config;
