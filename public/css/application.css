@@ -1,6 +1,24 @@
-body {
-    padding-top: 60px;
-    padding-bottom: 40px;
+html, body {
+	margin: 0;
+	height: 100%;
+	position: relative;
+}
+html > body {
+	height: auto;
+	min-height: 100%;
+}
+footer {
+	position:absolute;
+	left: 0;
+	bottom: 0;
+	padding: 0 !important;
+	margin: 0;
+	width: 100%;
+	text-align: right;
+}
+#main {
+	position: relative;
+    padding: 60px 0 75px 0;
 }
 #navbar .brand {
   	padding-right: 0;
