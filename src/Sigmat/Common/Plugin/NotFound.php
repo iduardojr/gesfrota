@@ -5,7 +5,7 @@ use PHPBootstrap\Mvc\Plugin;
 use PHPBootstrap\Mvc\Routing\Dispatcher;
 use PHPBootstrap\Mvc\Http\HttpResponse;
 use PHPBootstrap\Mvc\Http\HttpRequest;
-use Sigmat\View\Layout;
+use Sigmat\Common\Layout;
 
 /**
  * P�gina nao encontrada
@@ -18,8 +18,7 @@ class NotFound implements Plugin {
 	 */
 	public function preDispatch( HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null ) {
 		if ( $response->isNotFound() ) {
-			$layout = new Layout();
-			$layout->setTemplate('layout/404.phtml');
+			$layout = new Layout('layout/404.phtml');
 			$uri = $request->getUri();
 			if ( preg_match('|^[^\?#]*|', $uri, $match) ) {
 				$layout->uri = '/' . trim($match[0], "/ \t\n\r\0\x0B");

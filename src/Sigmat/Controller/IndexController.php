@@ -2,7 +2,7 @@
 namespace Sigmat\Controller;
 
 use PHPBootstrap\Mvc\Controller;
-use Sigmat\View\Layout;
+use Sigmat\Common\Layout;
 
 /**
  * Index
@@ -13,7 +13,6 @@ class IndexController extends Controller{
 	 * Construtor 
 	 */
 	public function __construct() {
-		
 	}
 	
 	/**
@@ -21,9 +20,7 @@ class IndexController extends Controller{
 	 * @return Layout
 	 */
 	public function indexAction() {
-		$view = new Layout();
-		$view->setTemplate('index/index.phtml');
-		return $view;
+		return new Layout('index/index.phtml');
 	}
 }
 ?>

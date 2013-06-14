@@ -2,6 +2,7 @@
 namespace Sigmat\Common\Logging;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Sigmat\Common\Entity;
 
 /**
  * Evento de Log
@@ -12,21 +13,13 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @DiscriminatorColumn(name="event", type="string")
  * @DiscriminatorMap({"Access" = "LogAccess", "Application" = "LogApplication"})
  */
-abstract class Log {
+abstract class Log extends Entity {
 	
 	// Severidade
 	const Critical = 400;
 	const Error = 300;
 	const Warning = 200;
 	const Notice = 100;
-	
-	/**
-	 * @Id 
-	 * @Column(type="integer") 
-	 * @GeneratedValue 
-	 * @var integer
-	 */
-	protected $id;
 	
 	/**
 	 * @Column(type="string")
@@ -60,6 +53,7 @@ abstract class Log {
 	 * @param array $context
 	 */
 	public function __construct( $severity, $description, array $context = array() ) {
+		parent::__construct();
 		$this->severity = $severity;
 		$this->description = $description;
 		$this->context = new ArrayCollection();
@@ -68,19 +62,10 @@ abstract class Log {
 		}
 		$this->created = new \DateTime();
 	}
-
+	
 	/**
-	 * Obtem o identificador
-	 * 
-	 * @return integer
-	 */
-	public function getId() {
-		return $this->id;
-	}
-
-	/**
-	 * Obtem a descricao
-	 * 
+	 * Obtem $description
+	 *
 	 * @return string
 	 */
 	public function getDescription() {
@@ -88,8 +73,8 @@ abstract class Log {
 	}
 
 	/**
-	 * Obtem o contexto
-	 * 
+	 * Obtem $context
+	 *
 	 * @return array
 	 */
 	public function getContext() {
@@ -101,22 +86,23 @@ abstract class Log {
 	}
 
 	/**
-	 * Obtem a data de criação
-	 * 
-	 * @return string
+	 * Obtem $created
+	 *
+	 * @return \DateTime
 	 */
 	public function getCreated() {
 		return $this->created;
 	}
 
 	/**
-	 * Obtem a severidade
-	 * 
+	 * Obtem $severity
+	 *
 	 * @return integer
 	 */
 	public function getSeverity() {
 		return $this->severity;
 	}
+
 	
 }
 ?>

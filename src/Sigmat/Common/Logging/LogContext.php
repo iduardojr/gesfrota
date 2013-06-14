@@ -1,33 +1,28 @@
 <?php
 namespace Sigmat\Common\Logging;
 
+use Sigmat\Common\Entity;
+
 /**
  * Contexto do log
  * 
  * @Entity 
  * @Table(name="logs_context")
  */
-class LogContext {
+class LogContext extends Entity {
 
-	/**
-	 * @Id
-	 * @Column(type="integer")
-	 * @GeneratedValue
-	 * @var integer
-	 */
-	protected $id;
-	
 	/**
 	 * @Column(type="string")
 	 * @var string
 	 */
 	protected $key;
-	
+
 	/**
 	 * @Column(type="string")
 	 * @var string
 	 */
 	protected $value;
+
 	/**
 	 * @ManyToOne(targetEntity="Log", inversedBy="context")
 	 * @JoinColumn(name="log_id", referencedColumnName="id")
@@ -47,19 +42,10 @@ class LogContext {
 		$this->key = $key;
 		$this->value = $value;
 	}
-
+	
 	/**
-	 * Obtem o identificador 
-	 * 
-	 * @return integer
-	 */
-	public function getId() {
-		return $this->id;
-	}
-
-	/**
-	 * Obtem a chave 
-	 * 
+	 * Obtem $key
+	 *
 	 * @return string
 	 */
 	public function getKey() {
@@ -67,8 +53,8 @@ class LogContext {
 	}
 
 	/**
-	 * Obtem o valor 
-	 * 
+	 * Obtem $value
+	 *
 	 * @return string
 	 */
 	public function getValue() {
@@ -76,12 +62,14 @@ class LogContext {
 	}
 
 	/**
-	 * Obtem o log
-	 * 
+	 * Obtem $log
+	 *
 	 * @return Log
 	 */
 	public function getLog() {
 		return $this->log;
 	}
+
+	
 }
 ?>

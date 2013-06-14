@@ -5,7 +5,7 @@ use PHPBootstrap\Mvc\Plugin;
 use PHPBootstrap\Mvc\Routing\Dispatcher;
 use PHPBootstrap\Mvc\Http\HttpResponse;
 use PHPBootstrap\Mvc\Http\HttpRequest;
-use Sigmat\View\Layout;
+use Sigmat\Common\Layout;
 
 /**
  * Erro
@@ -26,8 +26,7 @@ class Error implements Plugin {
 	 */
 	public function postDispatch( HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null ) {
 		if ( $response->isServerError() ) {
-			$layout = new Layout();
-			$layout->setTemplate('layout/500.phtml');
+			$layout = new Layout('layout/500.phtml');
 			if ( $dispatcher ) {
 				$layout->exception = $dispatcher->getException();
 			}
