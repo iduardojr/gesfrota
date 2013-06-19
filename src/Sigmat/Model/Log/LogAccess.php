@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\Common\Logging;
+namespace Sigmat\Model\Log;
 
 /**
  * Logs de acesso a aplicação

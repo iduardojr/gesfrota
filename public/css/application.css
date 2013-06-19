@@ -2,6 +2,7 @@ html, body {
 	margin: 0;
 	height: 100%;
 	position: relative;
+	font-size: 13px;
 }
 html > body {
 	height: auto;
@@ -16,9 +17,13 @@ footer {
 	width: 100%;
 	text-align: right;
 }
+footer hr {
+	margin-top: 0;
+	margin-bottom: 10px;
+}
 #main {
 	position: relative;
-    padding: 60px 0 75px 0;
+    padding: 45px 0 55px 0;
 }
 #navbar .brand {
   	padding-right: 0;
@@ -37,4 +42,52 @@ footer {
 }
 #navbar .brand sup {
 	font-size: 10px;
+}
+#toolbar .btn-group {
+	float: right;
+	margin-left: 10px;	
+}
+.label-required:after{
+    color: #E5476F;
+    content: "* ";
+    font-weight: bold;
+}
+#notice-filter {
+	margin-top: 100px;
+	clear: both;
+}
+.form-inline > * {
+	margin: 0 5px;
+}
+h1 > small, 
+h2 > small,
+h3 > small,
+h4 > small,
+h5 > small,
+h6 > small {
+	margin: 0 10px;
+}
+form,
+.table {
+	margin: 0;
+}
+.pagination {
+	margin: 20px 0 10px 0;
+}
+.text-left {
+	text-align: left !important;
+}
+.text-center {
+	text-align: center !important;
+}
+.text-right {
+	text-align: right !important;
+}
+#toolbar [class^="ui-icon-"],
+#toolbar [class*=" ui-icon-"],
+#toolbar [class^="icon-"],
+#toolbar [class*=" icon-"],
+#toolbar .badge,
+#toolbar .label {
+	margin: 0 5px;
 }

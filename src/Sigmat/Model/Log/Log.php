@@ -1,8 +1,8 @@
 <?php
-namespace Sigmat\Common\Logging;
+namespace Sigmat\Model\Log;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Sigmat\Common\Entity;
+use Sigmat\Model\Entity;
 
 /**
  * Evento de Log

@@ -9,6 +9,7 @@ $(function() {
 				 .append('<span class="validate help-inline">' + error.message + '</span>');
 		});
 	});
+	
 	$('form').on('validform', function( e, data ){
 		$.each(data.list, function (i, valid) {
 			var group = $(valid).closest('.control-group'); 
@@ -18,7 +19,19 @@ $(function() {
 		});
 	});
 	
+	$(':input').on('focusin', function( e ){
+		var group = $(this).closest('.control-group'); 
+		group.removeClass('error')
+			 .find('.validate')
+			 .remove();
+	});
+	
+	$(':input').on('focusout', function( e ) {
+		$(this).valid();
+		return true;
+	});
+	
 	$('[data-validate*="required"]').each( function( i, item ) {
-		$('label[for=' + $(item).attr('name') + ']').append(' <span class="text-error">*</span>');
+		$('label[for=' + $(item).attr('name') + ']').addClass('label-required');
 	});
 });

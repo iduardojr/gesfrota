@@ -2,7 +2,7 @@
 namespace Sigmat\Controller;
 
 use PHPBootstrap\Mvc\Controller;
-use Sigmat\Common\Layout;
+use Sigmat\View\Layout;
 
 /**
  * Index

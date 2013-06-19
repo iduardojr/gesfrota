@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\Common;
+namespace Sigmat\Model;
 
 /**
  * Entidade
@@ -58,6 +58,15 @@ abstract class Entity {
 			throw new \BadMethodCallException('unsupported method "' . $method . '" in ' . get_class($this));
 		}
 		return call_user_func(array(&$this, $method));
+	}
+	
+	/**
+	 * Obtem o nome da classe
+	 * 
+	 * @return string
+	 */
+	public static function getClass() {
+		return get_called_class();
 	}
 	
 }

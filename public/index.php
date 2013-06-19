@@ -1,11 +1,11 @@
 <?php
-use Sigmat\Common\Logging\Logger;
 use Doctrine\ORM\EntityManager;
 use PHPBootstrap\Mvc\Application;
 use Doctrine\ORM\Tools\Setup;
-use Sigmat\Common\Plugin\NotFound;
-use Sigmat\Common\Plugin\Error;
 use PHPBootstrap\Widget\Action\Action;
+use Sigmat\Services\Logger;
+use Sigmat\Services\NotFound;
+use Sigmat\Services\Error;
 
 // MODE
 $isDevMode = getenv('APPLICATION_ENV') == 'development';
@@ -20,7 +20,7 @@ if ( file_exists('../vendor/autoload.php') ) {
 }
 
 // ERROR REPORTING
-error_reporting(E_ALL ^ E_NOTICE);
+error_reporting(-1);
 if ( $isDevMode ) {
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);

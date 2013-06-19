@@ -2,7 +2,7 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-CREATE SCHEMA IF NOT EXISTS `sigmat` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
+CREATE SCHEMA IF NOT EXISTS `sigmat` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `sigmat`;
 
 -- -----------------------------------------------------
@@ -29,10 +29,10 @@ DROP TABLE IF EXISTS `sigmat`.`logs` ;
 
 CREATE  TABLE IF NOT EXISTS `sigmat`.`logs` (
   `id` INT NOT NULL AUTO_INCREMENT ,
-  `description` TEXT NULL ,
-  `event` VARCHAR(45) NULL ,
-  `severity` INT NULL ,
-  `created` DATETIME NULL ,
+  `description` TEXT NOT NULL ,
+  `event` VARCHAR(45) NOT NULL ,
+  `severity` INT NOT NULL ,
+  `created` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB;
 
@@ -45,8 +45,8 @@ DROP TABLE IF EXISTS `sigmat`.`logs_context` ;
 CREATE  TABLE IF NOT EXISTS `sigmat`.`logs_context` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `log_id` INT NOT NULL ,
-  `key` VARCHAR(45) NULL ,
-  `value` VARCHAR(45) NULL ,
+  `key` VARCHAR(100) NOT NULL ,
+  `value` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_logs_context_logs` (`log_id` ASC) ,
   CONSTRAINT `fk_logs_context_logs`

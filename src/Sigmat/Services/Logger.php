@@ -1,7 +1,8 @@
 <?php
-namespace Sigmat\Common\Logging;
+namespace Sigmat\Services;
 
 use Doctrine\ORM\EntityManager;
+use Sigmat\Model\Log\Log;
 
 /**
  * Registrador de logs

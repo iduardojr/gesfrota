@@ -1,7 +1,7 @@
 <?php
-namespace Sigmat\Common\Logging;
+namespace Sigmat\Model\Log;
 
-use Sigmat\Common\Entity;
+use Sigmat\Model\Entity;
 
 /**
  * Contexto do log

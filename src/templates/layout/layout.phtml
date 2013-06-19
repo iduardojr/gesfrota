@@ -22,11 +22,12 @@
     </head>
     <body>
     	<div id="main">
-	    	<?php $this->__NAVBAR__->render(); ?>
+	    	<?php $this->navbar->render(); ?>
 	    	<div class="container">
 	            <?php echo $this->__CONTENT__; ?>
 	        </div>
         </div>
+        <?php $this->about->render(); ?>
         <footer>
         	<div class="container-fluid">
 	        	<hr><p class="muted">Copyright © <?php echo date('Y'); ?> Sigmat v1.0 | Development by <a href="http://iduardojunior.com.br">Iduardo Junior</a></p>

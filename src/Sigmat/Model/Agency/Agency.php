@@ -1,7 +1,7 @@
 <?php
-namespace Sigmat\Model;
+namespace Sigmat\Model\Agency;
 
-use Sigmat\Common\Entity;
+use Sigmat\Model\Entity;
 
 /**
  * Orgão
@@ -48,14 +48,9 @@ class Agency extends Entity {
 
 	/**
      * Construtor
-     * 
-     * @param string $name
-     * @param string $acronym
      */
-	public function __construct( $name, $acronym ) {
-		$this->setName($name);
-		$this->setAcronym($acronym);
-		$this->setStatus(true);
+	public function __construct() {
+
 	}
 
 	/**
