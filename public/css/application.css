@@ -44,8 +44,7 @@ footer hr {
 	font-size: 10px;
 }
 #toolbar .btn-group {
-	float: right;
-	margin-left: 10px;	
+	
 }
 .label-required:after{
     color: #E5476F;
@@ -66,6 +65,9 @@ h4 > small,
 h5 > small,
 h6 > small {
 	margin: 0 10px;
+}
+.alert em {
+	border-bottom: 1px dotted #999999;
 }
 form,
 .table {

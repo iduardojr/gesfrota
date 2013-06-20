@@ -17,13 +17,15 @@ class FormFilter extends Form {
 	 */
 	public function __construct() {
 		parent::__construct('agency-filter');
-		$this->setStyle(Form::Inline);
+		$this->setStyle(Form::Horizontal);
 		
 		$input = new TextBox('acronym');
+		$input->setSpan(2);
 		$this->append(new ControlGroup(new Label('Sigla', $input), $input));
 		$this->register($input);
 		
 		$input = new TextBox('name');
+		$input->setSpan(4);
 		$this->append(new ControlGroup(new Label('Nome', $input), $input));
 		$this->register($input);
 		

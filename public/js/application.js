@@ -27,7 +27,9 @@ $(function() {
 	});
 	
 	$(':input').on('focusout', function( e ) {
-		$(this).valid();
+		if ($(this).closest('[data-control]')) {
+			$(this).valid();
+		}
 		return true;
 	});
 	

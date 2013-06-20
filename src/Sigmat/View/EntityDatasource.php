@@ -50,32 +50,29 @@ class EntityDatasource extends Paginator implements DataSource {
 	/**
 	 * @var array
 	 */
-	protected $defaults = array();
+	protected $defaults;
 	
 	/**
+	 * Consulta
+	 * 
 	 * @var QueryBuilder
 	 */
 	protected $query;
-	
-	/**
-	 * @var \Closure
-	 */
-	protected $processQuery;
 	
 	/**
 	 * Construtor
 	 * 
 	 * @param QueryBuilder $query
 	 * @param Session $session
-	 * @param \Closure $processQuery
+	 * @param array $defaults
 	 */
-	public function __construct( QueryBuilder $query, Session $session, \Closure $processQuery = null ) {
+	public function __construct( QueryBuilder $query, Session $session, array $defaults = array() ) {
+		$this->loaded = false;
 		$this->query = $query;
 		$this->session = $session;
 		$this->data = array();
-		$this->setProcessQuery($processQuery);
-		$this->setLimit(isset($session->limit) ? $session->limit : 10);
-		$this->setPage($session->page);
+		$this->page = $session->page ? $session->page : 1;
+		$this->defaults = array_merge(array('sort'=>$this->getIdentify(), 'order'=>self::Asc, 'limit'=>10), $defaults);
 	}
 
 	/**
@@ -124,8 +121,11 @@ class EntityDatasource extends Paginator implements DataSource {
 	 */
 	public function setOrderBy( $sort, $order ) {
 		$this->loaded = false;
+		$sort = $sort == $this->defaults['sort'] ? null : $sort;
+		$order = $order == self::Desc ? self::Desc : self::Asc;
+		$order = $order == $this->defaults['order'] ? null : $order; 
 		$this->session->sort = $sort;
-		$this->session->order = $order == self::Desc ? self::Desc : self::Asc;
+		$this->session->order = $order;
 	}
 	
 	/**
@@ -144,7 +144,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return string
 	 */
 	public function getSort() {
-		return isset($this->session->sort) ? $this->session->sort : $this->getIdentify();
+		return isset($this->session->sort) ? $this->session->sort : $this->defaults['sort'];
 	}
 	
 	/**
@@ -153,7 +153,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return string
 	 */
 	public function getOrder() {
-		return isset($this->session->order) ? $this->session->order : self::Asc;
+		return isset($this->session->order) ? $this->session->order : $this->defaults['order'];
 	}
 	
 	/**
@@ -161,10 +161,11 @@ class EntityDatasource extends Paginator implements DataSource {
 	 *  
 	 * @param integer $limit
 	 */
-	public function setLimit($limit) {
+	public function setLimit( $limit ) {
 		$this->loaded = false;
 		parent::setLimit($limit);
-		$this->session->limit = $this->limit;
+		$limit = $limit == $this->defaults['limit'] ? null : $limit;
+		$this->session->limit = $limit;
 	}
 	
 	/**
@@ -172,10 +173,10 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * 
 	 * @param integer $page
 	 */
-	public function setPage($page) {
+	public function setPage( $page ) {
 		$this->loaded = false;
 		parent::setPage($page);
-		$this->session->page = $this->page;
+		$this->session->page = $this->page == 1 ? null : $this->page;
 	}
 	
 	/**
@@ -186,7 +187,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	public function setFilter( array $data ) {
 		$this->loaded = false;
 		$this->total = null;
-		$this->session->filter = $data;
+		$this->session->filter = empty($data) ? null : $data;
 	}
 	
 	/**
@@ -219,8 +220,8 @@ class EntityDatasource extends Paginator implements DataSource {
 			$query = clone $this->query;
 			$query->setFirstResult(null)
 				  ->setMaxResults(null);
-			if ( isset($this->processQuery) ) {
-				call_user_func($this->processQuery, $query, $this->getFilter());
+			if ( isset($this->defaults['processQuery']) ) {
+				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}
 			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->getIdentify() . ')');
 			$this->total = (int) $query->getQuery()->getSingleScalarResult();
@@ -237,13 +238,26 @@ class EntityDatasource extends Paginator implements DataSource {
 		if ( $this->count === null ) {
 			$query = clone $this->query;
 			$query->setFirstResult(null)
-			->setMaxResults(null);
+				  ->setMaxResults(null);
 			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->getIdentify() . ')');
 			$this->count = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->count;
 	}
 	
+	/**
+	 * Verifica se existe dado para filtrar
+	 * 
+	 * @return boolean
+	 */
+	public function hasFilter() {
+		foreach ( $this->getFilter() as $data ) {
+			if ( !empty($data) ) {
+				return true;
+			}
+		}
+		return false;
+	}
 	/**
 	 * Obtem uma propriedade da linha atual
 	 * 
@@ -267,7 +281,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @param \Closure $handler
 	 */
 	public function setProcessQuery( \Closure $handler = null ) {
-		$this->processQuery = $handler;
+		$this->defaults['processQuery'] = $handler;
 	}
 	
 	/**
@@ -276,11 +290,17 @@ class EntityDatasource extends Paginator implements DataSource {
 	public function reset() {
 		if (! $this->loaded ) {
 			$query = clone $this->query;
-			$query->setFirstResult($this->getOffset())
-			      ->setMaxResults($this->getLimit())
-				  ->orderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
-			if ( isset($this->processQuery) ) {
-				call_user_func($this->processQuery, $query, $this->getFilter());
+			$offset = $this->getOffset();
+			$limit = $this->getLimit();
+			if ( $limit == 0 ) {
+				$offset = null;
+				$limit = null;
+			}
+			$query->setFirstResult($offset)
+				   ->setMaxResults($limit)
+				   ->orderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
+			if ( isset($this->defaults['processQuery']) ) {
+				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}
 			$this->data = $query->getQuery()->getResult();
 			$this->loaded = true;

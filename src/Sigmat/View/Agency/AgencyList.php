@@ -10,52 +10,72 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use Sigmat\View\AbstractList;
 use Sigmat\View\EntityDatasource;
+use PHPBootstrap\Widget\Button\ButtonGroup;
 
 class AgencyList extends AbstractList {
 	
 	/**
+	 * @var FormFilter
+	 */
+	protected $formFilter;
+	
+	/**
+	 * @var ButtonGroup
+	 */
+	protected $btnGroupFilter;
+	
+	/**
+	 * @var Button
+	 */
+	protected $btnResetFilter;
+	
+	/**
 	 * Construtor
 	 * 
-	 * @param EntityDatasource $datasource
-	 * @param Action $action
+	 * @param Action $filter
+	 * @param Action $new
+	 * @param Action $edit
+	 * @param Action $remove
 	 */
-	public function __construct( EntityDatasource $datasource, Action $action ) {
+	public function __construct( Action $filter, Action $new, Action $edit, Action $remove ) {
 		$panel = $this->buildPanel('Administração', 'Gerenciar Orgãos');
-		$confirm = $this->buildConfirm('confirm-remove', new Paragraph('Deseja realmente excluir esse orgão e todos os cadastros relacionados?'));
+		$modalConfirm = $this->buildConfirm('confirm-remove', new Paragraph('Deseja realmente excluir esse orgão e todos os seus cadastros?'));
 		
-		$form = new FormFilter();
-		$form->bind($datasource->getFilter());
-		$datasource->setFilter($form->getData());
+		$reset = clone $filter;
+		$reset->setParameter('reset', 1);
 		
-		$filtered = 'Filtrar';
-		foreach ( $datasource->getFilter() as $data ) {
-			if ( !empty($data) ) {
-				$filtered = 'Filtrados<span class="badge badge-important">' . $datasource->getTotal() . '</span>';
-				break;
-			}
-		}
+		$this->formFilter = new FormFilter();
+		$modalFilter = $this->buildFilter($this->formFilter, clone $filter, $reset );
 		
-		$filter = $this->buildFilter($form, clone $action, clone $action );
-		$new = clone $action;
-		$new->setMethodName('new');
-		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary),
-							new Button(array($filtered, new Icon('icon-filter')), new TgModalOpen($filter), Button::Link));
+		$this->btnGroupFilter = new ButtonGroup(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link)));
+		$this->btnResetFilter = new Button(array('Remover Filtros', new Icon('icon-eye-close')), new TgLink($reset), array(Button::Link, Button::Mini));
 		
+		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary), $this->btnGroupFilter);
 		
+		$this->buildTable('agency-table', clone $filter);
 		
-		$this->buildTable('agency-table', $datasource, clone $action);
-		
-		$this->buildColumnText('id', '#', clone $action, 70, null, function( $value ) {
+		$this->buildColumnText('id', '#', clone $filter, 70, null, function( $value ) {
 			return str_repeat('0', 3 - strlen($value)) . $value; 
 		});
-		$this->buildColumnText('acronym', 'Sigla', clone $action, 200, ColumnText::Left);
-		$this->buildColumnText('name', 'Nome', clone $action, null, ColumnText::Left);
-		$this->buildColumnText('status', 'Status', clone $action, 70, null, function ( $value ) {
+		$this->buildColumnText('acronym', 'Sigla', clone $filter, 200, ColumnText::Left);
+		$this->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
+		$this->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? '<span class="label label-success">Ativo<span>' : '<span class="label label-important">Inativo</span>';
 		});
-		$this->buildColumnAction('edit', 'icon-pencil', clone $action);
-		$this->buildColumnAction('remove', 'icon-remove', clone $action, $confirm);
+		$this->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
+		$this->buildColumnAction('remove', new Icon('icon-remove'), $remove, $modalConfirm);
 		
+	}
+	
+	/**
+	 * @see AbstractList::update()
+	 */
+	protected  function update( EntityDatasource $datasource ) {
+		$this->formFilter->bind($datasource->getFilter());
+		$datasource->setFilter($this->formFilter->getData());
+		if ( $datasource->hasFilter() ) {
+			$this->btnGroupFilter->addButton($this->btnResetFilter);
+		}
 	}
 }
 ?>

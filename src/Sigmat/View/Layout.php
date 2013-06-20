@@ -58,9 +58,11 @@ class Layout extends View {
 		$nav->addItem(new NavDivider());
 		$nav->addItem(new NavLink('Relatórios'));
 		$nav->addItem(new NavDivider());
-		$nav->addItem(new NavLink('Administração'));
-		$navbar->addItem($nav);
 		
+		$drop = new Dropdown();
+		$drop->addItem(new DropdownLink('Gerenciar Orgãos', new TgLink(new Action('Sigmat\\Controller\\AgencyController'))));
+		$nav->addItem(new NavLink('Administração', new TgDropdown($drop, false, false)));
+		$navbar->addItem($nav);
 		
 		$nav = new Nav();
 		

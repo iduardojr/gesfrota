@@ -1,15 +1,17 @@
 <?php
 namespace Sigmat\Controller;
 
-use Sigmat\View\Layout;
-use Sigmat\View\Agency\AgencyForm;
-use Sigmat\View\Agency\AgencyList;
-use Sigmat\View\EntityDatasource;
 use PHPBootstrap\Mvc\Session\Session;
-use Doctrine\ORM\QueryBuilder;
-use Sigmat\Model\Agency\Agency;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Action\Action;
+use Sigmat\View\Agency\AgencyForm;
+use Sigmat\View\Agency\AgencyList;
+use Sigmat\Controller\Helper\Crud;
+use Sigmat\Controller\Helper\NotFoundEntityException;
+use Sigmat\Controller\Helper\InvalidRequestDataException;
+use Sigmat\Model\Agency\Agency;
+use Sigmat\View\Layout;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * Orgão
@@ -24,12 +26,12 @@ class AgencyController extends AbstractController {
 	}
 	
 	public function indexAction() {
-		$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+		$list = new AgencyList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
 		$process = function ( QueryBuilder $query, array $data ) {
 			$where = $query->expr()->andx();
 			if ( !empty($data['name']) ) {
 				$expr = $query->expr()->like('u.name', $query->expr()->literal('%' . $data['name'] . '%'));
-            	$where->add($expr);
+				$where->add($expr);
 			}
 			if ( !empty($data['acronym']) ) {
 				$expr = $query->expr()->like('u.acronym', $query->expr()->literal('%' . $data['acronym'] . '%'));
@@ -37,86 +39,66 @@ class AgencyController extends AbstractController {
 			}
 			if ( !empty($data['status']) ) {
 				$expr = $query->expr()->eq('u.status', $data['status']-1);
-            	$where->add($expr);
+				$where->add($expr);
 			}
-        	if ( $where->count() > 0 ) {
-           		$query->where($where);
-        	}
+			if ( $where->count() > 0 ) {
+				$query->where($where);
+			}
 		};
-		$datasource = new EntityDatasource($query, $this->session, $process);
-		if ( $this->request->isPost() ) {
-			$datasource->setFilter($this->request->getPost());
-		}
-		$query = $this->request->getQuery();
-		if ( isset($query['sort']) ) {
-			$datasource->toggleOrder($this->sanitize($query['sort']));
-		}
-		if ( isset($query['reset-filter']) ) {
-			$datasource->setFilter(array());
-		}
-		if ( isset($query['page']) ) {
-			$datasource->setPage((int) $query['page']);
-		}
-		if ( isset($query['limit']) ) {
-			$datasource->setLimit((int) $query['limit']);
-		}
-		$list = new AgencyList($datasource, new Action($this));
-		if ( $this->session->alert ) {
-			$list->setAlert($this->session->alert);
-			$this->session->alert = null;
-		}
+		$helper = new Crud($this->getEntityManager(), Agency::getClass());
+		$helper->read($this->request, $this->session, $list, null, array('limit' => null, 'processQuery' => $process ));
 		return new Layout($list);
 	}
 	
 	public function newAction() {
-		$form = new AgencyForm(new Action($this, 'new'), new Action($this));
-		if ( $this->request->isPost() ) {
-			$form->bind($this->request->getPost());
-			if ( $form->valid() ) {
-				$entity = new Agency();
-				$form->hydrate($entity);
-				$this->getEntityManager()->persist($entity);
-				$this->getEntityManager()->flush();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão #' . $entity->getId() . ' ' . $entity->getAcronym() . ' criado com sucesso!', Alert::Success);
+		try {
+			$form = new AgencyForm(new Action($this, 'new'), new Action($this));
+			$helper = new Crud($this->getEntityManager(), Agency::getClass());
+			if ( $helper->create($this->request, $form) ){
+				$entity = $helper->getEntity();
+				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> criado com sucesso!', Alert::Success);
 				$this->forward('/');
 			}
+		} catch ( InvalidRequestDataException $e ){
+			
+		} catch ( \Exception $e ) {
+			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
 	
 	public function editAction() {
-		$id = $this->request->getQuery('key');
-		$entity = $this->getEntityManager()->find(Agency::getClass(), ( int ) $id);
-		if ( ! $entity instanceof Agency ) {
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar o orgão. Orgão #' . $id . ' não foi encontrado');
-			$this->forward('/');
-		} 
-		$form = new AgencyForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
-		if ( $this->request->isPost() ) {
-			$form->bind($this->request->getPost());
-			if ( $form->valid() ) {
-				$form->hydrate($entity);
-				$this->getEntityManager()->persist($entity);
-				$this->getEntityManager()->flush();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão #' . $id . ' ' . $entity->getAcronym() . ' alterado com sucesso!', Alert::Success);
+		try {
+			$id = $this->request->getQuery('key');
+			$form = new AgencyForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
+			$helper = new Crud($this->getEntityManager(), Agency::getClass());
+			if ( $helper->update($id, $this->request, $form) ){
+				$entity = $helper->getEntity();
+				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym .  '</em> alterado com sucesso!', Alert::Success);
 				$this->forward('/');
 			}
+		} catch ( NotFoundEntityException $e ){
+			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar o orgão. Orgão <em>#' . $id . '</em> não foi encontrado');
+		} catch ( InvalidRequestDataException $e ){ 
+			
+		} catch ( \Exception $e ) {
+			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
 		}
-		$form->extract($entity);
-		$form->getButtonByName('submit')->setLabel('Salvar');
 		return new Layout($form);
 	}
 	
 	public function removeAction() {
-		$id = $this->request->getQuery('key');
-		$entity = $this->getEntityManager()->find(Agency::getClass(), ( int ) $id);
-		if ( ! $entity instanceof Agency ) {
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel excluir o orgão. Orgão #' . $id . ' não foi encontrado');
-			$this->forward('/');
+		try {
+			$id = $this->request->getQuery('key');
+			$helper = new Crud($this->getEntityManager(), Agency::getClass());
+			$helper->delete($id);
+			$entity = $helper->getEntity();
+			$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> removido com sucesso!', Alert::Success);
+		} catch ( NotFoundEntityException $e ){
+			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel excluir o orgão. Orgão <em>#' . $id . '</em> não foi encontrado');
+		} catch ( \Exception $e ) {
+			$this->session->alert = new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger);
 		}
-		$this->getEntityManager()->remove($entity);
-		$this->getEntityManager()->flush();
-		$this->session->alert = new Alert('<strong>Ok!</strong> Orgão #' . $id . ' ' . $entity->getAcronym() . ' removido com sucesso!', Alert::Success);
 		$this->forward('/');
 	}
 	
