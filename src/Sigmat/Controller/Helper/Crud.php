@@ -10,11 +10,16 @@ use Sigmat\View\AbstractForm;
 use Sigmat\View\EntityDatasource;
 use Sigmat\View\AbstractList;
 use Sigmat\Model\Entity;
+use PHPBootstrap\Common\ArrayCollection;
+use PHPBootstrap\Common\Enum;
 
 /**
  * Ajudante de create-read-update-delete
  */
 class Crud {
+	
+	// Eventos
+	const PrePersist = 'pre-persist';
 	
 	/**
 	 * @var EntityManager
@@ -32,6 +37,11 @@ class Crud {
 	protected $object;
 	
 	/**
+	 * @var ArrayCollection
+	 */
+	protected $listeners;
+	
+	/**
 	 * Construtor
 	 * 
 	 * @param EntityManager $em
@@ -40,6 +50,7 @@ class Crud {
 	public function __construct( EntityManager $em, $entity ) {
 		$this->em = $em;
 		$this->entity = $entity;
+		$this->listeners = new ArrayCollection();
 	}
 	
 	/**
@@ -58,7 +69,8 @@ class Crud {
 				throw new InvalidRequestDataException();
 			}
 			$this->object = new $this->entity;
-			$form->hydrate($this->object);
+			$form->hydrate($this->object, $this->em);
+			$this->trigger(self::PrePersist, array($this->object, $this->em));
 			$this->em->persist($this->object);
 			$this->em->flush();
 			return true;
@@ -84,18 +96,18 @@ class Crud {
 		if ( $request->isPost() ) {
 			$datasource->setFilter($request->getPost());
 		}
-		$query = $request->getQuery();
-		if ( isset($query['sort']) ) {
-			$datasource->toggleOrder(trim($query['sort']));
+		$get = $request->getQuery();
+		if ( isset($get['sort']) ) {
+			$datasource->toggleOrder(trim($get['sort']));
 		}
-		if ( isset($query['reset']) ) {
+		if ( isset($get['reset']) ) {
 			$datasource->setFilter(array());
 		}
-		if ( isset($query['page']) ) {
-			$datasource->setPage((int) $query['page']);
+		if ( isset($get['page']) ) {
+			$datasource->setPage((int) $get['page']);
 		}
-		if ( isset($query['limit']) ) {
-			$datasource->setLimit((int) $query['limit']);
+		if ( isset($get['limit']) ) {
+			$datasource->setLimit((int) $get['limit']);
 		}
 		$list->setDatasource($datasource);
 		if ( $session->alert ) {
@@ -127,13 +139,14 @@ class Crud {
 			if ( ! $form->valid() ) {
 				throw new InvalidRequestDataException();
 			}
-			$form->hydrate($this->object);
+			$form->hydrate($this->object, $this->em);
+			$this->trigger(self::PrePersist, array($this->object, $this->em));
 			$this->em->persist($this->object);
 			$this->em->flush();
 			return true;
 		} 
-		$form->extract($this->object);
 		$form->getButtonByName('submit')->setLabel('Salvar');
+		$form->extract($this->object);
 		return false;
 	}
 	
@@ -162,5 +175,49 @@ class Crud {
 		return $this->object;
 	}
 	
+	/**
+	 * Atribui um evento ao crud:
+	 * - Crud.PrePersist
+	 *
+	 * @param string $event
+	 * @param \Closure $handler
+	 * @throws \UnexpectedValueException
+	 */
+	public function attach( $event, \Closure $handler ) {
+		$this->listeners->set(Enum::ensure($event, $this), $handler);
+	}
+
+	/**
+	 * Remove um evento do helper e retorna o closure:
+	 * - Crud.PrePersist
+	 *
+	 * @param string $event
+	 * @return \Closure
+	 * @throws \UnexpectedValueException
+	 */
+	public function detach( $event ) {
+		return $this->listeners->removeKey(Enum::ensure($event, $this));
+	}
+
+	/**
+	 * Dispara um evento e retorna se deve seguir ou não com o padrão do evento: 
+	 * - Crud.PrePersist
+	 *
+	 * @param string $event
+	 * @param array $data
+	 * @return boolean
+	 * @throws \RuntimeException
+	 * @throws \UnexpectedValueException
+	 */
+	protected function trigger( $event, array $data = array() ) {
+		$event = Enum::ensure($event, $this);
+		if ( $this->listeners && $this->listeners->containsKey($event) ) {
+			$handler = $this->listeners->get($event);
+			if ( call_user_func_array($handler, $data) === false ) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
 ?>

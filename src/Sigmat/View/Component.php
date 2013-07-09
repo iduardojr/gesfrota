@@ -29,9 +29,6 @@ class Component implements Renderable {
 	 * @param Alert $alert
 	 */
 	public function setAlert( Alert $alert = null ) {
-		if ( ! isset($this->panel) ) {
-			throw new \RuntimeException('panel not builder');
-		}
 		$this->panel->getByName('flash-message')->setContent($alert);
 	}
 	
@@ -68,17 +65,14 @@ class Component implements Renderable {
 	
 	/**
 	 * Renderizar
+	 * 
+	 * @throws \RuntimeException
 	 */
 	public function render() {
 		if ( ! isset($this->panel) ) {
 			throw new \RuntimeException('panel not builder');
 		}
-		if ( isset($this->panel) ) {
-			if ( isset($this->component) ) {
-				$this->panel->append($this->component);
-			}
-			$this->panel->render();
-		}
+		$this->panel->render();
 	}
 	
 }

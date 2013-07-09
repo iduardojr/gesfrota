@@ -149,13 +149,15 @@ abstract class AbstractList extends Component {
 	 * 
 	 * @param string $name
 	 * @param mixed $labels
-	 * @param Action $action
+	 * @param Action|Toggle $action
 	 * @param Modal $confirm
 	 * @param \Closure $context
 	 * @return ColumnAction
 	 */
-	protected function buildColumnAction( $name, $labels, Action $action, Modal $confirm = null, \Closure $context = null ) {
-		$toggle = new TgLink($action);
+	protected function buildColumnAction( $name, $labels, $toggle, Modal $confirm = null, \Closure $context = null ) {
+		if ( $toggle instanceof Action ) {
+			$toggle = new TgLink($toggle);
+		}
 		if ( $confirm !== null ) {
 			$toggle = new TgModalOpen($confirm, $toggle);
 		}
@@ -187,5 +189,6 @@ abstract class AbstractList extends Component {
 	protected function update( EntityDatasource $datasource ) {
 		
 	}
+	
 }
 ?>

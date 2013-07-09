@@ -13,6 +13,7 @@ use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Form\TgFormSubmit;
 use PHPBootstrap\Widget\Widget;
 use PHPBootstrap\Widget\Misc\Alert;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
 
 abstract class AbstractForm extends Component {
 	
@@ -25,7 +26,7 @@ abstract class AbstractForm extends Component {
 	 * @var Form
 	 */
 	protected $component;
-
+	
 	/**
 	 * Liga os dados submetidos ao formulario
 	 *
@@ -37,9 +38,12 @@ abstract class AbstractForm extends Component {
 
 	/**
 	 * Prepara o formulario e seus controles para a renderização
+	 * 
+	 * @return array
 	 */
 	public function prepare() {
 		$this->component->prepare();
+		return $this->component->getData();
 	}
 
 	/**
@@ -97,7 +101,7 @@ abstract class AbstractForm extends Component {
 	 * Hidrata o objeto com os valores do formulario
 	 *
 	 * @param object $object
-	*/
+	 */
 	public function hydrate( $object ) {
 		throw new \BadMethodCallException('unsupported method');
 	}
@@ -152,7 +156,11 @@ abstract class AbstractForm extends Component {
 			$inputs = array($inputs);
 		}
 		foreach( $inputs as $input ) {
-			$this->component->register($input);
+			if ( $input instanceof Embed ) {
+				$this->component->register($input->getInput());
+			} else {
+				$this->component->register($input);
+			}
 			if ( $sanitize && $input instanceof AbstractInputEntry ) {
 				$input->addFilter('trim');
 				$input->addFilter('strip_tags');
@@ -183,6 +191,6 @@ abstract class AbstractForm extends Component {
 		$this->component->addButton($button);
 		return $button;
 	}
-
+	
 }
 ?>

@@ -74,7 +74,7 @@ class EntityDatasource extends Paginator implements DataSource {
 		$this->page = $session->page ? $session->page : 1;
 		$this->defaults = array_merge(array('sort'=>$this->getIdentify(), 'order'=>self::Asc, 'limit'=>10), $defaults);
 	}
-
+	
 	/**
 	 * Obtem chave de identificação dos registros
 	 *

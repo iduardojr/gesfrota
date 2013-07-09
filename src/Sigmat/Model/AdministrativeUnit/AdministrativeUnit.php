@@ -1,15 +1,19 @@
 <?php
-namespace Sigmat\Model\Agency;
+namespace Sigmat\Model\AdministrativeUnit;
 
 use Sigmat\Model\Entity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Orgão
+ * Unidade Administrativa
  * @Entity
- * @Table(name="agencies")
+ * @Table(name="administrative_units")
+ * @InheritanceType("SINGLE_TABLE")
+ * @DiscriminatorColumn(name="type", type="string")
+ * @DiscriminatorMap({"U" = "AdministrativeUnit", "A" = "Agency"})
  */
-class Agency extends Entity {
-
+class AdministrativeUnit extends Entity {
+	
 	/**
      * @Column(type="string")
      * @var string
@@ -45,14 +49,28 @@ class Agency extends Entity {
      * @var boolean
      */
 	protected $status;
-
+	
 	/**
-     * Construtor
-     */
+	 * @OneToMany(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit", mappedBy="parent")
+	 * @OrderBy({"name" = "ASC"})
+	 */
+	protected $children;
+	
+	/**
+	 * @ManyToOne(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit", inversedBy="children")
+	 * @JoinColumn(name="parent_id", referencedColumnName="id")
+	 * @var AdministrativeUnit
+	 */
+	protected $parent;
+	
+	/**
+	 * Construtor
+	 */
 	public function __construct() {
-
+		$this->children = new ArrayCollection();
+		$this->setStatus(true);
 	}
-
+	
 	/**
 	 * Obtem $name
 	 *
@@ -70,7 +88,7 @@ class Agency extends Entity {
 	public function getAcronym() {
 		return $this->acronym;
 	}
-
+	
 	/**
 	 * Obtem $contact
 	 *
@@ -105,6 +123,30 @@ class Agency extends Entity {
 	 */
 	public function getStatus() {
 		return $this->status;
+	}
+	
+	/**
+	 * Obtem $parent
+	 *
+	 * @return AdministrativeUnit
+	 */
+	public function getParent() {
+		return $this->parent;
+	}
+	
+	/**
+	 * Obtem as unidades filhas
+	 *
+	 * @return array
+	 */
+	public function getChildren() {
+		$active = array();
+		foreach ( $this->children as $child ) {
+			if ( $child->getStatus() ) {
+				$active[] = $child;
+			}
+		}
+		return $active;
 	}
 
 	/**
@@ -160,5 +202,38 @@ class Agency extends Entity {
 	public function setStatus( $status ) {
 		$this->status = ( bool ) $status;
 	}
+	
+	/**
+	 * Atribui $parent
+	 *
+	 * @param AdministrativeUnit $parent
+	 * @throws \DomainException
+	 */
+	public function setParent( AdministrativeUnit $parent = null ) {
+		if ( $parent !== null ) {
+			if ( $this->assertReferenceCircular($parent) ) {
+				throw new \DomainException('parent in reference circular');
+			}
+		}
+		$this->parent = $parent;
+	}
+	
+	/**
+	 * Verifica se há referencia circular
+	 * @param AdministrativeUnit $parent
+	 * @return boolean
+	 */
+	private function assertReferenceCircular( AdministrativeUnit $parent ) {
+		if ( $parent === $this ) {
+			return true;
+		}
+		foreach ( $this->children as $child ) {
+			if ( $child->assertReferenceCircular($parent) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
 ?>

@@ -46,7 +46,7 @@ footer hr {
 #toolbar .btn-group {
 	
 }
-.label-required:after{
+.label-required:after {
     color: #E5476F;
     content: "* ";
     font-weight: bold;
@@ -88,8 +88,43 @@ form,
 #toolbar [class^="ui-icon-"],
 #toolbar [class*=" ui-icon-"],
 #toolbar [class^="icon-"],
-#toolbar [class*=" icon-"],
-#toolbar .badge,
-#toolbar .label {
+#toolbar [class*=" icon-"] {
 	margin: 0 5px;
+}
+.tree-node {
+	padding: 2px 4px;
+	display: block;
+}
+.tree-node.loading {
+	padding-right: 30px;
+}
+.tree-node.loading:hover .btn {
+	display: none !important;
+}
+.tree-hover.expandable > .tree-node {
+	background: #f2f2f2;
+}
+.tree-selected {
+	display: none;
+}
+.tree-selected * {
+	visibility: hidden;
+}
+.tree-helper {
+	background: #fff !important;
+	border: 1px solid #ccc;
+	padding: 7px 7px 7px 35px;
+}
+.tree-hover > ul > .tree-selected,
+.tree-placeholder {
+	display: block !important;
+	background: url("/images/tree-placeholder.png") 5px 0 no-repeat !important;
+	margin: 3px 0 !important;
+	height: 8px;
+}
+#breadcrumb {
+	margin: 0;
+}
+#administrative-unit-list > li > .tree-node:hover {
+	background-color: #fff !important;
 }

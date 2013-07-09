@@ -9,9 +9,9 @@ use Sigmat\View\Agency\AgencyList;
 use Sigmat\Controller\Helper\Crud;
 use Sigmat\Controller\Helper\NotFoundEntityException;
 use Sigmat\Controller\Helper\InvalidRequestDataException;
-use Sigmat\Model\Agency\Agency;
 use Sigmat\View\Layout;
 use Doctrine\ORM\QueryBuilder;
+use Sigmat\Model\AdministrativeUnit\Agency;
 
 /**
  * Orgão
@@ -28,21 +28,14 @@ class AgencyController extends AbstractController {
 	public function indexAction() {
 		$list = new AgencyList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
 		$process = function ( QueryBuilder $query, array $data ) {
-			$where = $query->expr()->andx();
 			if ( !empty($data['name']) ) {
-				$expr = $query->expr()->like('u.name', $query->expr()->literal('%' . $data['name'] . '%'));
-				$where->add($expr);
+				$query->andWhere($query->expr()->like('u.name', $query->expr()->literal('%' . $data['name'] . '%')));
 			}
 			if ( !empty($data['acronym']) ) {
-				$expr = $query->expr()->like('u.acronym', $query->expr()->literal('%' . $data['acronym'] . '%'));
-				$where->add($expr);
+				$query->andWhere($query->expr()->like('u.acronym', $query->expr()->literal('%' . $data['acronym'] . '%')));
 			}
 			if ( !empty($data['status']) ) {
-				$expr = $query->expr()->eq('u.status', $data['status']-1);
-				$where->add($expr);
-			}
-			if ( $where->count() > 0 ) {
-				$query->where($where);
+				$query->andWhere($query->expr()->eq('u.status', $data['status']-1));
 			}
 		};
 		$helper = new Crud($this->getEntityManager(), Agency::getClass());
