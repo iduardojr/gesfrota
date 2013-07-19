@@ -46,9 +46,10 @@ footer hr {
 #toolbar .btn-group {
 	
 }
-.label-required:after {
+.label-required:after,
+.tab-error:after {
     color: #E5476F;
-    content: "* ";
+    content: " *";
     font-weight: bold;
 }
 #notice-filter {
@@ -85,15 +86,17 @@ form,
 .text-right {
 	text-align: right !important;
 }
-#toolbar [class^="ui-icon-"],
-#toolbar [class*=" ui-icon-"],
-#toolbar [class^="icon-"],
-#toolbar [class*=" icon-"] {
+.btn [class^="ui-icon-"],
+.btn [class*=" ui-icon-"],
+.btn [class^="icon-"],
+.btn [class*=" icon-"] {
 	margin: 0 5px;
 }
 .tree-node {
 	padding: 2px 4px;
-	display: block;
+}
+.tree li .hitarea {
+	top: 4px;
 }
 .tree-node.loading {
 	padding-right: 30px;
@@ -127,4 +130,22 @@ form,
 }
 #administrative-unit-list > li > .tree-node:hover {
 	background-color: #fff !important;
+}
+.controls-row > * {
+	margin-left: 30px !important;
+}
+.controls-row > label {
+	padding-top:5px;
+}
+.controls-row > *:first-child {
+	margin-left: 0 !important;
+}
+.well {
+	background: #fff;
+	overflow: hidden;
+}
+fieldset > legend {
+	margin-bottom: 10px;
+	font-size: 17px;
+	line-height: 38px;
 }

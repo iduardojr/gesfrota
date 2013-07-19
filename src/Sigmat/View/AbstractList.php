@@ -101,12 +101,11 @@ abstract class AbstractList extends Component {
 	 * Constroi uma tabela
 	 * 
 	 * @param string $name
-	 * @param DataSource $ds
 	 * @param Action $pager
 	 */
 	protected function buildTable($name, Action $pager ) {
 		if ( !isset($this->component) ) {
-			$table = new Table($name, new EmptyDatasource());
+			$table = new Table($name, new ArrayDatasource());
 			$table->setStyle(Table::Striped);
 			$table->setStyle(Table::Hover);
 			$table->setStyle(Table::Condensed);
@@ -170,9 +169,9 @@ abstract class AbstractList extends Component {
 	/**
 	 * Atribui um datasource
 	 * 
-	 * @param EntityDatasource $datasource
+	 * @param DataSource $datasource
 	 */
-	public function setDatasource( EntityDatasource $datasource ) {
+	public function setDatasource( DataSource $datasource ) {
 		$this->component->setDataSource($datasource);
 		$this->pagination->setPaginator($datasource);
 		if ( $datasource->getLimit() > 0 && $datasource->getTotal() > $datasource->getLimit() ) {
@@ -184,9 +183,9 @@ abstract class AbstractList extends Component {
 	/**
 	 * Atualiza a interface de acordo com datasource
 	 * 
-	 * @param EntityDatasource $datasource
+	 * @param DataSource $datasource
 	 */
-	protected function update( EntityDatasource $datasource ) {
+	protected function update( DataSource $datasource ) {
 		
 	}
 	

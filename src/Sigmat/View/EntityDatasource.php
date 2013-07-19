@@ -1,7 +1,6 @@
 <?php
 namespace Sigmat\View;
 
-use PHPBootstrap\Mvc\Session\Session;
 use PHPBootstrap\Widget\Pagination\Paginator;
 use PHPBootstrap\Widget\Table\DataSource;
 use Doctrine\ORM\QueryBuilder;
@@ -19,15 +18,11 @@ class EntityDatasource extends Paginator implements DataSource {
 	protected $data;
 	
 	/**
-	 * Atual
-	 * 
 	 * @var array|object
 	 */
 	protected $current;
 	
 	/**
-	 * Resetado
-	 * 
 	 * @var boolean
 	 */
 	protected $reset;
@@ -36,11 +31,6 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @var boolean
 	 */
 	protected $loaded;
-	
-	/**
-	 * @var Session
-	 */
-	protected $session;
 	
 	/**
 	 * @var integer
@@ -53,8 +43,6 @@ class EntityDatasource extends Paginator implements DataSource {
 	protected $defaults;
 	
 	/**
-	 * Consulta
-	 * 
 	 * @var QueryBuilder
 	 */
 	protected $query;
@@ -63,16 +51,17 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * Construtor
 	 * 
 	 * @param QueryBuilder $query
-	 * @param Session $session
 	 * @param array $defaults
 	 */
-	public function __construct( QueryBuilder $query, Session $session, array $defaults = array() ) {
+	public function __construct( QueryBuilder $query, array $defaults = array() ) {
 		$this->loaded = false;
 		$this->query = $query;
-		$this->session = $session;
 		$this->data = array();
-		$this->page = $session->page ? $session->page : 1;
-		$this->defaults = array_merge(array('sort'=>$this->getIdentify(), 'order'=>self::Asc, 'limit'=>10), $defaults);
+		$this->defaults = array_merge(array('sort' => $this->getIdentify(), 
+											'order' => self::Asc, 
+											'limit' => 10 ), $defaults);
+		unset($this->defaults['page']);
+		$this->page = ( int ) isset($defaults['page']) && $defaults['page'] > 0 ? $defaults['page'] : 1;
 	}
 	
 	/**
@@ -121,11 +110,8 @@ class EntityDatasource extends Paginator implements DataSource {
 	 */
 	public function setOrderBy( $sort, $order ) {
 		$this->loaded = false;
-		$sort = $sort == $this->defaults['sort'] ? null : $sort;
-		$order = $order == self::Desc ? self::Desc : self::Asc;
-		$order = $order == $this->defaults['order'] ? null : $order; 
-		$this->session->sort = $sort;
-		$this->session->order = $order;
+		$this->defaults['sort'] = $sort;
+		$this->defaults['order'] = $order == self::Desc ? self::Desc : self::Asc;
 	}
 	
 	/**
@@ -144,7 +130,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return string
 	 */
 	public function getSort() {
-		return isset($this->session->sort) ? $this->session->sort : $this->defaults['sort'];
+		return $this->defaults['sort'];
 	}
 	
 	/**
@@ -153,7 +139,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return string
 	 */
 	public function getOrder() {
-		return isset($this->session->order) ? $this->session->order : $this->defaults['order'];
+		return $this->defaults['order'];
 	}
 	
 	/**
@@ -164,8 +150,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	public function setLimit( $limit ) {
 		$this->loaded = false;
 		parent::setLimit($limit);
-		$limit = $limit == $this->defaults['limit'] ? null : $limit;
-		$this->session->limit = $limit;
+		$this->defaults['limit'] = $limit;
 	}
 	
 	/**
@@ -176,7 +161,6 @@ class EntityDatasource extends Paginator implements DataSource {
 	public function setPage( $page ) {
 		$this->loaded = false;
 		parent::setPage($page);
-		$this->session->page = $this->page == 1 ? null : $this->page;
 	}
 	
 	/**
@@ -187,7 +171,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	public function setFilter( array $data ) {
 		$this->loaded = false;
 		$this->total = null;
-		$this->session->filter = empty($data) ? null : $data;
+		$this->defaults['filter'] = empty($data) ? null : $data;
 	}
 	
 	/**
@@ -196,7 +180,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return array
 	 */
 	public function getFilter() {
-		return isset($this->session->filter) ? $this->session->filter : array();
+		return $this->defaults['filter'];
 	}
 	
 	/**
@@ -258,6 +242,7 @@ class EntityDatasource extends Paginator implements DataSource {
 		}
 		return false;
 	}
+	
 	/**
 	 * Obtem uma propriedade da linha atual
 	 * 
@@ -278,9 +263,13 @@ class EntityDatasource extends Paginator implements DataSource {
 	/**
 	 * Atribui uma função para processar a query
 	 * 
-	 * @param \Closure $handler
+	 * @param callback $handler
+	 * @throws \InvalidArgumentException
 	 */
-	public function setProcessQuery( \Closure $handler = null ) {
+	public function setProcessQuery( $handler ) {
+		if ( ! ( is_callable($handler) || $handler == null ) ){
+			throw new \InvalidArgumentException('handler not is callable');
+		}
 		$this->defaults['processQuery'] = $handler;
 	}
 	

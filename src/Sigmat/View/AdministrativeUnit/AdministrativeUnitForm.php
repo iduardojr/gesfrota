@@ -27,9 +27,9 @@ class AdministrativeUnitForm extends AbstractForm {
 	 */
 	public function __construct( Action $submit, Action $cancel, AdministrativeUnit $parent = null ) {
 		$this->buildPanel('Administração', 'Gerenciar Unidades Administrativas');
-		$form = $this->buildForm('agency-form');
+		$form = $this->buildForm('administrative-unit-form');
 		
-		$this->buildBreadcrumb($parent, 'new');
+		$this->buildBreadcrumb($parent);
 		
 		$input = new TextBox('acronym');
 		$input->setSpan(2);

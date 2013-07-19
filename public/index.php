@@ -6,9 +6,7 @@ use PHPBootstrap\Widget\Action\Action;
 use Sigmat\Services\Logger;
 use Sigmat\Services\NotFound;
 use Sigmat\Services\Error;
-use PHPBootstrap\Render\RenderKit;
-use Sigmat\View\Widget\TreeSelect;
-use Sigmat\View\Widget\RendererTreeSelect;
+
 
 // MODE
 $isDevMode = getenv('APPLICATION_ENV') == 'development';

@@ -1,7 +1,7 @@
 <?php
 namespace Sigmat\Model\AdministrativeUnit;
 
-use Sigmat\Model\Entity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Orgão
@@ -10,10 +10,18 @@ use Sigmat\Model\Entity;
 class Agency extends AdministrativeUnit {
 
 	/**
+	 * Construtor
+	 */
+	public function __construct() {
+		$this->children = new ArrayCollection();
+		$this->setStatus(true);
+	}
+	
+	/**
 	 * @see AdministrativeUnit::setParent()
 	 * @throws \BadMethodCallException
 	 */
-	public function setParent( AdministrativeUnit $parent = null ) {
+	public function setParent( AdministrativeUnit $parent ) {
 		throw new \BadMethodCallException('method unssuportted');
 	}
 }

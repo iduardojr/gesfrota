@@ -14,6 +14,7 @@ use PHPBootstrap\Widget\Form\TgFormSubmit;
 use PHPBootstrap\Widget\Widget;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
+use Doctrine\ORM\EntityManager;
 
 abstract class AbstractForm extends Component {
 	
@@ -101,8 +102,9 @@ abstract class AbstractForm extends Component {
 	 * Hidrata o objeto com os valores do formulario
 	 *
 	 * @param object $object
+	 * @param EntityManager $em
 	 */
-	public function hydrate( $object ) {
+	public function hydrate( $object, EntityManager $em = null ) {
 		throw new \BadMethodCallException('unsupported method');
 	}
 	
@@ -112,7 +114,7 @@ abstract class AbstractForm extends Component {
 	 * @param string $name
 	 * @return Form
 	 */
-	protected function  buildForm($name) {
+	protected function buildForm($name) {
 		if ( ! isset($this->component) ) {
 			$form = new Form($name);
 			$form->setStyle(Form::Horizontal);
@@ -156,18 +158,24 @@ abstract class AbstractForm extends Component {
 			$inputs = array($inputs);
 		}
 		foreach( $inputs as $input ) {
-			if ( $input instanceof Embed ) {
-				$this->component->register($input->getInput());
-			} else {
-				$this->component->register($input);
-			}
-			if ( $sanitize && $input instanceof AbstractInputEntry ) {
-				$input->addFilter('trim');
-				$input->addFilter('strip_tags');
+			if ( $input instanceof Inputable ) {
+				if ( $input instanceof Embed ) {
+					$this->component->register($input->getInput());
+				} else {
+					$this->component->register($input);
+				}
+				if ( $sanitize && $input instanceof AbstractInputEntry ) {
+					$input->addFilter('trim');
+					$input->addFilter('strip_tags');
+				} 
 			}
 		}
 		if ( $label !== null )  {
-			$label = new Label($label, reset($inputs));
+			$input = reset($inputs);
+			if ( ! $input instanceof Inputable )  {
+				$input = null;
+			}
+			$label = new Label($label, $input);
 		}
 		$control = new ControlGroup($label, $inputs);
 		$this->component->append($control);

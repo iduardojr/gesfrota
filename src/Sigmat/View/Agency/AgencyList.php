@@ -7,8 +7,8 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Paragraph;
-use Sigmat\View\AbstractList;
 use PHPBootstrap\Widget\Misc\Label;
+use Sigmat\View\AbstractList;
 
 class AgencyList extends AbstractList {
 	

@@ -19,42 +19,6 @@
 
 (function($) {
 	
-	$.fn.typeahead.Constructor.prototype.select = function () {
-        var val = this.$menu.find('.active').data('value');
-        this.$element.val(this.updater(val))
-        			 .change();
-        return this.hide();
-    };
-    
-    $.fn.typeahead.Constructor.prototype.render = function ( items ) {
-		var that = this;
-
-		items = $(items).map(function (i, item) {
-			i = $(that.options.item).data('value', item);
-			i.find('a').html(that.highlighter(item));
-        	return i[0];
-		});
-
-		items.first().addClass('active');
-		this.$menu.html(items);
-		return this;
-    };
-
-    $.fn.typeahead.Constructor.prototype.lookup = function ( event ) {
-        var items;
-        this.query = this.$element.val();
-
-        if ( this.query.length < this.options.minLength ) {
-        	return this.shown ? this.hide() : this;
-        }
-        items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source;
-        return items ? this.process(items) : this;
-   };
-   
-}(jQuery));
-
-(function($) {
-	
 	$.fn.datepicker.Constructor.prototype.setValue = function() {
 		var formatted = this.getFormattedDate();
 		if (!this.isInput) {
@@ -625,12 +589,18 @@
 		
 		toggle: function() {
 			this.abort();
-			this.loading();
+			if ( $.isFunction(this.options.before) ) {
+				this.options.before.call(this);
+			}
 			this.request = $.ajax( {
 				url: this.options.remote, 
 				success: $.proxy( function( data, textStatus, jqXHR) {
-					this.process(data, textStatus, jqXHR);
-					this.loaded();
+					if ( $.isFunction(this.options.execute) ) {
+						this.options.execute.apply(this, arguments);
+					}
+					if ( $.isFunction(this.options.after) ) {
+						this.options.after.call(this);
+					}
 				}, this ),
 				dataType: this.options.response
 			});
@@ -639,25 +609,32 @@
 		abort: function() {
 			if ( this.request ) {
 				this.request.abort();
-				this.loaded();
+				if ( $.isFunction(this.options.after) ) {
+					this.options.after.call(this);
+				}
 			}
-		},
+		}
 		
-		loading: function() {
-			if ( $.isFunction(this.options.loading) ) {
-				this.options.loading.call(this);
+	};
+	
+	/* STORAGE CLASS DEFINITION
+	 * ======================= */
+	var Storage = function( options ){
+		this.options = $.extend({}, $.fn.action.defaults, options);
+	};
+	
+	Storage.prototype = {
+		options: null,
+		
+		toggle: function() {
+			if ( $.isFunction(this.options.before) ) {
+				this.options.before.call(this);
 			}
-		},
-		
-		loaded: function() {
-			if ( $.isFunction(this.options.loaded) ) {
-				this.options.loaded.call(this);
+			if ( $.isFunction(this.options.execute) ) {
+				this.options.execute.call(this, this.options.storage);
 			}
-		},
-		
-		process: function() {
-			if ( $.isFunction(this.options.process) ) {
-				this.options.process.apply(this, arguments);
+			if ( $.isFunction(this.options.after) ) {
+				this.options.after.call(this);
 			}
 		}
 		
@@ -696,27 +673,30 @@
 		_setOption: function( key, value ) {
 			this.options[key] = value;
 			switch ( key ) {
-				case 'success':
-				case 'loading':
-				case 'loaded':
+				case 'execute':
+				case 'before':
+				case 'after':
 					break;
 				case 'ajax':
-				case 'target': 
+				case 'target':
+				case 'storage': 
 					var options = $.extend({}, this.options, {
-						process: $.proxy( function( data, textStatus, jqXHR ) {
-							this._trigger('success', this, data, textStatus, jqXHR );
+						execute: $.proxy( function( data, textStatus, jqXHR ) {
+							this._trigger('execute', this, data, textStatus, jqXHR );
 						}, this),
-						loading: $.proxy( function() {
-							this._trigger('loading', this);
+						before: $.proxy( function() {
+							this._trigger('before', this);
 						}, this),
-						loaded: $.proxy(function() {
-							this._trigger('loaded', this);
+						after: $.proxy(function() {
+							this._trigger('after', this);
 						}, this)
 					});
 					if ( this.options.ajax ) {
 						this.strategy = new Ajax(options);
 					} else if ( this.options.target ){
 						this.strategy = new Windows(options);
+					} else if ( this.options.storage ) {
+						this.strategy = new Storage(options);
 					} else {
 						this.strategy = new Default(options);
 					}
@@ -740,12 +720,17 @@
 		disabled: false,
 		ajax: false, 
 		response: 'html',
-		success: function( e, $this, data, textStatus, jqXHR ){
+		before: null,
+		execute: function( e, $this, data, textStatus, jqXHR ){
 			var event = $.Event('update');
-			$($this.options.target).trigger(event, data, $this);
+			if ( $this.options.target ) {
+				$($this.options.target).trigger(event, data, $this);
+			}
 			if ( ! event.isDefaultPrevented() ) {
-				if ( $this.options.response != $this.Json ){
+				if ( $this.options.response == $this.Text ){
 					$($this.options.target).html(data);
+				} else if ( $this.options.response == $this.Html ){
+					$($this.options.target).replaceWith(data);
 				} else {
 					$.each( data, function( key, value ) {
 						var el = $('#' + key );
@@ -759,19 +744,17 @@
 							};
 						};
 					});
-					
 				};
 			};
 		},
-		loading: null,
-		loaded: null
+		after: null
 	});
 	
 	/* ACTION DATA-API
 	* ============== */
 	var event = function ( e ) {
 		var $this = $(e.currentTarget), 
-		options = {};
+		options = $.extend({response: 'json'}, $this.data());
 	
 		options.remote = $this.attr('href');
 		options.disabled = $this.closest('.disabled,:disabled').size() > 0;
@@ -793,8 +776,8 @@
 		return false;
 	};
 	
-	$('body').on('click.action.data-api', 'a:not([href^=#],[data-toggle])', event);
-	$('body').on('toggle.action.data-api', 'a:not([href^=#])', event);
+	$('body').on('click.action.data-api', 'a:not([href^=#],[data-toggle]),a[data-storage]', event);
+	$('body').on('toggle.action.data-api', 'a:not([href^=#]),a[data-storage]', event);
 	
 }(jQuery));
 
@@ -842,115 +825,91 @@
 
 (function($) {
 	
-	/* SEEK CLASS DEFINITION
-	 * ===================== */
-	Seek = {
+	/* SEARCH CLASS DEFINITION
+	 * ========================= */
+	Search = {
 			
 		request: null,
+		query: null,
+		output: null,
+		response: null,
+		
+		_create: function() {
+			this.output = this.options.output ? $('.modal-body', this.options.output) : null;
+		},
 		
 		abort: function(){
 			if ( this.request ) {
 				this.request.abort();
 				this.request = null;
+				this.response = null;
 				this._trigger('loaded', this);
 			}
 		},
 		
-		search: function() {
-			this.abort();
-			if ( this.options.query.length > 0 && this.options.remote ) {
-				this._trigger('loading', this);
-				this.request = $.getJSON( this.options.remote, {'query': this.options.query }, $.proxy( function( result ) {
-					this.request = null;
-					this._trigger('process', { ui: this, data: result });
-					this._trigger('loaded', { ui: this, data: result });
-				}, this));
+		lookup: function() {
+			var query = this.options.query ? $(this.options.query).filter(':not([readonly])').val() : '';
+			if ( this.query != query || this.response == null ) {
+				this.abort();
+				this.query = query;
+				if ( this.options.remote ) {
+					this._trigger('loading', this);
+					this.request = $.get( this.options.remote, { 'query': this.query }, $.proxy( function( result ) {
+						this.request = null;
+						this.response = result;
+						this._trigger('process', this);
+						this._trigger('loaded', this);
+					}, this));
+				}
+			} else {
+				this._trigger('process', this);
 			}
 		}
-		
 	};
 	
-	/* RESEARCH CLASS DEFINITION
-	 * ========================= */
-	Research = {
-		
-		search: function() {
-			this.abort();
-			if ( this.options.remote ) {
-				this._trigger('loading', this);
-				this.request = $.get( this.options.remote, {'query': this.options.query }, $.proxy( function( result ) {
-					this.request = null;
-					$('.modal-body', this.options.target).empty();
-					$('.modal-body', this.options.target).append(result);
-					this.options.target.modal('show')
-	       	   		  		  		   .one('hide', $.proxy(function () { this.element.focus(); }, this));
-					this._trigger('loaded', { ui: this, data: result });
-				}, this));
-			}
-		}
-		
-	};
-	
-	/* OUTPUT, INPUT PLUGINS DEFINITION
+	/* SEARCH PLUGINS DEFINITION
 	 * ======================= */
-	$.plugin('xseek', Seek, {
-		process: function ( e, response ) {
-			$.each( response.data, function( key, value ) {
-				var el = $('#' + key );
-				var event = $.Event('update');
-				el.trigger(event, value);
-				if ( ! event.isDefaultPrevented() ) {
-					if ( el.is(':input') ) {
-						el.val(value);
-					} else {
-						el.html(value);
+	$.plugin('search', Search, {
+		loading: function ( e, ui ) {
+			$(ui.options.query).addClass('loading');
+		},
+		loaded: function( e, ui ) {
+			$(ui.options.query).removeClass('loading');
+		}, 
+		process: function ( e, ui ) {
+			if ( ui.output ) {
+				ui.output.empty();
+				ui.output.append(ui.response);
+				ui.output.closest('.modal')
+						 	  .modal('show')
+       	   		  		 	  .one('hide', $.proxy( function () { ui.element.focus(); }, this ));
+			} else {
+				$.each( ui.response, function( key, value ) {
+					var el = $('#' + key );
+					var event = $.Event('update');
+					el.trigger(event, value);
+					if ( ! event.isDefaultPrevented() ) {
+						if ( el.is(':input') ) {
+							el.val(value);
+						} else {
+							el.html(value);
+						};
 					};
-				};
-			});
+				});
+			}
 		}
 	});
-	$.plugin('xresearch', Research, Seek, {});
 	
    /* DATA-API
 	* ============== */
 	$(function () {
 		
-		$('body').on('click.search.data-api', '[data-toggle=seek]', function( e ) {
-			var $this = $(e.currentTarget),
-				input = $($this.data('input-query'));
-			
-			if ( ! $this.data('xseek') ) {
-				$this.xseek({ remote: $this.data('remote'),
-							  loading: function (e, ui ) {
-								  input.addClass('loading');
-							  },
-							  loaded: function(e, ui) {
-								  input.removeClass('loading');
-							  }});
-			}
-			$this.xseek('option', 'query', input.field('value'));
-			$this.xseek('search');
-			return false;
-		});
-		
-		$('body').on('click.search.data-api', '[data-toggle=research]', function( e ) {
-			var $this = $(e.currentTarget),
-				input = $($this.data('input-query'));
-			
-			if ( ! $this.data('xresearch') ) {
-				$this.xresearch({ 
-					remote: $this.data('remote'),
-					target: $($this.data('target')),
-					loading: function (e, ui ) {
-						input.addClass('loading');
-					},
-					loaded: function(e, ui) {
-						input.removeClass('loading');
-					}
-				});
-			}
-			$this.xresearch('option', 'query', input.is('[readonly]') ? '' : input.field('value'));
-			$this.xresearch('search');
+		$('body').on('click.search.data-api', '[data-toggle=search]', function( e ) {
+			var $this = $(e.currentTarget);
+			if ( ! $this.data('search') ) {
+				$this.search($this.data());
+			};
+			$this.search('lookup');
 			return false;
 		});
 		
@@ -959,6 +918,40 @@
 }(jQuery));
 
 (function($) {
+	
+	/* TYPEAHEAD CLASS DEFINITION
+	 * ===================== */
+	$.fn.typeahead.Constructor.prototype.select = function () {
+        var val = this.$menu.find('.active').data('value');
+        this.$element.val(this.updater(val))
+        			 .change();
+        return this.hide();
+    };
+    
+    $.fn.typeahead.Constructor.prototype.render = function ( items ) {
+		var that = this;
+
+		items = $(items).map(function (i, item) {
+			i = $(that.options.item).data('value', item);
+			i.find('a').html(that.highlighter(item));
+        	return i[0];
+		});
+
+		items.first().addClass('active');
+		this.$menu.html(items);
+		return this;
+    };
+
+    $.fn.typeahead.Constructor.prototype.lookup = function ( event ) {
+        var items;
+        this.query = this.$element.val();
+
+        if ( this.query.length < this.options.minLength ) {
+        	return this.shown ? this.hide() : this;
+        }
+        items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source;
+        return items ? this.process(items) : this;
+   };
 	
 	/* SUGGEST CLASS DEFINITION
 	 * ====================== */
@@ -1060,7 +1053,48 @@
 		}
 	});
 	
-	/* SUGGEST PLUGINS DEFINITION
+	/* SEEK CLASS DEFINITION
+	 * ===================== */
+	Seek = {
+			
+		request: null,
+		query: null,
+		result: null,
+		
+		_create: function() {
+			this.element.on('blur', $.proxy(this.lookup, this));
+			this.element.on('focus', $.proxy(this.abort, this));
+		},
+		
+		abort: function(){
+			if ( this.request ) {
+				this.request.abort();
+				this.request = null;
+				this.result = null;
+				this._trigger('loaded', this);
+			}
+		},
+		
+		lookup: function() {
+			if ( this.query != this.element.val() ) {
+				this.query = this.element.val();
+				this.abort();
+				if ( this.options.remote ) {
+					this._trigger('loading', this);
+					this.request = $.getJSON( this.options.remote, {'query': this.query }, $.proxy( function( result ) {
+						this.request = null;
+						this.result = result;
+						this._trigger('process', this);
+						this._trigger('loaded', this);
+					}, this));
+				}
+			}
+		}
+		
+	};
+	
+	
+	/* SUGGEST, SEEK PLUGINS DEFINITION
 	 * ======================= */
 	
 	$.fn.suggest = function ( option ) {
@@ -1100,9 +1134,40 @@
 	});
 	$.fn.suggest.Constructor = Suggest;
 	
-   /* SUGGEST DATA-API
+	
+	$.plugin('seek', Seek, {
+		loading: function ( e, ui ) {
+			ui.element.addClass('loading');
+		},
+	    loaded: function( e, ui ) {
+			ui.element.removeClass('loading');
+		},
+		process: function ( e, ui ) {
+			$.each( ui.result, function( key, value ) {
+				var el = $('#' + key );
+				var event = $.Event('update');
+				el.trigger(event, value);
+				if ( ! event.isDefaultPrevented() ) {
+					if ( el.is(':input') ) {
+						el.val(value);
+					} else {
+						el.html(value);
+					};
+				};
+			});
+		}
+	});
+	
+   /* SUGGEST, SEEK DATA-API
 	* ============== */
 	$(function () {
+		
+		$('body').on('focus.seek.data-api', '[data-provide=seek]', function( e ) {
+			var $this = $(e.currentTarget);
+			if ($this.data('seek')) return;
+		    e.preventDefault();
+		    $this.seek($this.data());
+		});
 		
 		$('body').on('focus.suggest.data-api', '[data-provide=suggest]', function ( e ) {
 			var $this = $(e.currentTarget);
@@ -1949,7 +2014,7 @@
 					if ( ! $.cookie.json ) {
 						data = JSON.parse(data);
 					}
-					$.each( data, function(node, value) {
+					$.each( data, function( node, value ) {
 						node = $('li[id="' + node + '"]', that.element);
 						if ( node.is('.expandable,.collapsable') ) {
 							value ? that.expand(node) : that.collapse(node);
@@ -1999,7 +2064,6 @@
 				$.cookie(this.options.persist, data, this.options.cookie);
 			}
 		}
-		
 
 	};
 	
@@ -2031,4 +2095,3 @@
 	});
 	
 }(jQuery));
-

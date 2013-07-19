@@ -2,6 +2,7 @@
 namespace Sigmat\Model\AdministrativeUnit;
 
 use Sigmat\Model\Entity;
+use Sigmat\Model\Deleting;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -12,7 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @DiscriminatorColumn(name="type", type="string")
  * @DiscriminatorMap({"U" = "AdministrativeUnit", "A" = "Agency"})
  */
-class AdministrativeUnit extends Entity {
+class AdministrativeUnit extends Entity implements Deleting {
 	
 	/**
      * @Column(type="string")
@@ -66,9 +67,10 @@ class AdministrativeUnit extends Entity {
 	/**
 	 * Construtor
 	 */
-	public function __construct() {
+	public function __construct( AdministrativeUnit $parent ) {
 		$this->children = new ArrayCollection();
 		$this->setStatus(true);
+		$this->setParent($parent);
 	}
 	
 	/**
@@ -209,7 +211,7 @@ class AdministrativeUnit extends Entity {
 	 * @param AdministrativeUnit $parent
 	 * @throws \DomainException
 	 */
-	public function setParent( AdministrativeUnit $parent = null ) {
+	public function setParent( AdministrativeUnit $parent ) {
 		if ( $parent !== null ) {
 			if ( $this->assertReferenceCircular($parent) ) {
 				throw new \DomainException('parent in reference circular');
@@ -235,5 +237,12 @@ class AdministrativeUnit extends Entity {
 		return false;
 	}
 	
+	/**
+	 * @see \Sigmat\Model\Deleting::delete()
+	 */
+	public function delete() {
+		$this->setStatus(false);
+	}
+
 }
 ?>

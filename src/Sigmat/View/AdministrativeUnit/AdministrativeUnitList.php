@@ -5,17 +5,17 @@ use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use PHPBootstrap\Widget\Button\Button;
-use Sigmat\View\AbstractList;
-use Sigmat\View\EntityDatasource;
 use PHPBootstrap\Widget\Tree\Tree;
 use PHPBootstrap\Widget\Tree\TgTree;
-use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
 use PHPBootstrap\Widget\Tree\TreeNode;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Anchor;
 use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Form\Controls\Help;
+use Sigmat\View\AbstractList;
+use Sigmat\View\EntityDatasource;
+use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
 
 class AdministrativeUnitList extends AbstractList {
 	
@@ -64,7 +64,6 @@ class AdministrativeUnitList extends AbstractList {
 		$this->edit = $edit;
 		$this->remove = $remove;
 		$this->confirm = $this->buildConfirm('confirm-remove', new Paragraph('Deseja realmente excluir essa unidade administrativa?'));
-		
 	}
 	
 	/**
@@ -83,7 +82,7 @@ class AdministrativeUnitList extends AbstractList {
 		$unit = $datasource->fetch();
 		$new = clone $this->new;
 		$new->setParameter('key', $unit->getId());
-		$node = new TreeNode($unit->getId(), '<strong>' . $unit->getAcronym() . '</strong>', null, new Button(new Icon('icon-plus'), new TgLink($new), array(Button::Link, Button::Mini)));
+		$node = new TreeNode($unit->getId(), '<strong>' . $unit->getAcronym() . '</strong>', new Button(new Icon('icon-plus'), new TgLink($new), array(Button::Link, Button::Mini)));
 		$this->component->addNode($node);
 		foreach ( $unit->getChildren() as $child ) {
 			$node->addNode($this->buildNode($child));

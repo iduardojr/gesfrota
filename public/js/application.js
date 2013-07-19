@@ -1,21 +1,29 @@
 $(function() {
 	$('form').on('errorform', function( e, data ){
 		$.each(data.list, function (i, error) {
-			var group = $(error.element).closest('.control-group');
+			var group = $(error.element).closest('.control-group'),
+				tabpane = group.closest('.tab-pane'),
+				tab = $('[data-toggle=tab][data-target="#' + tabpane.attr('id') + '"]');
 			group.find('.validate')
 				 .remove(); 
 			group.addClass('error')
 				 .find('.controls')
 				 .append('<span class="validate help-inline">' + error.message + '</span>');
+			tab.addClass('tab-error');
 		});
 	});
 	
 	$('form').on('validform', function( e, data ){
 		$.each(data.list, function (i, valid) {
-			var group = $(valid).closest('.control-group'); 
+			var group = $(valid).closest('.control-group'),
+			 	tabpane = group.closest('.tab-pane'),
+				tab = $('[data-toggle=tab][data-target="#' + tabpane.attr('id') + '"]');
 			group.removeClass('error')
 				 .find('.validate')
 				 .remove();
+			if ( $('.control-group.error', tabpane).size() == 0 ) {
+				tab.removeClass('tab-error');
+			}
 		});
 	});
 	
@@ -49,7 +57,7 @@ $(function() {
 	});
 	$('li, .tree-node', '#administrative-unit-list').droppable({
 		tolerance: 'pointer',
-		distance: 10,
+		distance: 20,
 		accept: "#administrative-unit-list li",
 		greedy: true,
 		over: function ( e, ui ) {
@@ -103,5 +111,18 @@ $(function() {
 			}
 			$('.tree-placeholder').remove();
 		}
+	});
+	
+	$('body').on('loadedseek', '[data-provide=seek]', function ( e, ui ) {
+		if ( ui.result.message ) {
+			var group = ui.element.closest('.control-group');
+				group.addClass('error')
+					 .find('.controls')
+					 .append('<span class="validate help-inline">' + ui.result.message + '</span>');
+		}
+	});
+	
+	$('body').on('afteraction', '.modal a[data-storage]', function ( e ) {
+		$(this).closest('.modal').modal('hide');
 	});
 });
