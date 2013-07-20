@@ -70,13 +70,6 @@ class AdministrativeUnitList extends AbstractList {
 	 * @see AbstractList::setDatasource()
 	 */
 	public function setDatasource( EntityDatasource $datasource ) {
-		$this->update($datasource);
-	}
-	
-	/**
-	 * @see AbstractList::update()
-	 */
-	protected function update( EntityDatasource $datasource ) {
 		$datasource->reset();
 		$datasource->next();
 		$unit = $datasource->fetch();
@@ -88,7 +81,7 @@ class AdministrativeUnitList extends AbstractList {
 			$node->addNode($this->buildNode($child));
 		}
 	}
-	 
+	
 	/**
 	 * Construi um nó filho
 	 * 

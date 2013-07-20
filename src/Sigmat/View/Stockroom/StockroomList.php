@@ -26,17 +26,16 @@ class StockroomList extends AbstractList {
 		
 		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary));
 		
-		$this->buildTable('stockroom-table', clone $filter);
+		$table = $this->buildTable('stockroom-table');
+		$table->buildPagination(clone $filter);
 		
-		$this->buildColumnText('id', '#', clone $filter, 70, null, function( $value ) {
-			return str_repeat('0', 3 - strlen($value)) . $value; 
-		});
-		$this->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
-		$this->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {
+		$table->buildColumnTextId();
+		$table->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});
-		$this->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
-		$this->buildColumnAction('remove', new Icon('icon-remove'), $remove, $modalConfirm);
+		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
+		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $modalConfirm);
 	}
 	
 }

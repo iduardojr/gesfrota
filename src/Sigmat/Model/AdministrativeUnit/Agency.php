@@ -24,5 +24,12 @@ class Agency extends AdministrativeUnit {
 	public function setParent( AdministrativeUnit $parent ) {
 		throw new \BadMethodCallException('method unssuportted');
 	}
+	
+	/**
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->getAcronym();
+	}
 }
 ?>

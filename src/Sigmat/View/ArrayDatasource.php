@@ -4,7 +4,7 @@ namespace Sigmat\View;
 use PHPBootstrap\Widget\Table\DataSource;
 
 /**
- * Datasource vazio
+ * Datasource array
  */
 class ArrayDatasource implements DataSource {
 	
@@ -16,30 +16,17 @@ class ArrayDatasource implements DataSource {
 	protected $data;
 	
 	/**
+	 * @var boolean
+	 */
+	protected $reset;
+	
+	/**
 	 * Construtor
 	 * 
 	 * @param array $data
 	 */
 	public function __construct( array $data = array() ) {
-		$this->setData($data);
-	}
-	
-	/**
-	 * Atribui os dados
-	 * 
-	 * @param array $data
-	 */
-	public function setData( array $data ) {
 		$this->data = $data;
-	}
-	
-	/**
-	 * Obtem os dados
-	 * 
-	 * @return array
-	 */
-	public function getData() {
-		return $this->data;
 	}
 	
 	/**
@@ -52,59 +39,84 @@ class ArrayDatasource implements DataSource {
 	}
 
 	/**
-	 * @see DataSource::fetch()
+	 * Obtem o rowset
+	 *
+	 * @return array|object
 	 */
 	public function fetch() {
+		if ( ! is_array($this->data) ) {
+			throw new \RuntimeException('data not found');
+		}
+		if ( current($this->data) === false ) {
+			throw new \RuntimeException('end of the datasource');
+		}
 		return current($this->data);
 	}
 
 	/**
-	 * @see DataSource::next()
+	 * Verifica e avança para o proximo rowset 
+	 * 
+	 * @return boolean
 	 */
 	public function next() {
-		return next($this->data) !== false;
+		if ( ! is_array($this->data) ) {
+			throw new \RuntimeException('data not found');
+		}
+		$current = $this->reset ? reset($this->data) : next($this->data);
+		$this->reset = false;
+		return $current !== false;
 	}
 
 	/**
-	 * @see DataSource::getSort()
+	 * Obtem o campo ordenado dos registros
+	 *
+	 * @return string
 	 */
 	public function getSort() {
 		return null;
 	}
 
 	/**
-	 * @see DataSource::getOrder()
+	 * Obtem a ordenação dos registros
+	 *
+	 * @return string
 	 */
 	public function getOrder() {
 		return self::Asc;
 	}
 
 	/**
-	 * @see DataSource::getLimit()
+	 * Obtem quantidade de registros a retornar
+	 *
+	 * @return integer
 	 */
 	public function getLimit() {
 		return 0;
 	}
 
 	/**
-	 * @see DataSource::getOffset()
+	 * Obtem o indice do primeiro registro
+	 *
+	 * @return integer
 	 */
 	public function getOffset() {
 		return 0;
 	}
 
 	/**
-	 * @see DataSource::getTotal()
+	 * Obtem o total de registros
+	 *
+	 * @return integer
 	 */
 	public function getTotal() {
 		return count($this->data);
 	}
 
 	/**
-	 * @see DataSource::reset()
+	 * Restabelece o conjunto de dados
 	 */
 	public function reset() {
-		return reset($this->data);
+		$this->reset = true;
 	}
 
 	/**
@@ -123,6 +135,5 @@ class ArrayDatasource implements DataSource {
 		}
 		return null;
 	}
-	
 }
 ?>

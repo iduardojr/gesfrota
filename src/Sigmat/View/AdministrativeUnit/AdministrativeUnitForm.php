@@ -9,9 +9,7 @@ use PHPBootstrap\Validate\Pattern\Email;
 use PHPBootstrap\Widget\Action\Action;
 use Sigmat\View\AbstractForm;
 use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
-use PHPBootstrap\Widget\Misc\Breadcrumb;
-use PHPBootstrap\Widget\Form\Controls\ControlGroup;
-use PHPBootstrap\Widget\Form\Controls\Label;
+use PHPBootstrap\Widget\Form\Controls\Uneditable;
 
 /**
  * Formulario
@@ -29,36 +27,38 @@ class AdministrativeUnitForm extends AbstractForm {
 		$this->buildPanel('Administração', 'Gerenciar Unidades Administrativas');
 		$form = $this->buildForm('administrative-unit-form');
 		
-		$this->buildBreadcrumb($parent);
+		$input = new Uneditable('parent');
+		$input->setSpan(9);
+		$form->buildField('Unidade Superior', $input);
 		
 		$input = new TextBox('acronym');
 		$input->setSpan(2);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input->addFilter('strtoupper');
-		$this->buildField('Sigla', $input);
+		$form->buildField('Sigla', $input);
 		
 		$input = new TextBox('name');
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$this->buildField('Nome', $input);
+		$form->buildField('Nome', $input);
 		
 		$input = new TextBox('contact');
 		$input->setSpan(7);
-		$this->buildField('Responsável', $input);
+		$form->buildField('Responsável', $input);
 		
 		$input = new TextBox('email');
 		$input->setSpan(7);
 		$input->setPattern(new Email('Por favor, informe um e-mail'));
-		$this->buildField('E-mail', $input);
+		$form->buildField('E-mail', $input);
 		
 		$input = new TextBox('phone');
 		$input->setSpan(2);
 		$input->setMask(Mask::PhoneBR);
 		$input->setPattern(new Pattern(Pattern::PhoneBR, 'Por favor, informe um telefone'));
-		$this->buildField('Telefone', $input);
+		$form->buildField('Telefone', $input);
 		
-		$this->buildButton('submit', 'Incluir', $submit);
-		$this->buildButton('cancel', 'Cancelar', $cancel);
+		$form->buildButton('submit', 'Incluir', $submit);
+		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
 	/**
@@ -70,33 +70,10 @@ class AdministrativeUnitForm extends AbstractForm {
 		$data['contact'] = $object->getContact();
 		$data['email'] = $object->getEmail();
 		$data['phone'] = $object->getPhone();
-		$this->buildBreadcrumb($object->getParent());
+		$data['parent'] = implode(' / ', $object->getAncestors());
 		$this->component->setData($data);
 	}
 	
-	/**
-	 * @param AdministrativeUnit $parent
-	 */
-	protected function buildBreadcrumb( AdministrativeUnit $parent = null ) {
-		$breadcrumb = $this->component->getByName('breadcrumb');
-		if ( $breadcrumb !== null ) {
-			$this->component->remove($breadcrumb);
-		}
-		if ( $parent !== null ) {
-			while ( $parent !== null ) {
-				$parents[] = $parent->getParent() !== null ? $parent->getName() : $parent->getAcronym();
-				$parent = $parent->getParent();
-			}
-			$breadcrumb = new Breadcrumb('breadcrumb', '/', false);
-			foreach( array_reverse($parents) as $parent ) {
-				$breadcrumb->addItem($parent);
-			}
-			$this->component->prepend(new ControlGroup(new Label('Unidade Superior'), $breadcrumb));
-			return $breadcrumb;
-		} 
-		
-	}
-
 	/**
 	 * @see AbstractForm::hydrate()
 	 */

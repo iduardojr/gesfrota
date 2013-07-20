@@ -24,40 +24,40 @@ class AgencyForm extends AbstractForm {
 	 */
 	public function __construct( Action $submit, Action $cancel ) {
 		$this->buildPanel('Administração', 'Gerenciar Orgãos');
-		$this->buildForm('agency-form');
+		$form = $this->buildForm('agency-form');
 		
 		$input = new TextBox('acronym');
 		$input->setSpan(2);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input->addFilter('strtoupper');
-		$this->buildField('Sigla', $input);
+		$form->buildField('Sigla', $input);
 		
 		$input = new TextBox('name');
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$this->buildField('Nome', $input);
+		$form->buildField('Nome', $input);
 		
 		$input = new TextBox('contact');
 		$input->setSpan(7);
-		$this->buildField('Responsável', $input);
+		$form->buildField('Responsável', $input);
 		
 		$input = new TextBox('email');
 		$input->setSpan(7);
 		$input->setPattern(new Email('Por favor, informe um e-mail'));
-		$this->buildField('E-mail', $input);
+		$form->buildField('E-mail', $input);
 		
 		$input = new TextBox('phone');
 		$input->setSpan(2);
 		$input->setMask(Mask::PhoneBR);
 		$input->setPattern(new Pattern(Pattern::PhoneBR, 'Por favor, informe um telefone'));
-		$this->buildField('Telefone', $input);
+		$form->buildField('Telefone', $input);
 		
 		$input = new CheckBox('status', 'Ativo');
 		$input->setValue(true);
-		$this->buildField(null, $input);
+		$form->buildField(null, $input);
 
-		$this->buildButton('submit', 'Incluir', $submit);
-		$this->buildButton('cancel', 'Cancelar', $cancel);
+		$form->buildButton('submit', 'Incluir', $submit);
+		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
 	/**

@@ -58,7 +58,7 @@ class AdministrativeUnit extends Entity implements Deleting {
 	protected $children;
 	
 	/**
-	 * @ManyToOne(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit", inversedBy="children")
+	 * @ManyToOne(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit", inversedBy="children", fetch="EAGER")
 	 * @JoinColumn(name="parent_id", referencedColumnName="id")
 	 * @var AdministrativeUnit
 	 */
@@ -71,6 +71,39 @@ class AdministrativeUnit extends Entity implements Deleting {
 		$this->children = new ArrayCollection();
 		$this->setStatus(true);
 		$this->setParent($parent);
+	}
+	
+	/**
+	 * Obtem a descrição da unidade administrativa
+	 * 
+	 * @return string
+	 */
+	public function getDescription() {
+		$nodes = $this->getAncestors();
+		$nodes[] = $this;
+		return implode(' / ', $nodes);
+	}
+	
+	/**
+	 * Obtem os antecessores
+	 * 
+	 * @return array
+	 */
+	public function getAncestors() {
+		$ancestors = array();
+		$parent = $this->getParent();
+		while ( $parent !== null ) {
+			$ancestors[] = $parent;
+			$parent = $parent->getParent();
+		}
+		return array_reverse($ancestors);
+	}
+	
+	/**
+	 * @see \Sigmat\Model\Deleting::delete()
+	 */
+	public function delete() {
+		$this->setStatus(false);
 	}
 	
 	/**
@@ -221,7 +254,15 @@ class AdministrativeUnit extends Entity implements Deleting {
 	}
 	
 	/**
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->getName();
+	}
+	
+	/**
 	 * Verifica se há referencia circular
+	 * 
 	 * @param AdministrativeUnit $parent
 	 * @return boolean
 	 */
@@ -237,12 +278,5 @@ class AdministrativeUnit extends Entity implements Deleting {
 		return false;
 	}
 	
-	/**
-	 * @see \Sigmat\Model\Deleting::delete()
-	 */
-	public function delete() {
-		$this->setStatus(false);
-	}
-
 }
 ?>

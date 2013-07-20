@@ -1,6 +1,6 @@
 $(function() {
-	$('form').on('errorform', function( e, data ){
-		$.each(data.list, function (i, error) {
+	$('body').on('errorform', 'form', function( e, ui ){
+		$.each(ui.invalidList, function (i, error) {
 			var group = $(error.element).closest('.control-group'),
 				tabpane = group.closest('.tab-pane'),
 				tab = $('[data-toggle=tab][data-target="#' + tabpane.attr('id') + '"]');
@@ -13,8 +13,8 @@ $(function() {
 		});
 	});
 	
-	$('form').on('validform', function( e, data ){
-		$.each(data.list, function (i, valid) {
+	$('body').on('validform', 'form', function( e, ui ){
+		$.each(ui.validList, function (i, valid) {
 			var group = $(valid).closest('.control-group'),
 			 	tabpane = group.closest('.tab-pane'),
 				tab = $('[data-toggle=tab][data-target="#' + tabpane.attr('id') + '"]');
@@ -27,7 +27,7 @@ $(function() {
 		});
 	});
 	
-	$(':input').on('focusin', function( e ){
+	$('body').on('focusin', ':input', function( e ){
 		var group = $(this).closest('.control-group'); 
 		group.removeClass('error')
 			 .find('.validate')
@@ -113,16 +113,26 @@ $(function() {
 		}
 	});
 	
-	$('body').on('loadedseek', '[data-provide=seek]', function ( e, ui ) {
-		if ( ui.result.message ) {
-			var group = ui.element.closest('.control-group');
-				group.addClass('error')
-					 .find('.controls')
-					 .append('<span class="validate help-inline">' + ui.result.message + '</span>');
-		}
-	});
-	
-	$('body').on('afteraction', '.modal a[data-storage]', function ( e ) {
+	$('body').on('sentaction', '.modal a[data-storage]', function ( e ) {
 		$(this).closest('.modal').modal('hide');
 	});
+	
+	$('body').on('ajaxComplete', function( e ) {
+		$('form[name="requesters-units-form"]').form({ajax: true, format: 'json'});
+	})
+	$('body').trigger('ajaxComplete');
+	
+	$('body').on('sentform', 'form[name="requesters-units-form"]', function( e ) {
+		$('#requesters-units-form legend .icon-loading').remove();
+	});
+	$('body').on('sendform', 'form[name="requesters-units-form"]', function( e ) {
+		$('#requesters-units-form legend .icon-loading').remove();
+		$('#requesters-units-form legend').append('<i class="icon-loading"></i>');
+	});
+	$('body').on('sendaction', '#requesters-units-form [data-column-action="unit-remove"]', function( e ) {
+		$('#requesters-units-form legend .icon-loading').remove();
+		$('#requesters-units-form legend').append('<i class="icon-loading"></i>');
+	});
+	
+	
 });

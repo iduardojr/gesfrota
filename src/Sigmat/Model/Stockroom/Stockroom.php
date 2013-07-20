@@ -26,14 +26,14 @@ class Stockroom extends Entity {
 	protected $status;
 	
 	/**
-	 * @OneToOne(targetEntity="Sigmat\Model\AdministrativeUnit\Agency")
+	 * @OneToOne(targetEntity="Sigmat\Model\AdministrativeUnit\Agency", fetch="EAGER")
 	 * @JoinColumn(name="agency_id", referencedColumnName="id")
 	 * @var Agency
 	 */
 	protected $agency;
 	
 	/**
-	 * @ManyToMany(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit")
+	 * @ManyToMany(targetEntity="Sigmat\Model\AdministrativeUnit\AdministrativeUnit", indexBy="id")
 	 * @JoinTable(name="stockrooms_has_administrative_units",
 	 *      joinColumns={@JoinColumn(name="stockroom_id", referencedColumnName="id")},
 	 *      inverseJoinColumns={@JoinColumn(name="administrative_unit_id", referencedColumnName="id")}
@@ -126,6 +126,13 @@ class Stockroom extends Entity {
 	}
 	
 	/**
+	 * Remove todas as unidades administrativas
+	 */
+	public function removeAllUnit() {
+		$this->units->clear();
+	}
+	
+	/**
 	 * Obtem a unidades administrativas
 	 * 
 	 * @return array
@@ -133,5 +140,6 @@ class Stockroom extends Entity {
 	public function getUnits() {
 		return $this->units->toArray();
 	}
+	
 }
 ?>

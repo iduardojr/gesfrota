@@ -589,8 +589,10 @@
 		
 		toggle: function() {
 			this.abort();
-			if ( $.isFunction(this.options.before) ) {
-				this.options.before.call(this);
+			if ( $.isFunction(this.options.send) ) {
+				if ( this.options.send.call(this) === false ) {
+					
+				}
 			}
 			this.request = $.ajax( {
 				url: this.options.remote, 
@@ -598,8 +600,8 @@
 					if ( $.isFunction(this.options.execute) ) {
 						this.options.execute.apply(this, arguments);
 					}
-					if ( $.isFunction(this.options.after) ) {
-						this.options.after.call(this);
+					if ( $.isFunction(this.options.sent) ) {
+						this.options.sent.call(this);
 					}
 				}, this ),
 				dataType: this.options.response
@@ -609,8 +611,8 @@
 		abort: function() {
 			if ( this.request ) {
 				this.request.abort();
-				if ( $.isFunction(this.options.after) ) {
-					this.options.after.call(this);
+				if ( $.isFunction(this.options.sent) ) {
+					this.options.sent.call(this);
 				}
 			}
 		}
@@ -627,14 +629,14 @@
 		options: null,
 		
 		toggle: function() {
-			if ( $.isFunction(this.options.before) ) {
-				this.options.before.call(this);
+			if ( $.isFunction(this.options.send) ) {
+				this.options.send.call(this);
 			}
 			if ( $.isFunction(this.options.execute) ) {
 				this.options.execute.call(this, this.options.storage);
 			}
-			if ( $.isFunction(this.options.after) ) {
-				this.options.after.call(this);
+			if ( $.isFunction(this.options.sent) ) {
+				this.options.sent.call(this);
 			}
 		}
 		
@@ -684,11 +686,11 @@
 						execute: $.proxy( function( data, textStatus, jqXHR ) {
 							this._trigger('execute', this, data, textStatus, jqXHR );
 						}, this),
-						before: $.proxy( function() {
-							this._trigger('before', this);
+						send: $.proxy( function() {
+							this._trigger('send', this);
 						}, this),
-						after: $.proxy(function() {
-							this._trigger('after', this);
+						sent: $.proxy(function() {
+							this._trigger('sent', this);
 						}, this)
 					});
 					if ( this.options.ajax ) {
@@ -720,34 +722,36 @@
 		disabled: false,
 		ajax: false, 
 		response: 'html',
-		before: null,
-		execute: function( e, $this, data, textStatus, jqXHR ){
-			var event = $.Event('update');
-			if ( $this.options.target ) {
-				$($this.options.target).trigger(event, data, $this);
-			}
-			if ( ! event.isDefaultPrevented() ) {
-				if ( $this.options.response == $this.Text ){
-					$($this.options.target).html(data);
-				} else if ( $this.options.response == $this.Html ){
-					$($this.options.target).replaceWith(data);
-				} else {
-					$.each( data, function( key, value ) {
-						var el = $('#' + key );
-						var event = $.Event('update');
-						el.trigger(event, value, $this);
-						if ( ! event.isDefaultPrevented() ) {
-							if ( el.is(':input') ) {
-								el.val(value);
-							} else {
-								el.html(value);
-							};
+		send: null,
+		execute: function( e, ui, data, textStatus, jqXHR ){
+			if ( ui.options.response == ui.Json) {
+				$.each( data, function( key, value ) {
+					var el = $('#' + key );
+					var event = $.Event('update');
+					el.trigger(event, value);
+					if ( ! event.isDefaultPrevented() ) {
+						if ( el.is(':input') ) {
+							el.val(value);
+						} else {
+							el.html(value);
 						};
-					});
-				};
-			};
+					};
+				});
+			} else {
+				if ( ui.options.target ) {
+					var event = $.Event('update');
+					$(ui.options.target).trigger(event, data);
+					if ( ! event.isDefaultPrevented() ) {
+						if ( ui.options.response == ui.Text ){
+							$(ui.options.target).html(data);
+						} else if ( ui.options.response == ui.Html ){
+							$(ui.options.target).replaceWith(data);
+						}
+					}
+				}
+			}
 		},
-		after: null
+		sent: null
 	});
 	
 	/* ACTION DATA-API
@@ -1079,7 +1083,7 @@
 			if ( this.query != this.element.val() ) {
 				this.query = this.element.val();
 				this.abort();
-				if ( this.options.remote ) {
+				if ( this.options.remote && this.query.length > 0 ) {
 					this._trigger('loading', this);
 					this.request = $.getJSON( this.options.remote, {'query': this.query }, $.proxy( function( result ) {
 						this.request = null;
@@ -1115,12 +1119,12 @@
 	$.fn.suggest.defaults = $.extend({}, $.fn.typeahead.defaults, { 
 		source: '', 
 		delay: 300, 
-		select: function( e, data, $this ) {
+		select: function( e, data ) {
 			if ( $.isPlainObject(data) && $.isPlainObject(data.value) ) {
 				$.each( data.value, function( key, value ) {
 					var el = $('#' + key );
 					var event = $.Event('update');
-					el.trigger(event, value, $this);
+					el.trigger(event, value);
 					if ( ! event.isDefaultPrevented() ) {
 						if ( el.is(':input,label,fieldset') ) {
 							el.val(value);
@@ -1726,6 +1730,7 @@
 		$('body').on('update.field.data-api', '[data-control]', function( e, data ) {
 			var $this = $(e.currentTarget);
 			$this.field('value', data);
+			return false;
 		});
 		
 		$('body').on('focus.field.data-api', '[data-mask]', function( e ) {
@@ -1791,7 +1796,14 @@
 	 * ====================== */
 	var Form = {
 		
+		Text: 'text',
+		Html: 'html',
+		Json: 'json',
+			
 		request: null,
+		response: null,
+		invalidList: null,
+		validList: null,
 		
 		_create: function () {
 			this.element.validate({
@@ -1807,8 +1819,9 @@
 			this._trigger('loading', this);
 			this.request = $.getJSON(url, $.proxy(function( data ) {
 				this.request = null;
-				this.refresh(data);
-				this._trigger('loaded', {'ui': this, 'response': data});
+				this.response = data;
+				this._trigger('refresh', this);
+				this._trigger('loaded', this);
 			}, this));
 		},
 		
@@ -1816,23 +1829,9 @@
 			if ( this.request ) {
 				this.request.abort();
 				this.request = null;
-				this._trigger('loaded', { 'ui': this });
+				this.response = null;
+				this._trigger('loaded', this);
 			}
-		},
-		
-		refresh: function( data ) {
-			$.each(data, function(key, value) {
-				var el = $('#' + key );
-				var event = $.Event('update');
-				el.trigger(event, value);
-				if ( ! event.isDefaultPrevented() ) {
-					if ( el.is(':input') ) {
-						el.val(value);
-					} else {
-						el.html(value);
-					};
-				};
-			});
 		},
 		
 		elements: function ( selector ) {
@@ -1884,8 +1883,12 @@
 				this.abort();
 				form.ajaxSubmit({
 					dataType: this.options.format,
-					success: $.proxy( function( response ) {
-						this._trigger('success', response);
+					success: $.proxy( function( data ) {
+						this.request = null;
+						this.response = data;
+						this._trigger('success', this);
+						this._trigger('sent', this);
+						this.response = null;
 					}, this)
 				});
 				this.request = form.data('jqxhr');
@@ -1911,12 +1914,14 @@
 			return element.valid();
 		},
 		
-		error: function ( errors, valids ) {
-			if ( errors.length ) {
-				this._trigger('error', {'list': errors, 'ui': this});
+		error: function ( invalidList, validList ) {
+			this.invalidList = invalidList;
+			this.validList = validList;
+			if ( this.invalidList.length ) {
+				this._trigger('error', this);
 			}
-			if ( valids.length ){
-				this._trigger('valid', {'list': valids, 'ui': this});
+			if ( this.validList.length ){
+				this._trigger('valid', this);
 			}
 		}
 	};
@@ -1926,6 +1931,46 @@
 	$.plugin('form', Form, { 
 		ajax: false,
 		format: 'html',
+		refresh: function( e, ui ) {
+			$.each(ui.response, function( key, value ) {
+				var el = $('#' + key );
+				var event = $.Event('update');
+				el.trigger(event, value);
+				if ( ! event.isDefaultPrevented() ) {
+					if ( el.is(':input') ) {
+						el.val(value);
+					} else {
+						el.html(value);
+					};
+				};
+			});
+		},
+		success: function( e, ui ){
+			if ( ui.options.format == ui.Json ) {
+				$.each( ui.response, function( key, value ) {
+					var el = $('#' + key );
+					var event = $.Event('update');
+					el.trigger(event, value);
+					if ( ! event.isDefaultPrevented() ) {
+						if ( el.is(':input') ) {
+							el.val(value);
+						} else {
+							el.html(value);
+						};
+					};
+				});
+			} else {
+				var event = $.Event('update');
+				ui.element.trigger(event, ui.response);
+				if ( ! event.isDefaultPrevented() ) {
+					if ( ui.options.format == ui.Text ){
+						ui.element.html(ui.response);
+					} else if ( ui.options.format == ui.Html ){
+						ui.element.replaceWith(ui.response);
+					}
+				}
+			}
+		}
 	});
 	
    /* FORM DATA-API
@@ -2095,3 +2140,4 @@
 	});
 	
 }(jQuery));
+

@@ -37,7 +37,6 @@ class StockroomController extends AbstractController {
 	
 	public function newAction() {
 		try {
-			$this->session->units = array();
 			$agency = $this->getAgency();
 			$form = new StockroomForm(new Action($this, 'new'), new Action($this), $this->createRequestersUnitsForm());
 			$helper = $this->createHelperCrud();
@@ -65,7 +64,6 @@ class StockroomController extends AbstractController {
 				$this->forward('/');
 			}
 			$entity = $helper->getEntity();
-			$this->session->units = $entity->getUnits();
 		} catch ( NotFoundEntityException $e ){
 			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não foi encontrado');
 			$this->forward('/');
@@ -95,9 +93,9 @@ class StockroomController extends AbstractController {
 	public function seekUnitAction() {
 		$entity = $this->getUnit( ( int ) $this->request->getQuery('query'));
 		if ( $entity instanceof AdministrativeUnit && ! ( $entity instanceof Agency ) ) {
-			return new JsonView(array('unit-id' => $entity->id, 'unit-name' => utf8_decode($entity->name), 'message' => null));
+			return new JsonView(array('unit-id' => $entity->id, 'unit-name' => $entity->name, 'flash-message' => null), false);
 		}
-		return new JsonView(array('unit-name' => '', 'message' => utf8_decode('Unidade Administrativa não encontrada.')));
+		return new JsonView(array('unit-name' => '', 'flash-message' => new Alert('Unidade Administrativa não encontrada')), false);
 	}
 	
 	public function searchUnitAction() {
@@ -105,18 +103,47 @@ class StockroomController extends AbstractController {
 	}
 	
 	public function addUnitAction() {
-		
+		try {
+			$id = ( int ) $this->request->getPost('unit-id');
+			$units = $this->session->units;
+			$unit = $this->getUnit($id);
+			if ( $unit instanceof AdministrativeUnit ) {
+				$units[$id] = $unit;
+				$this->session->units = $units;
+				$form = $this->createRequestersUnitsForm();
+				return new JsonView(array($form->getName() => $form, 'flash-message' => null), false);
+			} 
+			return new JsonView(array('flash-message' => new Alert('Unidade Administrativa não encontrada')), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('flash-message' => new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger)), false);
+		}
 	}
 	
 	public function removeUnitAction() {
-		
+		try {
+			$id = $this->request->getQuery('key');
+			$units = $this->session->units;
+			if ( isset($units[$id]) ) {
+				unset($units[$id]);
+				$this->session->units = $units;
+				$form = $this->createRequestersUnitsForm();
+				return new JsonView(array($form->getName() => $form, 'flash-message' => null), false);
+			}
+			return new JsonView(array('flash-message' => new Alert('Unidade Administrativa não adicionada')), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('flash-message' => new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger)), false);
+		}
 	}
 	
 	/**
 	 * @return RequestersUnitsForm
 	 */
 	private function createRequestersUnitsForm() {
-		return new RequestersUnitsForm(new Action($this, 'add-unit'), new Action($this, 'remove-unit'), new Action($this, 'seek-unit'), new Action($this, 'search-unit'));
+		$add = new Action($this, 'add-unit');
+		$remove = new Action($this, 'remove-unit');
+		$seek = new Action($this, 'seek-unit');
+		$search = new Action($this, 'search-unit');
+		return new RequestersUnitsForm($add, $remove, $seek, $search, $this->session);
 	}
 	
 	/**
@@ -133,7 +160,8 @@ class StockroomController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), Stockroom::getClass(), $this->getRequest());
+		$this->request->setPost(array_merge($this->request->getPost(), $this->session->toArray()));
+		return new Crud($this->getEntityManager(), Stockroom::getClass(), $this->request);
 	}
 	
 	/**

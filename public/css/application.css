@@ -90,7 +90,7 @@ form,
 .btn [class*=" ui-icon-"],
 .btn [class^="icon-"],
 .btn [class*=" icon-"] {
-	margin: 0 5px;
+	margin-left: 5px;
 }
 .tree-node {
 	padding: 2px 4px;
@@ -148,4 +148,11 @@ fieldset > legend {
 	margin-bottom: 10px;
 	font-size: 17px;
 	line-height: 38px;
+}
+.icon-loading {
+	background: url('../images/loading.gif') no-repeat;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	margin-left: 5px;
 }
