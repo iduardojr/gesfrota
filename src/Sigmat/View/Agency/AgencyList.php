@@ -29,7 +29,7 @@ class AgencyList extends AbstractList {
 		$table = $this->buildTable('agency-table');
 		$table->buildPagination(clone $filter);
 		
-		$table->buildColumnTextId();
+		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('acronym', 'Sigla', clone $filter, 200, ColumnText::Left);
 		$table->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
 		$table->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {

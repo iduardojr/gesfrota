@@ -19,56 +19,59 @@ class AdministrativeUnitController extends AbstractController {
 	
 	public function indexAction() {
 		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
-		$helper = $this->createHelperCrud();
-		$cookie = $helper->read($list, $this->createQuery(), array('limit' => null, 'sort' => 'name', 'order' => 'asc'));
-		$this->response->setCookie($cookie);
-		if ( $this->session->alert ) {
-			$list->setAlert($this->session->alert);
-			$this->session->alert = null;
+		try {
+			$helper = $this->createHelperCrud();
+			$helper->read($list, $this->createQuery(), array('limit' => null, 'sort' => 'name', 'order' => 'asc'));
+			$list->setAlert($this->getAlert());
+		} catch ( \Exception $e ) {
+			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);
 	}
 	
 	public function newAction() {
+		$id = $this->request->getQuery('key');
+		$form = new AdministrativeUnitForm(new Action($this, 'new', array('key' => $id)), new Action($this));
 		try {
-			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $this->request->getQuery('key'));
+			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
 			if ( $parent === null ) {
-				throw new \ErrorException('Não existe uma unidade superior');
+				throw new NotFoundEntityException('Não foi possível criar uma nova Unidade Administrativa. Unidade Superior <em>#'. $this->request->getQuery('key') .'</em> não encontrada.');
 			}
-			$form = new AdministrativeUnitForm(new Action($this, 'new', array('key' => $parent->getId())), new Action($this), $parent);
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form, new AdministrativeUnit($parent)) ){
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> criada com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> criada com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
-				
-		} catch ( \ErrorException $e ) {
-			$this->session->alert = new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger);
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+		} catch ( NotFoundEntityException $e ) {
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 			$this->forward('/');
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
 	
 	public function editAction() {
+		$id = $this->request->getQuery('key');
+		$form = new AdministrativeUnitForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
 		try {
-			$id = ( int ) $this->request->getQuery('key'); 
-			$form = new AdministrativeUnitForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
 			$helper = $this->createHelperCrud();
-			if ( $helper->update($form, ( int ) $id) ){
+			$helper->setException(new NotFoundEntityException('Não foi possível editar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
+			if ( $helper->update($form, $id) ){
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name .  '</em> alterada com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name .  '</em> alterada com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não foi encontrada');
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+			$this->forward('/');
 		} catch ( InvalidRequestDataException $e ){
-				
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
@@ -77,35 +80,39 @@ class AdministrativeUnitController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->delete( ( int ) $id);
+			$helper->setException(new NotFoundEntityException('Não foi possível excluir a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
+			$helper->delete($id);
 			$entity = $helper->getEntity();
-			$this->session->alert = new Alert('<strong>Ok!</strong> Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> removida com sucesso!', Alert::Success);
+			$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> removida com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel excluir a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não foi encontrada');
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$this->session->alert = new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger);
+			$this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		$this->forward('/');
 	}
 	
 	public function updateAction() {
 		try {
-			$id = ( int ) $this->request->getQuery('key');
-			$parentId = ( int ) $this->request->getQuery('parent');
-			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), $id);
-			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), $parentId);
+			$id = $this->request->getQuery('key');
+			$parentId = $this->request->getQuery('parent');
+			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
+			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $parentId);
 			if ( empty($entity) ) {
-				throw new \Exception('<strong>Ops!</strong> Não foi possivel atualizar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não foi encontrada');
+				throw new NotFoundEntityException('Não foi possível atualizar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.');
 			}
 			if ( empty($parent) ) {
-				throw new \Exception('<strong>Ops!</strong> Não foi possivel atualizar a Unidade Administrativa. Unidade Administrativa <em>#' . $parentId . '</em> não foi encontrada');
+				throw new NotFoundEntityException('Não foi possível atualizar a Unidade Administrativa. Unidade Superior <em>#' . $parentId . '</em> não encontrada.');
 			}
 			$entity->setParent($parent);
 			$this->getEntityManager()->flush();
-			return new JsonView(array('success' => true));
+			$json = array('success' => true);
+		} catch ( NotFoundEntityException $e ){
+			$json = array('success' => false, 'message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			return new JsonView(array('success' => false, 'message' => new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger)));
+			$json = array('success' => false, 'message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
+		return new JsonView($json, false);
 	}
 	
 	/**
@@ -123,7 +130,7 @@ class AdministrativeUnitController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), AdministrativeUnit::getClass(), $this->getRequest());
+		return new Crud($this->getEntityManager(), AdministrativeUnit::getClass(), $this);
 	}
 }
 ?>

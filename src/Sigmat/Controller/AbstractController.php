@@ -5,6 +5,7 @@ use PHPBootstrap\Mvc\Controller;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Mvc\Session\Session;
 use Doctrine\ORM\EntityManager;
+use PHPBootstrap\Widget\Misc\Alert;
 
 /**
  * Constrolador Abstrato
@@ -55,6 +56,26 @@ abstract class AbstractController extends Controller {
 	 */
 	protected function getEntityManager() {
 		return $this->em;
+	}
+	
+	/**
+	 * Obtem um alerta
+	 *  
+	 * @return Alert
+	 */
+	protected function getAlert() {
+		$alert = $this->session->alert;
+		$this->session->alert = null;
+		return $alert;
+	}
+	
+	/**
+	 * Atribui um alerta
+	 * 
+	 * @param Alert $alert
+	 */
+	protected function setAlert( Alert $alert = null ) {
+		$this->session->alert = $alert;
 	}
 	
 }

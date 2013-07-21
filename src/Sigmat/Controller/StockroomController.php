@@ -25,50 +25,50 @@ class StockroomController extends AbstractController {
 	public function indexAction() {
 		$this->session->units = null;
 		$list = new StockroomList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
-		$helper = $this->createHelperCrud();
-		$cookie = $helper->read($list, $this->createQuery(), array('limit' => null));
-		$this->response->setCookie($cookie);
-		if ( $this->session->alert ) {
-			$list->setAlert($this->session->alert);
-			$this->session->alert = null;
+		try {
+			$helper = $this->createHelperCrud();
+			$helper->read($list, $this->createQuery(), array('limit' => null));
+			$list->setAlert($this->getAlert());
+		} catch ( \Exception $e ) {
+			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);
 	}
 	
 	public function newAction() {
+		$form = new StockroomForm(new Action($this, 'new'), new Action($this), $this->createRequestersUnitsForm());
 		try {
 			$agency = $this->getAgency();
-			$form = new StockroomForm(new Action($this, 'new'), new Action($this), $this->createRequestersUnitsForm());
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form, new Stockroom($agency)) ){
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Almoxarifado <em>#' . $entity->id . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Almoxarifado <em>#' . $entity->id . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
-				
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage(), Alert::Danger));	
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
 	
 	public function editAction() {
+		$id = $this->request->getQuery('key');
+		$form = new StockroomForm(new Action($this, 'edit', array('key' => $id)), new Action($this), $this->createRequestersUnitsForm());
 		try {
-			$id = $this->request->getQuery('key');
-			$form = new StockroomForm(new Action($this, 'edit', array('key' => $id)), new Action($this), $this->createRequestersUnitsForm());
 			$helper = $this->createHelperCrud();
-			if ( $helper->update($form, ( int ) $id) ){
+			$helper->setException(new NotFoundEntityException('Não foi possível editar o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não encontrado.'));
+			if ( $helper->update($form, $id) ){
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Almoxarifado <em>#' . $entity->id . ' ' . $entity->name .  '</em> alterado com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Almoxarifado <em>#' . $entity->id . ' ' . $entity->name .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
-			$entity = $helper->getEntity();
 		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não foi encontrado');
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 			$this->forward('/');
 		} catch ( InvalidRequestDataException $e ){
-				
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
 		}
@@ -79,60 +79,79 @@ class StockroomController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->delete(( int ) $id);
+			$helper->setException(new NotFoundEntityException('Não foi possível excluir o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não encontrado.'));
+			$helper->delete($id);
 			$entity = $helper->getEntity();
-			$this->session->alert = new Alert('<strong>Ok!</strong> Almoxarifado <em>#' . $entity->id . ' ' . $entity->name . '</em> removido com sucesso!', Alert::Success);
+			$this->setAlert(new Alert('<strong>Ok! </strong>Almoxarifado <em>#' . $entity->id . ' ' . $entity->name . '</em> removido com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel excluir o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não foi encontrado');
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$this->session->alert = new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger);
+			$this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		$this->forward('/');
 	}
 	
 	public function seekUnitAction() {
-		$entity = $this->getUnit( ( int ) $this->request->getQuery('query'));
-		if ( $entity instanceof AdministrativeUnit && ! ( $entity instanceof Agency ) ) {
+		try {
+			$id = $this->request->getQuery('query');
+			$entity = $this->getUnit($id);
+			if ( ! $entity instanceof AdministrativeUnit || ( $entity instanceof Agency ) ) {
+				throw new NotFoundEntityException('Unidade Administrativa <em>#' . $id . '</em> não encontrada.');	
+			}
 			return new JsonView(array('unit-id' => $entity->id, 'unit-name' => $entity->name, 'flash-message' => null), false);
+		} catch ( NotFoundEntityException $e ){
+			return new JsonView(array('unit-name' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('unit-name' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
 		}
-		return new JsonView(array('unit-name' => '', 'flash-message' => new Alert('Unidade Administrativa não encontrada')), false);
 	}
 	
 	public function searchUnitAction() {
-		return new Layout(new AdministrativeUnitTree($this->getAgency()), null);
+		try {
+			$widget = new AdministrativeUnitTree($this->getAgency());
+		} catch ( \Exception $e ) {
+			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
+		}
+		return new Layout($widget, null);
 	}
 	
 	public function addUnitAction() {
 		try {
-			$id = ( int ) $this->request->getPost('unit-id');
+			$id = $this->request->getPost('unit-id');
 			$units = $this->session->units;
-			$unit = $this->getUnit($id);
-			if ( $unit instanceof AdministrativeUnit ) {
-				$units[$id] = $unit;
-				$this->session->units = $units;
-				$form = $this->createRequestersUnitsForm();
-				return new JsonView(array($form->getName() => $form, 'flash-message' => null), false);
-			} 
-			return new JsonView(array('flash-message' => new Alert('Unidade Administrativa não encontrada')), false);
+			$entity = $this->getUnit($id);
+			if ( ! $entity instanceof AdministrativeUnit || ( $entity instanceof Agency )  ) {
+				throw new NotFoundEntityException('Não foi possível adicionar Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.');	
+			}
+			$units[$id] = $entity;
+			$this->session->units = $units;
+			$form = $this->createRequestersUnitsForm();
+			$json = array($form->getName() => $form, 'flash-message' => null);
+		} catch ( NotFoundEntityException $e ) {
+			$json = array('flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			return new JsonView(array('flash-message' => new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger)), false);
+			$json = array('flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
+		return new JsonView($json, false);
 	}
 	
 	public function removeUnitAction() {
 		try {
 			$id = $this->request->getQuery('key');
 			$units = $this->session->units;
-			if ( isset($units[$id]) ) {
-				unset($units[$id]);
-				$this->session->units = $units;
-				$form = $this->createRequestersUnitsForm();
-				return new JsonView(array($form->getName() => $form, 'flash-message' => null), false);
+			if ( ! isset($units[(int)$id]) ) {
+				throw new NotFoundEntityException('Não foi possível remover Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.');	
 			}
-			return new JsonView(array('flash-message' => new Alert('Unidade Administrativa não adicionada')), false);
+			unset($units[(int)$id]);
+			$this->session->units = $units;
+			$form = $this->createRequestersUnitsForm();
+			$json = array($form->getName() => $form, 'flash-message' => null);
+		} catch ( NotFoundEntityException $e ) {
+			$json = array('flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			return new JsonView(array('flash-message' => new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger)), false);
+			$json = array('flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
+		return new JsonView($json, false);
 	}
 	
 	/**
@@ -161,7 +180,7 @@ class StockroomController extends AbstractController {
 	 */
 	private function createHelperCrud() {
 		$this->request->setPost(array_merge($this->request->getPost(), $this->session->toArray()));
-		return new Crud($this->getEntityManager(), Stockroom::getClass(), $this->request);
+		return new Crud($this->getEntityManager(), Stockroom::getClass(), $this);
 	}
 	
 	/**
@@ -176,7 +195,7 @@ class StockroomController extends AbstractController {
 	 * @return AdministrativeUnit
 	 */
 	private function getUnit( $id ) {
-		return $this->getEntityManager()->find(AdministrativeUnit::getClass(), $id);
+		return $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
 	}
 }
 ?>

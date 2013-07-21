@@ -4,7 +4,6 @@ namespace Sigmat\View;
 use PHPBootstrap\Widget\Form\Form;
 use PHPBootstrap\Widget\Form\Controls\ControlGroup;
 use PHPBootstrap\Widget\Form\Controls\Help;
-use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Form\Inputable;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
 use PHPBootstrap\Widget\Form\Controls\AbstractInputEntry;
@@ -42,9 +41,6 @@ class BuilderForm extends Form {
 					} while ( $parent === null);
 					$invalid = true;
 				}
-			}
-			if ( $invalid && $component !== null ) {
-				$component->setAlert(new Alert('<strong>Ops! </strong>Por favor, verifique se os campos estão corretamente preenchidos.', Alert::Error));
 			}
 		});
 	}

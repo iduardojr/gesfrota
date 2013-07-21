@@ -29,7 +29,7 @@ class StockroomList extends AbstractList {
 		$table = $this->buildTable('stockroom-table');
 		$table->buildPagination(clone $filter);
 		
-		$table->buildColumnTextId();
+		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
 		$table->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);

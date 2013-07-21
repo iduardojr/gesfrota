@@ -52,7 +52,10 @@ class BuilderTable extends Table {
 	 * @param string $filter
 	 * @return ColumnText
 	 */
-	public function buildColumnTextId( $span = 80, Action $sort = null, $align = null, $filter = null ){
+	public function buildColumnTextId( $span = null, Action $sort = null, $align = null, $filter = null ){
+		if ( $span ===  null ) {
+			$span = 80;
+		}
 		if ( func_num_args() < 4 ) {
 			$filter = function( $value ) {
 				return str_repeat('0', 3 - strlen($value)) . $value; 

@@ -18,49 +18,51 @@ class AgencyController extends AbstractController {
 	
 	public function indexAction() {
 		$list = new AgencyList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
-		$helper = $this->createHelperCrud();
-		$cookie = $helper->read($list, null, array('limit' => null));
-		$this->response->setCookie($cookie);
-		if ( $this->session->alert ) {
-			$list->setAlert($this->session->alert);
-			$this->session->alert = null;
+		try {
+			$helper = $this->createHelperCrud();
+			$helper->read($list, null, array('limit' => null));
+			$list->setAlert($this->getAlert());
+		} catch ( \Exception $e ) {
+			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);
 	}
 	
 	public function newAction() {
+		$form = new AgencyForm(new Action($this, 'new'), new Action($this));
 		try {
-			$form = new AgencyForm(new Action($this, 'new'), new Action($this));
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form) ){
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> criado com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
-			
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
 	
 	public function editAction() {
+		$id = $this->request->getQuery('key');
+		$form = new AgencyForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
 		try {
-			$id = $this->request->getQuery('key');
-			$form = new AgencyForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
 			$helper = $this->createHelperCrud();
-			if ( $helper->update($form, ( int ) $id) ){
+			$helper->setException(new NotFoundEntityException('Não foi possível editar o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
+			if ( $helper->update($form, $id) ) {
 				$entity = $helper->getEntity();
-				$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym .  '</em> alterado com sucesso!', Alert::Success);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Orgão <em>#' . $entity->id . ' ' . $entity->acronym .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
-		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel editar o orgão. Orgão <em>#' . $id . '</em> não foi encontrado');
-		} catch ( InvalidRequestDataException $e ){ 
-			
+		} catch ( NotFoundEntityException $e ) {
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+			$this->forward('/');
+		} catch ( InvalidRequestDataException $e ) {
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger));
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
@@ -69,13 +71,14 @@ class AgencyController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->delete( ( int ) $id);
+			$helper->setException(new NotFoundEntityException('Não foi possível excluir o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
+			$helper->delete($id);
 			$entity = $helper->getEntity();
-			$this->session->alert = new Alert('<strong>Ok!</strong> Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> removido com sucesso!', Alert::Success);
-		} catch ( NotFoundEntityException $e ){
-			$this->session->alert = new Alert('<strong>Ops!</strong> Não foi possivel excluir o orgão. Orgão <em>#' . $id . '</em> não foi encontrado');
+			$this->setAlert(new Alert('<strong>Ok! </strong>Orgão <em>#' . $entity->id . ' ' . $entity->acronym . '</em> removido com sucesso!', Alert::Success));
+		} catch ( NotFoundEntityException $e ) {
+			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$this->session->alert = new Alert('<strong>Error: </strong> ' . $e->getMessage(), Alert::Danger);
+			$this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		$this->forward('/');
 	}
@@ -84,7 +87,7 @@ class AgencyController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), Agency::getClass(), $this->getRequest());
+		return new Crud($this->getEntityManager(), Agency::getClass(), $this);
 	}
 	
 }

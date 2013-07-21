@@ -3,7 +3,6 @@ namespace Sigmat\Controller\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
-use PHPBootstrap\Mvc\Http\HttpRequest;
 use PHPBootstrap\Widget\Misc\Alert;
 use Sigmat\View\AbstractForm;
 use Sigmat\View\EntityDatasource;
@@ -13,6 +12,7 @@ use PHPBootstrap\Mvc\Http\Cookie;
 use PHPBootstrap\Common\ArrayCollection;
 use PHPBootstrap\Common\Enum;
 use Sigmat\Model\Deleting;
+use PHPBootstrap\Mvc\Controller;
 
 /**
  * Ajudante de create-read-update-delete
@@ -38,9 +38,9 @@ class Crud {
 	protected $object;
 	
 	/**
-	 * @var HttpRequest
+	 * @var Controller
 	 */
-	protected $request;
+	protected $controller;
 	
 	/**
 	 * @var ArrayCollection
@@ -48,17 +48,32 @@ class Crud {
 	protected $listeners;
 	
 	/**
+	 * @var array
+	 */
+	protected $exceptions;
+	
+	/**
 	 * Construtor
 	 * 
 	 * @param EntityManager $em
 	 * @param string $entity
-	 * @param HttpRequest $request
+	 * @param Controller $controller
 	 */
-	public function __construct( EntityManager $em, $entity, HttpRequest $request ) {
+	public function __construct( EntityManager $em, $entity, Controller $controller ) {
 		$this->em = $em;
 		$this->entity = $entity;
-		$this->request = $request;
+		$this->controller = $controller;
 		$this->listeners = new ArrayCollection();
+		$this->exceptions = array();
+	}
+	
+	/**
+	 * Atribui uma exceção
+	 * 
+	 * @param \Exception $e
+	 */
+	public function setException( \Exception $e ) {
+		$this->exceptions[get_class($e)] = $e;
 	}
 	
 	/**
@@ -71,15 +86,16 @@ class Crud {
 	 * @return boolean
 	 */
 	public function create( AbstractForm $form, $entity = null ) {
+		$request = $this->controller->getRequest();
 		$this->object = $entity;
 		if ( $this->object == null ) {
 			$this->object = new $this->entity;
 		}
 		$form->extract($this->object);
-		if ( $this->request->isPost() ) {
-			$form->bind($this->request->getPost());
+		if ( $request->isPost() ) {
+			$form->bind($request->getPost());
 			if ( ! $form->valid() ) {
-				throw new InvalidRequestDataException();
+				throw $this->getException(new InvalidRequestDataException());
 			}
 			$form->hydrate($this->object, $this->em);
 			$this->trigger(self::PrePersist, array($this->object, $this->em));
@@ -96,13 +112,14 @@ class Crud {
 	 * @param AbstractList $list
 	 * @param QueryBuilder $query
 	 * @param array $defaults
-	 * @return Cookie
 	 */
 	public function read( AbstractList $list, QueryBuilder $query = null, array $defaults = array() ) {
+		$request = $this->controller->getRequest();
+		$response = $this->controller->getResponse();
 		if ( $query == null ) {
 			$query = $this->em->getRepository($this->entity)->createQueryBuilder('u');
 		}
-		$storage = $this->request->getCookie('storage');
+		$storage = $request->getCookie('storage');
 		if ( $storage !== null ) {
 			$storage = json_decode($storage, true);
 			if ( $storage['identify'] == md5($this->entity) ) {
@@ -115,11 +132,11 @@ class Crud {
 			$storage = array();
 			$storage['identify'] = md5($this->entity);
 		}
-		$get = $this->request->getQuery();
+		$get = $request->getQuery();
 		$datasource = new EntityDatasource($query, $defaults);
-		if ( $this->request->isPost() ) {
+		if ( $request->isPost() ) {
 			unset($storage['data']['filter']);
-			$datasource->setFilter($this->request->getPost());
+			$datasource->setFilter($request->getPost());
 			if ( $datasource->hasFilter() ) {
 				$list->setAlert(new Alert($datasource->getTotal() . ' resultados encontrados pela sua pesquisa', Alert::Info));
 				$storage['data']['filter'] = $datasource->getFilter();
@@ -143,7 +160,7 @@ class Crud {
 			$storage['data']['limit'] = $datasource->getLimit();
 		}
 		$list->setDatasource($datasource);
-		return new Cookie('storage', json_encode($storage));
+		$response->setCookie(new Cookie('storage', json_encode($storage)));
 	}
 	
 	/**
@@ -156,20 +173,21 @@ class Crud {
 	 * @return boolean
 	 */
 	public function update( AbstractForm $form, $entity ) {
+		$request = $this->controller->getRequest();
 		if ( $entity instanceof Entity ) {
 			$this->object = $entity;
 		} else {
 			$this->object = $this->em->find($this->entity, ( int ) $entity);
 		}
 		if ( ! $this->object ) {
-			throw new NotFoundEntityException();
+			throw $this->getException(new NotFoundEntityException());
 		}
 		$form->extract($this->object);
 		$form->getButtonByName('submit')->setLabel('Salvar');
-		if ( $this->request->isPost() ) {
-			$form->bind($this->request->getPost());
+		if ( $request->isPost() ) {
+			$form->bind($request->getPost());
 			if ( ! $form->valid() ) {
-				throw new InvalidRequestDataException();
+				throw $this->getException(new InvalidRequestDataException());
 			}
 			$form->hydrate($this->object, $this->em);
 			$this->trigger(self::PrePersist, array($this->object, $this->em));
@@ -194,7 +212,7 @@ class Crud {
 			$this->object = $this->em->find($this->entity, ( int ) $entity);
 		}
 		if ( ! $this->object ) {
-			throw new NotFoundEntityException();
+			throw $this->getException(new NotFoundEntityException());
 		}
 		if ( $this->object instanceof Deleting ) {
 			$this->object->delete();
@@ -260,6 +278,20 @@ class Crud {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Obtem uma exceção ou retorna a default
+	 *
+	 * @param \Exception $default
+	 * @return \Exception
+	 */
+	protected function getException( \Exception $default ) {
+		$key = get_class($default);
+		if ( isset($this->exceptions[$key])) {
+			return $this->exceptions[$key];
+		}
+		return $default;
 	}
 	
 }
