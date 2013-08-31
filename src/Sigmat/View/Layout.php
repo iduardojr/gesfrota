@@ -22,6 +22,7 @@ use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
+use PHPBootstrap\Widget\Dropdown\DropdownHeader;
 
 /**
  * Layout
@@ -60,9 +61,25 @@ class Layout extends View {
 		$nav->addItem(new NavDivider());
 		
 		$drop = new Dropdown();
+		$drop->addItem(new DropdownHeader('Unidades Administrativas'));
 		$drop->addItem(new DropdownLink('Gerenciar Orgãos', new TgLink(new Action('Sigmat\\Controller\\AgencyController'))));
-		$drop->addItem(new DropdownLink('Gerenciar Almoxarifados', new TgLink(new Action('Sigmat\\Controller\\StockroomController'))));
 		$drop->addItem(new DropdownLink('Gerenciar Unidades Administrativas', new TgLink(new Action('Sigmat\\Controller\\AdministrativeUnitController'))));
+		$drop->addItem(new DropdownDivider());
+		$drop->addItem(new DropdownHeader('Almoxarifados'));
+		$drop->addItem(new DropdownLink('Gerenciar Almoxarifados', new TgLink(new Action('Sigmat\\Controller\\StockroomController'))));
+		$drop->addItem(new DropdownLink('Gerenciar Catálogo de Itens', new TgLink(new Action('Sigmat\\Controller\\StockroomController'))));
+		$drop->addItem(new DropdownDivider());
+		$drop->addItem(new DropdownHeader('Produtos'));
+		$drop->addItem(new DropdownLink('Gerenciar Produtos', new TgLink(new Action('Sigmat\\Controller\\ProductController'))));
+		$drop->addItem(new DropdownLink('Gerenciar Categorias', new TgLink(new Action('Sigmat\\Controller\\ProductCategoryController'))));
+		$drop->addItem(new DropdownLink('Gerenciar Classes de Produto', new TgLink(new Action('Sigmat\\Controller\\ProductClassController'))));
+		$drop->addItem(new DropdownLink('Gerenciar Atributos', new TgLink(new Action('Sigmat\\Controller\\ProductAttributeController'))));
+		$drop->addItem(new DropdownDivider());
+		$drop->addItem(new DropdownHeader('Usuários'));
+		$drop->addItem(new DropdownLink('Gerenciar Usuários', new TgLink(new Action('Sigmat\\Controller\\ProductController'))));
+		$drop->addItem(new DropdownLink('Credenciamento de Usuários', new TgLink(new Action('Sigmat\\Controller\\ProductController'))));
+		$drop->addItem(new DropdownLink('Gerenciar Perfis de Usuário', new TgLink(new Action('Sigmat\\Controller\\ProductController'))));
+		
 		$nav->addItem(new NavLink('Administração', new TgDropdown($drop, false, false)));
 		$navbar->addItem($nav);
 		

@@ -10,8 +10,6 @@ use Doctrine\ORM\QueryBuilder;
  */
 class EntityDatasource extends Paginator implements DataSource {
 
-	const IDENTIFY = 'id';
-	
 	/**
 	 * @var array
 	 */
@@ -46,6 +44,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @var QueryBuilder
 	 */
 	protected $query;
+
 	
 	/**
 	 * Construtor
@@ -57,20 +56,24 @@ class EntityDatasource extends Paginator implements DataSource {
 		$this->loaded = false;
 		$this->query = $query;
 		$this->data = array();
-		$this->defaults = array_merge(array('sort' => $this->getIdentify(), 
+		if ( ! isset($defaults['identify']) ) {
+			$defaults['identify'] = 'id';
+		}
+		$this->defaults = array_merge(array('sort' => $defaults['identify'], 
 											'order' => self::Asc, 
 											'limit' => 10 ), $defaults);
+		$this->setLimit($this->defaults['limit']);
 		unset($this->defaults['page']);
 		$this->page = ( int ) isset($defaults['page']) && $defaults['page'] > 0 ? $defaults['page'] : 1;
 	}
 	
 	/**
-	 * Obtem chave de identificação dos registros
+	 * Obtem a identificação do registro
 	 *
-	 * @return string
+	 * @return integer
 	 */
 	public function getIdentify() {
-		return constant(get_class($this) . '::IDENTIFY');
+		return $this->__get($this->defaults['identify']);
 	}
 
 	/**
@@ -180,7 +183,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return array
 	 */
 	public function getFilter() {
-		return $this->defaults['filter'];
+		return isset($this->defaults['filter']) ? $this->defaults['filter'] : array();
 	}
 	
 	/**
@@ -207,7 +210,7 @@ class EntityDatasource extends Paginator implements DataSource {
 			if ( isset($this->defaults['processQuery']) ) {
 				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}
-			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->getIdentify() . ')');
+			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->defaults['identify'] . ')');
 			$this->total = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->total;
@@ -223,7 +226,7 @@ class EntityDatasource extends Paginator implements DataSource {
 			$query = clone $this->query;
 			$query->setFirstResult(null)
 				  ->setMaxResults(null);
-			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->getIdentify() . ')');
+			$query->select('COUNT(' .$query->getRootAlias() . '.' . $this->defaults['identify'] . ')');
 			$this->count = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->count;
@@ -277,7 +280,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * Restabelece o conjunto de dados e aponta para o primeiro resultado
 	 */
 	public function reset() {
-		if (! $this->loaded ) {
+		if ( ! $this->loaded ) {
 			$query = clone $this->query;
 			$offset = $this->getOffset();
 			$limit = $this->getLimit();
@@ -288,6 +291,7 @@ class EntityDatasource extends Paginator implements DataSource {
 			$query->setFirstResult($offset)
 				   ->setMaxResults($limit)
 				   ->orderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
+			
 			if ( isset($this->defaults['processQuery']) ) {
 				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}

@@ -116,7 +116,7 @@ class Crud {
 	public function read( AbstractList $list, QueryBuilder $query = null, array $defaults = array() ) {
 		$request = $this->controller->getRequest();
 		$response = $this->controller->getResponse();
-		if ( $query == null ) {
+		if ( $query === null ) {
 			$query = $this->em->getRepository($this->entity)->createQueryBuilder('u');
 		}
 		$storage = $request->getCookie('storage');
@@ -134,16 +134,29 @@ class Crud {
 		}
 		$get = $request->getQuery();
 		$datasource = new EntityDatasource($query, $defaults);
+		if ( isset($storage['data']['filter']) ) {
+			$datasource->setFilter($storage['data']['filter']);
+		}
 		if ( $request->isPost() ) {
-			unset($storage['data']['filter']);
-			$datasource->setFilter($request->getPost());
+			$list->getFormFilter()->bind($request->getPost());
+			$datasource->setFilter($list->getFormFilter()->getData());
 			if ( $datasource->hasFilter() ) {
-				$list->setAlert(new Alert($datasource->getTotal() . ' resultados encontrados pela sua pesquisa', Alert::Info));
-				$storage['data']['filter'] = $datasource->getFilter();
+				$list->setAlert(new Alert($datasource->getTotal() . ' resultado(s) encontrado(s) pela pesquisa', Alert::Info));
 			}
 		}
 		if ( isset($get['reset']) ) {
 			$datasource->setFilter(array());
+		}
+		if ( $datasource->hasFilter() ) {
+			$storage['data']['filter'] = $datasource->getFilter();
+			if ( $list->getFormFilter() ) {
+				$list->getFormFilter()->setData($datasource->getFilter());
+			}
+		} else {
+			$btnRemoveFilter = $list->getToolbar()->getButtonByName('remove-filter');
+			if ( $btnRemoveFilter ) {
+				$btnRemoveFilter->getParent()->removeButton($btnRemoveFilter);
+			}
 			unset($storage['data']['filter']);
 		}
 		if ( isset($get['sort']) ) {

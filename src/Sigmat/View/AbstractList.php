@@ -41,13 +41,23 @@ abstract class AbstractList extends Component {
 	 * @return Modal
 	 */
 	protected function buildFilter( Form $form, Action $submit, Action $reset ) {
-		$modal = new Modal('modal-filter', new Title('Pesquisar?', 3));
+		$modal = new Modal('modal-filter', new Title('Filtrar?', 3));
 		$modal->setWidth(600);
 		$modal->setBody($form);
-		$modal->addButton(new Button('Pesquisar', new TgFormSubmit($submit, $form), Button::Primary));
+		$modal->addButton(new Button('Filtrar', new TgFormSubmit($submit, $form), Button::Primary));
 		$modal->addButton(new Button('Remover Filtros', new TgLink($reset)));
 		$this->panel->append($modal);
 		return $modal;
+	}
+	
+	/**
+	 * Obtem o formulário do filtro
+	 * 
+	 * @return Form
+	 */
+	public function getFormFilter() {
+		$modalFilter = $this->panel->getByName('modal-filter');
+		return $modalFilter ? $modalFilter->getBody() : null;
 	}
 	
 	/**
@@ -91,6 +101,15 @@ abstract class AbstractList extends Component {
 		}
 		$this->panel->append($toolbar);
 		return $toolbar;
+	}
+	
+	/**
+	 * Obtem a barra de ferramentas
+	 * 
+	 * @return ButtonToolbar
+	 */
+	public function getToolbar() {
+		return $this->panel->getByName('toolbar');
 	}
 	
 	/**

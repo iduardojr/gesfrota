@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\View\AdministrativeUnit;
+namespace Sigmat\View\Product;
 
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Action\Action;
@@ -15,9 +15,9 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Form\Controls\Help;
 use Sigmat\View\AbstractList;
 use Sigmat\View\EntityDatasource;
-use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
+use Sigmat\Model\Product\Category;
 
-class AdministrativeUnitList extends AbstractList {
+class CategoryList extends AbstractList {
 	
 	/**
 	 * @var Action
@@ -53,54 +53,51 @@ class AdministrativeUnitList extends AbstractList {
 	 * @param Action $remove
 	 */
 	public function __construct( Action $filter, Action $new, Action $edit, Action $remove ) {
-		$panel = $this->buildPanel('Administração', 'Gerenciar Unidades Administrativas');
-		$this->component = new Tree('administrative-unit-list');
+		$panel = $this->buildPanel('Administração', 'Gerenciar Categorias');
+		$this->component = new Tree('product-category-list');
 		$this->buildToolbar(new Button(array(new Icon('icon-eye-open'), 'Expandir todos'), new TgTree($this->component, TgTree::Expand), array(Button::Link, Button::Mini)),
 							new Button(array(new Icon('icon-eye-close'), 'Recolher todos'), new TgTree($this->component, TgTree::Collapse), array(Button::Link, Button::Mini)));
 		
-		$panel->append(new Help('Você pode selecionar e arrastar as unidades administrativas para criar a estrutura que desejar.', false));
+		$panel->append(new Help('Você pode selecionar e arrastar as categorias para criar a estrutura que desejar.', false));
 		$panel->append($this->component);
 		$this->new = $new;
 		$this->edit = $edit;
 		$this->remove = $remove;
-		$this->confirm = $this->buildConfirm('confirm-remove', new Paragraph('Deseja realmente excluir essa unidade administrativa e todas as suas unidades subordinadas?'));
+		$this->confirm = $this->buildConfirm('confirm-remove', new Paragraph('Deseja realmente excluir essa categoria e todas suas subcategorias?'));
 	}
 	
 	/**
 	 * @see AbstractList::setDatasource()
 	 */
 	public function setDatasource( EntityDatasource $datasource ) {
-		$datasource->reset();
-		$datasource->next();
-		$unit = $datasource->fetch();
-		$new = clone $this->new;
-		$new->setParameter('key', $unit->getId());
-		$node = new TreeNode($unit->getId(), '<strong>' . $unit->getAcronym() . '</strong>', new Button(new Icon('icon-plus'), new TgLink($new), array(Button::Link, Button::Mini)));
+		$node = new TreeNode(0, '<em>root</em>', new Button(new Icon('icon-plus'), new TgLink(clone $this->new), array(Button::Link, Button::Mini)));
 		$this->component->addNode($node);
-		foreach ( $unit->getChildren() as $child ) {
-			$node->addNode($this->buildNode($child));
+		$datasource->reset();
+		while( $datasource->next() ) {
+			$category = $datasource->fetch();
+			$node->addNode($this->buildNode($category));
 		}
 	}
 	
 	/**
 	 * Construi um nó filho
 	 * 
-	 * @param AdministrativeUnit $unit
+	 * @param Category $category
 	 * @return TreeNode
 	 */
-	private function buildNode( AdministrativeUnit $unit ) {
+	private function buildNode( Category $category ) {
 		$new = clone $this->new;
 		$edit = clone $this->edit;
 		$remove = clone $this->remove;
 		
-		$new->setParameter('key', $unit->getId());
-		$edit->setParameter('key', $unit->getId());
-		$remove->setParameter('key', $unit->getId());
+		$new->setParameter('key', $category->getId());
+		$edit->setParameter('key', $category->getId());
+		$remove->setParameter('key', $category->getId());
 		
-		$node = new TreeNode($unit->getId(), new Anchor($unit->getName(), new TgLink($edit)));
+		$node = new TreeNode($category->getId(), new Anchor($category->getName(), new TgLink($edit)));
 		$node->addButton(new Button(new Icon('icon-plus'), new TgLink($new), array(Button::Link, Button::Mini)));
 		$node->addButton(new Button(new Icon('icon-remove'), new TgModalOpen($this->confirm, new TgLink($remove)), array(Button::Link, Button::Mini)));
-		foreach ( $unit->getChildren() as $child ) {
+		foreach ( $category->getChildren() as $child ) {
 			$node->addNode($this->buildNode($child));
 		}
 		$node->setOpened(true);

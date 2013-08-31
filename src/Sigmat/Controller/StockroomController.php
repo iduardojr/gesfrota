@@ -2,20 +2,21 @@
 namespace Sigmat\Controller;
 
 use Doctrine\ORM\QueryBuilder;
-use Sigmat\Controller\Helper\Crud;
-use Sigmat\View\Stockroom\StockroomList;
-use Sigmat\View\Layout;
-use Sigmat\Model\Stockroom\Stockroom;
-use Sigmat\View\Stockroom\StockroomForm;
-use Sigmat\Model\AdministrativeUnit\Agency;
-use Sigmat\Controller\Helper\NotFoundEntityException;
-use Sigmat\Controller\Helper\InvalidRequestDataException;
-use Sigmat\View\Stockroom\RequestersUnitsForm;
-use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
-use Sigmat\View\AdministrativeUnit\AdministrativeUnitTree;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Sigmat\View\Layout;
+use Sigmat\View\Stockroom\StockroomForm;
+use Sigmat\View\Stockroom\StockroomList;
+use Sigmat\View\AdministrativeUnit\AdministrativeUnitTree;
+use Sigmat\Controller\Helper\Crud;
+use Sigmat\Controller\Helper\NotFoundEntityException;
+use Sigmat\Controller\Helper\InvalidRequestDataException;
+use Sigmat\Model\Stockroom\Stockroom;
+use Sigmat\Model\AdministrativeUnit\Agency;
+use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
+use Sigmat\View\Stockroom\RequestersUnitsForm;
+
 
 /**
  * Almoxarifado
@@ -36,7 +37,7 @@ class StockroomController extends AbstractController {
 	}
 	
 	public function newAction() {
-		$form = new StockroomForm(new Action($this, 'new'), new Action($this), $this->createRequestersUnitsForm());
+		$form = $this->createForm(new Action($this, 'new'));
 		try {
 			$agency = $this->getAgency();
 			$helper = $this->createHelperCrud();
@@ -55,7 +56,7 @@ class StockroomController extends AbstractController {
 	
 	public function editAction() {
 		$id = $this->request->getQuery('key');
-		$form = new StockroomForm(new Action($this, 'edit', array('key' => $id)), new Action($this), $this->createRequestersUnitsForm());
+		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 		try {
 			$helper = $this->createHelperCrud();
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Almoxarifado. Almoxarifado <em>#' . $id . '</em> não encontrado.'));
@@ -155,17 +156,6 @@ class StockroomController extends AbstractController {
 	}
 	
 	/**
-	 * @return RequestersUnitsForm
-	 */
-	private function createRequestersUnitsForm() {
-		$add = new Action($this, 'add-unit');
-		$remove = new Action($this, 'remove-unit');
-		$seek = new Action($this, 'seek-unit');
-		$search = new Action($this, 'search-unit');
-		return new RequestersUnitsForm($add, $remove, $seek, $search, $this->session);
-	}
-	
-	/**
 	 * @return QueryBuilder
 	 */
 	private function createQuery() {
@@ -196,6 +186,25 @@ class StockroomController extends AbstractController {
 	 */
 	private function getUnit( $id ) {
 		return $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
+	}
+	
+	/**
+	 * @param Action $submit
+	 * @return StockroomForm
+	 */
+	private function createForm ( Action $submit ) {
+		return new StockroomForm($submit, new Action($this), $this->createRequestersUnitsForm());
+	}
+	
+	/**
+	 * @return RequestersUnitsForm
+	 */
+	private function createRequestersUnitsForm() {
+		$add = new Action($this, 'add-unit');
+		$remove = new Action($this, 'remove-unit');
+		$seek = new Action($this, 'seek-unit');
+		$search = new Action($this, 'search-unit');
+		return new RequestersUnitsForm($add, $remove, $seek, $search, $this->session);
 	}
 }
 ?>

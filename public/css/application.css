@@ -90,7 +90,13 @@ form,
 .btn [class*=" ui-icon-"],
 .btn [class^="icon-"],
 .btn [class*=" icon-"] {
-	margin-left: 5px;
+	margin-right: 5px;
+}
+.btn-icon-only [class^="ui-icon-"],
+.btn-icon-only [class*=" ui-icon-"],
+.btn-icon-only [class^="icon-"],
+.btn-icon-only [class*=" icon-"] {
+	margin-right: 0;
 }
 .tree-node {
 	padding: 2px 4px;
@@ -132,10 +138,25 @@ form,
 	background-color: #fff !important;
 }
 .controls-row > * {
-	margin-left: 30px !important;
+	margin-left: 30px !important; 
+}
+.controls-row > .dropdown-menu {
+	margin-left: 0 !important; 
+}
+#option-submit, #option-cancel {
+	margin: 4px 0;
+}
+#option-cancel {
+	margin-left: 10px !important;
+}
+#option-input .controls {
+	margin-left: 0;
+}
+#product-new-form .controls {
+	margin-left: 0;
 }
 .controls-row > label {
-	padding-top:5px;
+	padding-top: 5px;
 }
 .controls-row > *:first-child {
 	margin-left: 0 !important;

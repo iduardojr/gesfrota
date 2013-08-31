@@ -21,9 +21,8 @@ class AdministrativeUnitForm extends AbstractForm {
 	 * 
 	 * @param Action $submit
 	 * @param Action $cancel
-	 * @param AdministrativeUnit $parent
 	 */
-	public function __construct( Action $submit, Action $cancel, AdministrativeUnit $parent = null ) {
+	public function __construct( Action $submit, Action $cancel ) {
 		$this->buildPanel('Administração', 'Gerenciar Unidades Administrativas');
 		$form = $this->buildForm('administrative-unit-form');
 		

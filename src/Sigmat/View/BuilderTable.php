@@ -98,7 +98,7 @@ class BuilderTable extends Table {
 	 * @param \Closure $context
 	 * @return ColumnAction
 	 */
-	public function buildColumnAction( $name, $labels, $toggle, Modal $confirm = null, \Closure $context = null ) {
+	public function buildColumnAction( $name, $labels, $toggle = null, Modal $confirm = null, \Closure $context = null ) {
 		if ( $toggle instanceof Action ) {
 			$toggle = new TgLink($toggle);
 		}

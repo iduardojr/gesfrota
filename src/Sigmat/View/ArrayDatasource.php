@@ -8,8 +8,6 @@ use PHPBootstrap\Widget\Table\DataSource;
  */
 class ArrayDatasource implements DataSource {
 	
-	const IDENTIFY = 'id';
-	
 	/**
 	 * @var array
 	 */
@@ -21,21 +19,30 @@ class ArrayDatasource implements DataSource {
 	protected $reset;
 	
 	/**
+	 * Identificação
+	 * 
+	 * @var string
+	 */
+	protected $identify;
+	
+	/**
 	 * Construtor
 	 * 
 	 * @param array $data
+	 * @param string $identify
 	 */
-	public function __construct( array $data = array() ) {
+	public function __construct( array $data = array(), $identify = null ) {
 		$this->data = $data;
+		$this->identify = $identify;
 	}
 	
 	/**
-	 * Obtem chave de identificação dos registros
+	 * Obtem a identificação do registro
 	 *
-	 * @return string
+	 * @return integer
 	 */
 	public function getIdentify() {
-		return constant(get_class($this) . '::IDENTIFY');
+		return empty($this->identify) ? key($this->data) : $this->__get($this->identify);
 	}
 
 	/**

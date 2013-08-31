@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\View\Agency;
+namespace Sigmat\View\AdministrativeUnit;
 
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Action\TgLink;

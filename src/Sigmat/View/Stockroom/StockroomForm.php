@@ -46,8 +46,9 @@ class StockroomForm extends AbstractForm {
 		$tab->addItem(new NavLink('Unidades Requisitantes'), null, new TabPane($subform));
 		$form->append($tab);
 		$form->remove($general);
-		
+
 		$form->register($subform->getByName('units'));
+		
 		$form->buildButton('submit', 'Incluir', $submit);
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}

@@ -26,6 +26,20 @@ class Agency extends AdministrativeUnit {
 	}
 	
 	/**
+	 * @see AdministrativeUnit::getAncestors()
+	 */
+	public function getAncestors() {
+		return array();
+	}
+	
+	/**
+	 * @see AdministrativeUnit::getStatus()
+	 */
+	public function getStatus() {
+		return $this->status;
+	}
+	
+	/**
 	 * @return string
 	 */
 	public function __toString() {

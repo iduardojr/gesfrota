@@ -1,5 +1,5 @@
 <?php
-namespace Sigmat\View\Agency;
+namespace Sigmat\View\AdministrativeUnit;
 
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Validate\Required\Required;

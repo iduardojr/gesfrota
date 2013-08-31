@@ -3,8 +3,8 @@ namespace Sigmat\Model\Stockroom;
 
 use Sigmat\Model\Entity;
 use Sigmat\Model\AdministrativeUnit\Agency;
-use Doctrine\Common\Collections\ArrayCollection;
 use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Almoxarifado
@@ -48,6 +48,7 @@ class Stockroom extends Entity {
 	 * @param Agency $agency
 	 */
 	public function __construct( Agency $agency ) {
+		parent::__construct();
 		$this->units = new ArrayCollection();
 		$this->setAgency($agency);
 		$this->setStatus(true);

@@ -4,6 +4,7 @@ namespace Sigmat\Model\AdministrativeUnit;
 use Sigmat\Model\Entity;
 use Sigmat\Model\Deleting;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Unidade Administrativa
@@ -66,8 +67,11 @@ class AdministrativeUnit extends Entity implements Deleting {
 	
 	/**
 	 * Construtor
+	 * 
+	 * @param AdministrativeUnit $parent
 	 */
 	public function __construct( AdministrativeUnit $parent ) {
+		parent::__construct();
 		$this->children = new ArrayCollection();
 		$this->setStatus(true);
 		$this->setParent($parent);
@@ -90,13 +94,9 @@ class AdministrativeUnit extends Entity implements Deleting {
 	 * @return array
 	 */
 	public function getAncestors() {
-		$ancestors = array();
-		$parent = $this->getParent();
-		while ( $parent !== null ) {
-			$ancestors[] = $parent;
-			$parent = $parent->getParent();
-		}
-		return array_reverse($ancestors);
+		$ancestors = $this->getParent()->getAncestors();
+		$ancestors[] = $this->getParent();
+		return $ancestors;
 	}
 	
 	/**
@@ -157,7 +157,7 @@ class AdministrativeUnit extends Entity implements Deleting {
 	 * @return boolean
 	 */
 	public function getStatus() {
-		return $this->status;
+		return $this->getParent()->getStatus() && $this->status;
 	}
 	
 	/**
@@ -175,13 +175,9 @@ class AdministrativeUnit extends Entity implements Deleting {
 	 * @return array
 	 */
 	public function getChildren() {
-		$active = array();
-		foreach ( $this->children as $child ) {
-			if ( $child->getStatus() ) {
-				$active[] = $child;
-			}
-		}
-		return $active;
+		$criteria = Criteria::create();
+		$criteria->andWhere(Criteria::expr()->eq('status', true));
+		return $this->children->matching($criteria);
 	}
 
 	/**
@@ -245,10 +241,8 @@ class AdministrativeUnit extends Entity implements Deleting {
 	 * @throws \DomainException
 	 */
 	public function setParent( AdministrativeUnit $parent ) {
-		if ( $parent !== null ) {
-			if ( $this->assertReferenceCircular($parent) ) {
-				throw new \DomainException('parent in reference circular');
-			}
+		if ( $this->assertReferenceCircular($parent) ) {
+			throw new \DomainException('parent in reference circular');
 		}
 		$this->parent = $parent;
 	}

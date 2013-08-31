@@ -38,6 +38,7 @@ class LogContext extends Entity {
 	 * @param mixed $value
 	 */
 	public function __construct( Log $log, $key, $value ) {
+		parent::__construct();
 		$this->log = $log;
 		$this->key = $key;
 		$this->value = $value;

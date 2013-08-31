@@ -31,7 +31,7 @@ class TableCollection extends BuilderTable implements Inputable {
 	 * @see Inputable::setValue()
 	 */
 	public function setValue( $value ) {
-		if ( ! ( is_array($value) || $value === null) ) {
+		if ( ! ( is_array($value) || $value === null ) ) {
 			throw new \InvalidArgumentException('value not is valid');
 		}
 		if ( $value === null ) {

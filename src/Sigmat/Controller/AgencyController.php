@@ -3,12 +3,12 @@ namespace Sigmat\Controller;
 
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Action\Action;
-use Sigmat\View\Agency\AgencyForm;
-use Sigmat\View\Agency\AgencyList;
+use Sigmat\View\Layout;
+use Sigmat\View\AdministrativeUnit\AgencyForm;
+use Sigmat\View\AdministrativeUnit\AgencyList;
 use Sigmat\Controller\Helper\Crud;
 use Sigmat\Controller\Helper\NotFoundEntityException;
 use Sigmat\Controller\Helper\InvalidRequestDataException;
-use Sigmat\View\Layout;
 use Sigmat\Model\AdministrativeUnit\Agency;
 
 /**
@@ -29,7 +29,7 @@ class AgencyController extends AbstractController {
 	}
 	
 	public function newAction() {
-		$form = new AgencyForm(new Action($this, 'new'), new Action($this));
+		$form = $this->createForm(new Action($this, 'new'));
 		try {
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form) ){
@@ -47,7 +47,7 @@ class AgencyController extends AbstractController {
 	
 	public function editAction() {
 		$id = $this->request->getQuery('key');
-		$form = new AgencyForm(new Action($this, 'edit', array('key' => $id)), new Action($this));
+		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 		try {
 			$helper = $this->createHelperCrud();
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
@@ -88,6 +88,14 @@ class AgencyController extends AbstractController {
 	 */
 	private function createHelperCrud() {
 		return new Crud($this->getEntityManager(), Agency::getClass(), $this);
+	}
+	
+	/**
+	 * @param Action $submit
+	 * @return AgencyForm
+	 */
+	private function createForm ( Action $submit ) {
+		return new AgencyForm($submit, new Action($this));
 	}
 	
 }
