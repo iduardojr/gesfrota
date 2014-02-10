@@ -2,7 +2,7 @@
 namespace Sigmat\Services;
 
 use Doctrine\ORM\EntityManager;
-use Sigmat\Model\Log\Log;
+use Sigmat\Model\Domain\Log;
 
 /**
  * Registrador de logs

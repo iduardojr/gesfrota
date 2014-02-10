@@ -20,7 +20,7 @@ if ( file_exists('../vendor/autoload.php') ) {
 }
 
 // ERROR REPORTING
-error_reporting(E_ALL | E_STRICT | E_RECOVERABLE_ERROR);
+error_reporting(E_ALL ^ E_NOTICE | E_STRICT | E_RECOVERABLE_ERROR);
 
 if ( $isDevMode ) {
 	ini_set('display_errors', 1);

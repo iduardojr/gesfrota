@@ -3,16 +3,16 @@ namespace Sigmat\Controller\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
-use PHPBootstrap\Widget\Misc\Alert;
-use Sigmat\View\AbstractForm;
-use Sigmat\View\EntityDatasource;
-use Sigmat\View\AbstractList;
-use Sigmat\Model\Entity;
-use PHPBootstrap\Mvc\Http\Cookie;
-use PHPBootstrap\Common\ArrayCollection;
 use PHPBootstrap\Common\Enum;
-use Sigmat\Model\Deleting;
+use PHPBootstrap\Common\ArrayCollection;
 use PHPBootstrap\Mvc\Controller;
+use PHPBootstrap\Mvc\Http\Cookie;
+use PHPBootstrap\Widget\Misc\Alert;
+use Sigmat\View\GUI\AbstractForm;
+use Sigmat\View\GUI\EntityDatasource;
+use Sigmat\View\GUI\AbstractList;
+use Sigmat\Model\Entity;
+use Sigmat\Model\Activable;
 
 /**
  * Ajudante de create-read-update-delete
@@ -165,7 +165,7 @@ class Crud {
 			$storage['data']['order'] = $datasource->getOrder();
 		}
 		if ( isset($get['page']) ) {
-			$datasource->setPage((int) $get['page']);
+			$datasource->setPage($get['page']);
 			$storage['data']['page'] = $datasource->getPage();
 		}
 		if ( isset($get['limit']) ) {
@@ -212,6 +212,30 @@ class Crud {
 	}
 	
 	/**
+	 * Ativa ou desativa uma entidade
+	 *
+	 * @param Activable|integer $entity
+	 * @param boolean $active
+	 * @throws NotFoundEntityException
+	 * @throws Exception
+	 */
+	public function active( $entity, $active = null ) {
+		if ( $entity instanceof Entity ) {
+			$this->object = $entity;
+		} else {
+			$this->object = $this->em->find($this->entity, ( int ) $entity);
+		}
+		if ( ! $this->object instanceof Activable ) {
+			throw $this->getException(new NotFoundEntityException());
+		}
+		if ( $active === null ) {
+			$active = ! $this->object->getActive();
+		}
+		$this->object->setActive($active);
+		$this->em->flush();
+	}
+	
+	/**
 	 * Remove uma entidade
 	 *
 	 * @param Entity|integer $entity
@@ -227,11 +251,7 @@ class Crud {
 		if ( ! $this->object ) {
 			throw $this->getException(new NotFoundEntityException());
 		}
-		if ( $this->object instanceof Deleting ) {
-			$this->object->delete();
-		} else {
-			$this->em->remove($this->object);
-		}
+		$this->em->remove($this->object);
 		$this->em->flush();
 	}
 	

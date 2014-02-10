@@ -1,21 +1,24 @@
 <?php
 namespace Sigmat\Controller;
 
+use Doctrine\ORM\QueryBuilder;
+use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Action\Action;
-use Sigmat\View\Layout;
+use Sigmat\View\GUI\Layout;
+use Sigmat\View\GUI\PanelQuery;
+use Sigmat\View\GUI\EntityDatasource;
+use Sigmat\View\ProductForm;
+use Sigmat\View\ProductList;
+use Sigmat\View\ProductUnitsForm;
+use Sigmat\View\ProductCategoryTable;
+use Sigmat\View\ProductUnitTable;
 use Sigmat\Controller\Helper\Crud;
 use Sigmat\Controller\Helper\NotFoundEntityException;
 use Sigmat\Controller\Helper\InvalidRequestDataException;
-use Sigmat\View\Product\ProductList;
-use Sigmat\Model\Product\Product;
-use Sigmat\View\Product\ProductForm;
-use Sigmat\View\Product\ProductNewForm;
-use Sigmat\Model\Product\ProductClass;
-use PHPBootstrap\Mvc\View\JsonView;
-use Doctrine\ORM\EntityNotFoundException;
-use Sigmat\Model\Product\Category;
-use Sigmat\View\Product\CategoryTree;
+use Sigmat\Model\Domain\Product;
+use Sigmat\Model\Domain\ProductCategory;
+use Sigmat\Model\Domain\ProductUnit;
 
 /**
  * Produto
@@ -23,47 +26,46 @@ use Sigmat\View\Product\CategoryTree;
 class ProductController extends AbstractController {
 	
 	public function indexAction() {
-		$list = new ProductList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
+		$this->session->units = null;
+		$list = new ProductList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), new Action($this, 'search-ProductCategory'), new Action($this, 'seek-ProductCategory'));
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, $this->createQuery(), array('limit' => null));
+			$helper->read($list, $this->createQuery(), array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+				if ( !empty($data['description']) ) {
+					$query->andWhere('u.description LIKE :description');
+					$query->setParameter('description', '%' . $data['description'] . '%');
+				}
+				if ( !empty($data['product-category-id']) ) {
+					$em = $query->getEntityManager();
+					$ProductCategory = $em->find(ProductCategory::getClass(), (int) $data['product-category-id']);
+					$query->andWhere('c.lft BETWEEN :lowerbound AND :upperbound');
+					$query->setParameter('lowerbound', (int) $ProductCategory->getLft());
+					$query->setParameter('upperbound', (int) $ProductCategory->getRgt());
+				}
+				if ( !empty($data['only-active']) ) {
+					$query->andWhere('u.active = true');
+				}
+			}));
 			$list->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
-			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(). nl2br($e->getTraceAsString()), Alert::Danger));
 		}
 		return new Layout($list);
 	}
 	
 	public function newAction() {
-		$request = $this->request;
-		$id = $request->getQuery('key');
-		if ( $id !== null ) {
-			try {
-				$class = $this->getEntityManager()->find(ProductClass::getClass(), ( int ) $id);
-				if ( ! $class instanceof ProductClass ) {
-					throw new EntityNotFoundException('Não foi possível criar o um novo Produto. Classe de Produto <em>#' . $id . '</em> não encontrada.');
-				}
-				$form = $this->createForm(new Action($this, 'new', array('key' => $id)));
-				$helper = $this->createHelperCrud();
-				if ( $helper->create($form, new Product($class)) ){
-					$entity = $helper->getEntity();
-					$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->id . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
-					$this->forward('/');
-				}
-			} catch ( NotFoundEntityException $e ) {
-				$form = $this->createNewForm();
-				$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
-			} catch ( InvalidRequestDataException $e ) {
-				$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
-			} catch ( \Exception $e ) {
-				$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		try {
+			$form = $this->createForm(new Action($this, 'new'));
+			$helper = $this->createHelperCrud();
+			if ( $helper->create($form) ){
+				$entity = $helper->getEntity();
+				$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
+				$this->forward('/');
 			}
-		} else {
-			$form = $this->createNewForm();
-			if ( $request->isPost() ) {
-				$id = $request->getPost('product-class');
-				$this->redirect(new Action($this, 'new', array('key' => $id)));
-			}
+		} catch ( InvalidRequestDataException $e ) {
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+		} catch ( \Exception $e ) {
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
 	}
@@ -76,7 +78,7 @@ class ProductController extends AbstractController {
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Produto. Produto <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $id) ) {
 				$entity = $helper->getEntity();
-				$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->id . ' ' . $entity->description .  '</em> alterado com sucesso!', Alert::Success));
+				$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->code . ' ' . $entity->description .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( NotFoundEntityException $e ) {
@@ -90,14 +92,14 @@ class ProductController extends AbstractController {
 		return new Layout($form);
 	}
 	
-	public function removeAction() {
+	public function activeAction() {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->setException(new NotFoundEntityException('Não foi possível excluir o Produto. Produto <em>#' . $id . '</em> não encontrado.'));
-			$helper->delete($id);
+			$helper->setException(new NotFoundEntityException('Não foi possível ativar/desativar o Produto. Produto <em>#' . $id . '</em> não encontrado.'));
+			$helper->active($id);
 			$entity = $helper->getEntity();
-			$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->id . ' ' . $entity->description . '</em> removido com sucesso!', Alert::Success));
+			$this->setAlert(new Alert('<strong>Ok! </strong>Produto <em>#' . $entity->code . ' ' . $entity->description . '</em> ' . ( $entity->active ? 'ativado' : 'desativado' ) . ' com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ) {
 			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
@@ -106,62 +108,137 @@ class ProductController extends AbstractController {
 		$this->forward('/');
 	}
 	
-	public function seekCategoryAction() {
-		try {
-			$id = $this->request->getQuery('query');
-			$entity = $this->getCategory($id);
-			if ( ! $entity instanceof Category ) {
-				throw new NotFoundEntityException('Categoria <em>#' . $id . '</em> não encontrada.');
-			}
-			return new JsonView(array('category-id' => $entity->id, 'category-description' => $entity->description, 'flash-message' => null), false);
-		} catch ( NotFoundEntityException $e ){
-			return new JsonView(array('category-description' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
-		} catch ( \Exception $e ) {
-			return new JsonView(array('category-description' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
-		}
-	}
-	
 	public function searchCategoryAction() {
 		try {
-			$repository = $this->getEntityManager()->getRepository(Category::getClass());
-			$widget = new CategoryTree($repository->findBy(array('parent' => null)));
+			$query = $this->createQueryCategory();
+			$params = $this->request->getQuery();
+			if ( $params['query'] ) {
+				$query->from(ProductCategory::getClass(), 'p0');
+				$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
+				$query->andWhere('p0.description LIKE :description');
+				$query->setParameter('description', '%' . $params['query'] . '%');
+			}
+			if ( $params['only-active'] ) { 
+				$query->andWhere('u.active = true');
+				$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . ProductCategory::getClass() . ' p1, ' . ProductCategory::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				$query->andWhere('u.lft + 1 = u.rgt');
+			}
+			$datasource = new EntityDatasource($query);
+			$datasource->setPage($params['page']);
+			$datasource->setOrderBy('lft', 'ASC');
+			$table = new ProductCategoryTable(new Action($this,'search-product-category', $params));
+			$table->setDataSource($datasource);
+			$widget = new PanelQuery($table, new Action($this,'search-product-category', $params), $params['query']);
 		} catch ( \Exception $e ) {
 			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
 		return new Layout($widget, null);
 	}
 	
-	public function searchClassAction() {
-		$term = $this->getRequest()->getQuery('query');
-		$items = $this->getRequest()->getQuery('items');
-		$query = $this->getEntityManager()->getRepository(ProductClass::getClass())->createQueryBuilder('u');
-		$query->andWhere($query->expr()->like('u.description', $query->expr()->literal('%' . $this->sanitize($term) . '%')))
-			  ->addOrderBy('u.description', 'asc')
-			  ->setMaxResults($items);
-		$collection = $query->getQuery()->getResult();
-		$response = array();
-		foreach( $collection as $entity )	{
-			$item['label'] = $entity->getDescription();
-			$item['value']['product-class'] = $entity->getId();
-			$response[] = $item;
+	public function seekCategoryAction() {
+		try {
+			$id = $this->request->getQuery('query');
+			
+			$query = $this->createQueryCategory();
+			if ( $this->request->getQuery('only-active') ) { 
+				$query->andWhere('u.active = true');
+				$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . ProductCategory::getClass() . ' p1, ' . ProductCategory::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				$query->andWhere('u.lft + 1 = u.rgt');
+			}
+			$query->andWhere('u.id = :entity');
+			$query->setParameter('entity', (int) $id);
+			$entity = $query->getQuery()->getOneOrNullResult();
+			
+			if ( !$entity ) {
+				throw new NotFoundEntityException('Categoria <em>#' . $id . '</em> não encontrada.');
+			}
+			return new JsonView(array('product-ProductCategory-id' =>  $entity->code, 'product-category-description' => $entity->fullDescription, 'flash-message' => null), false);
+		} catch ( NotFoundEntityException $e ){
+			return new JsonView(array('product-category-description' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('product-category-description' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
 		}
-		return new JsonView($response, false);
+	}
+	
+	public function addUnitAction() {
+		try {
+			$id = (int) $this->request->getPost('product-unit-id');
+			$units = $this->session->units;
+			$entity = $this->getEntityManager()->find(ProductUnit::getClass(), ( int ) $id);
+			if ( ! $entity ) {
+				throw new NotFoundEntityException('Não foi possível adicionar Unidade de Medida. Unidade de Medida <em>#' . $id . '</em> não encontrada.');
+			}
+			$units[$id] = $entity;
+			$this->session->units = $units;
+			$form = $this->createUnitsForm();
+			$json = array($form->getName() => $form, 'flash-message' => null);
+		} catch ( NotFoundEntityException $e ) {
+			$json = array('flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+		} catch ( \Exception $e ) {
+			$json = array('flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		}
+		return new JsonView($json, false);
+	}
+	
+	public function removeUnitAction() {
+		try {
+			$id = $this->request->getQuery('key');
+			$units = $this->session->units;
+			if ( ! isset($units[(int)$id]) ) {
+				throw new NotFoundEntityException('Não foi possível remover Unidade de Medida. Unidade de Medida <em>#' . $id . '</em> não encontrada.');
+			}
+			unset($units[(int)$id]);
+			$this->session->units = $units;
+			$form = $this->createUnitsForm();
+			$json = array($form->getName() => $form, 'flash-message' => null);
+		} catch ( NotFoundEntityException $e ) {
+			$json = array('flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+		} catch ( \Exception $e ) {
+			$json = array('flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		}
+		return new JsonView($json, false);
+	}
+	
+	public function searchUnitAction() {
+		try {
+			$query = $this->createQueryUnit();
+			$params = $this->request->getQuery();
+			$datasource = new EntityDatasource($query);
+			$datasource->setPage($params['page']);
+			$datasource->setOrderBy('description', 'ASC');
+			$widget = new ProductUnitTable(new Action($this,'search'));
+			$widget->setDataSource($datasource);
+		} catch ( \Exception $e ) {
+			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
+		}
+		return new Layout($widget, null);
+	}
+	
+	public function seekUnitAction() {
+		try {
+			$id = $this->request->getQuery('query');
+				
+			$query = $this->createQueryUnit();
+			$query->andWhere('u.id = :entity');
+			$query->setParameter('entity', (int) $id);
+			$entity = $query->getQuery()->getOneOrNullResult();
+			if ( ! $entity ) {
+				throw new NotFoundEntityException('Unidade de Medida <em>#' . $id . '</em> não encontrada.');
+			}
+			return new JsonView(array('product-unit-id' => $entity->code, 'product-unit-description' => $entity->description, 'flash-message' => null), false);
+		} catch ( NotFoundEntityException $e ){
+			return new JsonView(array('product-unit-description' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('product-unit-description' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
+		}
 	}
 	
 	/**
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
+		$this->request->setPost(array_merge($this->request->getPost(), $this->session->toArray()));
 		return new Crud($this->getEntityManager(), Product::getClass(), $this);
-	}
-	
-	/**
-	 * @return QueryBuilder
-	 */
-	private function createQuery() {
-		$query = $this->getEntityManager()->getRepository(Product::getClass())->createQueryBuilder('u');
-		$query->andWhere($query->expr()->eq('u.status', 1));
-		return $query;
 	}
 	
 	/**
@@ -169,22 +246,49 @@ class ProductController extends AbstractController {
 	 * @return ProductForm
 	 */
 	private function createForm ( Action $submit ) {
-		return new ProductForm($submit, new Action($this), new Action($this, 'seek-category'), new Action($this, 'search-category'));
+		$seek = new Action($this, 'seek-category', array('only-active' => true));
+		$search = new Action($this, 'search-category', array('only-active' => true));
+		$cancel = new Action($this);
+		return new ProductForm($submit, $search, $seek, $cancel, $this->createUnitsForm());
 	}
 	
 	/**
-	 * @return ProductNewForm
+	 * @return ProductUnitsForm
 	 */
-	private function createNewForm() {
-		return new ProductNewForm(new Action($this, 'new'), new Action($this, 'search-class'));
+	private function createUnitsForm () {
+		$add = new Action($this, 'add-unit');
+		$remove = new Action($this, 'remove-unit');
+		$seek = new Action($this, 'seek-unit');
+		$search = new Action($this, 'search-unit');
+		return new ProductUnitsForm($add, $remove, $seek, $search, $this->session);
 	}
 	
 	/**
-	 * @param integer $id
-	 * @return Category
+	 * @return QueryBuilder
 	 */
-	private function getCategory( $id ) {
-		return $this->getEntityManager()->find(Category::getClass(), ( int ) $id);
+	private function createQuery() {
+		$query = $this->getEntityManager()->getRepository(Product::getClass())->createQueryBuilder('u');
+		$query->leftJoin('u.category', 'c');
+		return $query;
 	}
+	
+	/**
+	 * @return QueryBuilder
+	 */
+	private function createQueryUnit() {
+		$query = $this->getEntityManager()->getRepository(ProductUnit::getClass())->createQueryBuilder('u');
+		$query->andWhere('u.active = true');
+		return $query;
+	}
+	
+	/**
+	 * @return QueryBuilder
+	 */
+	private function createQueryCategory() {
+		$query = $this->getEntityManager()->getRepository(ProductCategory::getClass())->createQueryBuilder('u');
+		$query->leftJoin('u.parent', 'a');
+		return $query;
+	}
+	
 }
 ?>

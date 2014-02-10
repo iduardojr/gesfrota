@@ -32,6 +32,15 @@ abstract class Entity {
 	}
 	
 	/**
+	 * Obtem o identificador formatado
+	 * 
+	 * @return string
+	 */
+	public function getCode() {
+		return str_repeat('0', 3 - strlen($this->getId())) . $this->getId();
+	}
+	
+	/**
 	 * Atribui uma propriedade
 	 * 
 	 * @param string $name

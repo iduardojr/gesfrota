@@ -1,11 +1,12 @@
 <?php
 namespace Sigmat\Controller;
 
-use PHPBootstrap\Mvc\Controller;
-use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Mvc\Session\Session;
 use Doctrine\ORM\EntityManager;
+use PHPBootstrap\Mvc\Controller;
+use PHPBootstrap\Mvc\Session\Session;
+use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Sigmat\Model\Domain\Agency;
 
 /**
  * Constrolador Abstrato
@@ -27,6 +28,13 @@ abstract class AbstractController extends Controller {
 			$this->session = new Session('storage');
 			$this->session->identify = md5(get_class($this));
 		}
+	}
+	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencyActive() {
+		return $this->getEntityManager()->find(Agency::getClass(), ( int ) 1);
 	}
 
 	/**

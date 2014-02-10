@@ -98,19 +98,19 @@ form,
 .btn-icon-only [class*=" icon-"] {
 	margin-right: 0;
 }
-.tree-node {
+.tree-label {
 	padding: 2px 4px;
 }
 .tree li .hitarea {
 	top: 4px;
 }
-.tree-node.loading {
+.tree-label.loading {
 	padding-right: 30px;
 }
-.tree-node.loading:hover .btn {
+.tree-label.loading:hover .btn {
 	display: none !important;
 }
-.tree-hover.expandable > .tree-node {
+.tree-hover.expandable > .tree-label {
 	background: #f2f2f2;
 }
 .tree-selected {
@@ -131,17 +131,11 @@ form,
 	margin: 3px 0 !important;
 	height: 8px;
 }
-#breadcrumb {
-	margin: 0;
-}
-#administrative-unit-list > li > .tree-node:hover {
+#administrative-unit-list > li > .tree-label:hover {
 	background-color: #fff !important;
 }
-.controls-row > * {
-	margin-left: 30px !important; 
-}
-.controls-row > .dropdown-menu {
-	margin-left: 0 !important; 
+#breadcrumb {
+	margin: 0;
 }
 #option-submit, #option-cancel {
 	margin: 4px 0;
@@ -152,14 +146,27 @@ form,
 #option-input .controls {
 	margin-left: 0;
 }
-#product-new-form .controls {
+#product-new-form .controls, 
+#product-category-new-form .controls {
 	margin-left: 0;
+}
+#attribute_chosen .chosen-results {
+	max-height: 100px;
+}
+.controls-row > * {
+	margin-left: 30px !important; 
+}
+.controls-row > .dropdown-menu {
+	margin-left: 0 !important; 
 }
 .controls-row > label {
 	padding-top: 5px;
 }
 .controls-row > *:first-child {
 	margin-left: 0 !important;
+}
+.controls-row > [class*="span"] {
+    margin-left: 30px;
 }
 .well {
 	background: #fff;
@@ -176,4 +183,14 @@ fieldset > legend {
 	height: 16px;
 	line-height: 16px;
 	margin-left: 5px;
+}
+#chosen-category .btn-group + .btn-group {
+	margin-left: 20px;
+}
+#panel-query {
+	padding-bottom: 15px;
+	border-bottom: 1px solid #CCC; 
+}
+.pagination-mini {
+	margin-top: 10px;
 }

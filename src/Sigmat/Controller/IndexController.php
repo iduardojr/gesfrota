@@ -2,12 +2,9 @@
 namespace Sigmat\Controller;
 
 use PHPBootstrap\Mvc\Controller;
-use Sigmat\View\Layout;
+use Sigmat\View\GUI\Layout;
 
-/**
- * Index
- */
-class IndexController extends Controller{
+class IndexController extends Controller {
 	
 	public function indexAction() {
 		return new Layout('index/index.phtml');

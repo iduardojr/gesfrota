@@ -1,27 +1,41 @@
 <?php
 namespace Sigmat\Controller;
 
+use Doctrine\ORM\QueryBuilder;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Sigmat\View\Layout;
-use Sigmat\View\AdministrativeUnit\AdministrativeUnitForm;
-use Sigmat\View\AdministrativeUnit\AdministrativeUnitList;
+use Sigmat\View\GUI\Layout;
+use Sigmat\View\GUI\PanelQuery;
+use Sigmat\View\GUI\EntityDatasource;
+use Sigmat\View\AdministrativeUnitForm;
+use Sigmat\View\AdministrativeUnitList;
+use Sigmat\View\AdministrativeUnitTable;
 use Sigmat\Controller\Helper\Crud;
 use Sigmat\Controller\Helper\NotFoundEntityException;
 use Sigmat\Controller\Helper\InvalidRequestDataException;
-use Sigmat\Model\AdministrativeUnit\AdministrativeUnit;
+use Sigmat\Model\Domain\AdministrativeUnit;
+use Sigmat\Model\Domain\Agency;
 
-/**
- * Unidade Administrativa
- */
 class AdministrativeUnitController extends AbstractController { 
 	
 	public function indexAction() {
-		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'remove'));
+		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, $this->createQuery(), array('limit' => null, 'sort' => 'name', 'order' => 'asc'));
+			$helper->read($list, $this->createQuery(), array('limit' => 12, 'sort' => 'lft', 'order' => 'asc', 'processQuery' => function( QueryBuilder $query, array $data ) {
+				if ( !empty($data['name']) ) {
+					$query->from(AdministrativeUnit::getClass(), 'p0');
+					$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
+					$query->andWhere('p0.name LIKE :name');
+					$query->setParameter('name', '%' . $data['name'] . '%');
+					
+				}
+				if ( !empty($data['only-active']) ) {
+					$query->andWhere('u.active = true');
+					$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				}
+			}));
 			$list->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
 			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
@@ -29,18 +43,16 @@ class AdministrativeUnitController extends AbstractController {
 		return new Layout($list);
 	}
 	
+	
 	public function newAction() {
 		$id = $this->request->getQuery('key');
-		$form = $this->createForm(new Action($this, 'new', array('key' => $id)));
+		$form = $this->createForm(new Action($this, 'new'));
 		try {
 			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
-			if ( $parent === null ) {
-				throw new NotFoundEntityException('Não foi possível criar uma nova Unidade Administrativa. Unidade Superior <em>#'. $id .'</em> não encontrada.');
-			}
 			$helper = $this->createHelperCrud();
-			if ( $helper->create($form, new AdministrativeUnit($parent)) ){
+			if ( $helper->create($form, new AdministrativeUnit($this->getAgencyActive(), $parent)) ){
 				$entity = $helper->getEntity();
-				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> criada com sucesso!', Alert::Success));
+				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription . '</em> criada com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
@@ -54,6 +66,7 @@ class AdministrativeUnitController extends AbstractController {
 		return new Layout($form);
 	}
 	
+	
 	public function editAction() {
 		$id = $this->request->getQuery('key');
 		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
@@ -62,7 +75,7 @@ class AdministrativeUnitController extends AbstractController {
 			$helper->setException(new NotFoundEntityException('Não foi possível editar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
 			if ( $helper->update($form, $id) ){
 				$entity = $helper->getEntity();
-				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name .  '</em> alterada com sucesso!', Alert::Success));
+				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription .  '</em> alterada com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( NotFoundEntityException $e ){
@@ -76,14 +89,14 @@ class AdministrativeUnitController extends AbstractController {
 		return new Layout($form);
 	}
 	
-	public function removeAction() {
+	public function activeAction() {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->setException(new NotFoundEntityException('Não foi possível excluir a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
-			$helper->delete($id);
+			$helper->setException(new NotFoundEntityException('Não foi possível ativar/desativar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
+			$helper->active($id);
 			$entity = $helper->getEntity();
-			$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->id . ' ' . $entity->name . '</em> removida com sucesso!', Alert::Success));
+			$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription . '</em> ' . ( $entity->active ? 'ativada' : 'desativada' ) . ' com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ){
 			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
@@ -92,27 +105,47 @@ class AdministrativeUnitController extends AbstractController {
 		$this->forward('/');
 	}
 	
-	public function updateAction() {
+	public function searchAction() {
 		try {
-			$id = $this->request->getQuery('key');
-			$parentId = $this->request->getQuery('parent');
-			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
-			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $parentId);
-			if ( empty($entity) ) {
-				throw new NotFoundEntityException('Não foi possível atualizar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.');
+			$query = $this->createQuery();
+			$params = $this->request->getQuery();
+			if ( $params['key'] > 0 ) {
+				$query->from(AdministrativeUnit::getClass(), 'p');
+				$query->andWhere('u.lft NOT BETWEEN p.lft AND p.rgt');
+				$query->andWhere('p.id = :parent');
+				$query->setParameter('parent', (int) $params['key']);
 			}
-			if ( empty($parent) ) {
-				throw new NotFoundEntityException('Não foi possível atualizar a Unidade Administrativa. Unidade Superior <em>#' . $parentId . '</em> não encontrada.');
+			if ( $params['query'] ) {
+				$query->from(AdministrativeUnit::getClass(), 'p0');
+				$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
+				$query->andWhere('p0.name LIKE :name');
+				$query->setParameter('name', '%' . $params['query'] . '%');
 			}
-			$entity->setParent($parent);
-			$this->getEntityManager()->flush();
-			$json = array('success' => true);
-		} catch ( NotFoundEntityException $e ){
-			$json = array('success' => false, 'message' => new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+			$datasource = new EntityDatasource($query);
+			$datasource->setOrderBy('lft', 'ASC');
+			$datasource->setPage($params['page']);
+			$table = new AdministrativeUnitTable(new Action($this,'search', $params));
+			$table->setDataSource($datasource);
+			$widget = new PanelQuery($table, new Action($this,'search', $params), $params['query']);
 		} catch ( \Exception $e ) {
-			$json = array('success' => false, 'message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
-		return new JsonView($json, false);
+		return new Layout($widget, null);
+	}
+	
+	public function seekAction() {
+		try {
+			$id = $this->request->getQuery('query');
+			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), (int) $id);
+			if ( ! $entity || $entity instanceof Agency ) {
+				throw new NotFoundEntityException('Unidade Administrativa <em>#' . $id . '</em> não encontrada.');
+			}
+			return new JsonView(array('administrative-unit-id' => $entity->code, 'administrative-unit-description' => $entity->fullDescription, 'flash-message' => null), false);
+		} catch ( NotFoundEntityException $e ){
+			return new JsonView(array('administrative-unit-description' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
+		} catch ( \Exception $e ) {
+			return new JsonView(array('administrative-unit-description' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
+		}
 	}
 	
 	/**
@@ -120,9 +153,10 @@ class AdministrativeUnitController extends AbstractController {
 	 */
 	private function createQuery() {
 		$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
-		$query->leftJoin('u.parent', 'a');
-		$query->andWhere($query->expr()->eq('u.status', 1));
-		$query->andWhere($query->expr()->eq('u.id', 1));
+		$query->distinct(true);
+		$query->andWhere('u.agency = :agency');
+		$query->setParameter('agency', $this->getAgencyActive()->getId());
+		$query->orderBy('u.lft');
 		return $query;
 	}
 	
@@ -130,6 +164,7 @@ class AdministrativeUnitController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
+		$this->request->setPost(array_merge($this->request->getPost(), array('agency' => $this->getAgencyActive())));
 		return new Crud($this->getEntityManager(), AdministrativeUnit::getClass(), $this);
 	}
 	
@@ -138,7 +173,7 @@ class AdministrativeUnitController extends AbstractController {
 	 * @return AdministrativeUnitForm
 	 */
 	private function createForm ( Action $submit ) {
-		return new AdministrativeUnitForm($submit, new Action($this));
+		return new AdministrativeUnitForm($submit, new Action($this, 'seek'), new Action($this, 'search', $submit->getParameters()), new Action($this));
 	}
 
 }
