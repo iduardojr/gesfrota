@@ -1,0 +1,8 @@
+/vendor
+/tests
+/logs
+/.settings
+/.buildpath
+/.project
+/composer.phar
+/composer.lock

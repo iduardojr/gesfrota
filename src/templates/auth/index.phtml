@@ -1,0 +1,23 @@
+<form class="form-signin" method="post" action="/auth">
+	<h1 class="form-signin-heading">
+		<span class="brand">Entrar no Gesfrota</span>
+		<img src="/images/brand.png" alt="Governo de Goiás">
+	</h1>
+	<?php if ($this->message) { ?>
+	<p class="text-left"><?php echo $this->message; ?></p>
+	<?php } ?>
+	<input type="text" class="input-block-level" name="login" placeholder="Digite seu CPF" data-mask="999.999.999-99">
+	<input type="password" class="input-block-level" name="password" placeholder="Digite sua senha">
+	<label class="checkbox">
+		<input type="checkbox" value="remember-me"> Continuar conectado
+	</label>
+	<a class="btn btn-link" href="/auth/reset-password">Esqueci minha senha</a>
+	<button class="btn btn-large btn-success" type="submit">Entrar</button>
+</form>
+<style type="text/css">
+body {
+	padding-top: 40px;
+	padding-bottom: 40px;
+	background-color: #f5f5f5;
+}
+</style>

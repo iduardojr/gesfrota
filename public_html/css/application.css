@@ -1,0 +1,619 @@
+html, body {
+	margin: 0;
+	height: 100%;
+	position: relative;
+	font-size: 13px;
+}
+html > body {
+	height: auto;
+	min-height: 100%;
+}
+footer {
+	position:absolute;
+	left: 0;
+	bottom: 0;
+	padding: 0 !important;
+	margin: 0;
+	width: 100%;
+	text-align: right;
+}
+footer hr {
+	margin-top: 0;
+	margin-bottom: 10px;
+}
+#main {
+	position: relative;
+    padding: 60px 0 90px 0;
+}
+#navbar .brand {
+	margin-right: 10px;
+  	padding-right: 0;
+  	padding-left: 0;
+  	font-weight: bold;
+  	color: #62B400;
+  	text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
+  	-webkit-transition: all .2s linear;
+       -moz-transition: all .2s linear;
+          	transition: all .2s linear;
+}
+#navbar .brand:hover {
+  	text-decoration: none;
+  	text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.4);
+ 	color: #fff;
+}
+#navbar .brand sup {
+	font-size: 10px;
+}
+#navbar .icon-user {
+	margin-right: 7px;
+}
+#toolbar .btn-group {
+	
+}
+.label-required:after,
+.tab-error:after {
+    color: #E5476F;
+    content: " *";
+    font-weight: bold;
+}
+#notice-filter {
+	margin-top: 100px;
+	clear: both;
+}
+.control-group .controls .output {
+	padding: 5px 7px;
+	line-height: 20px;
+	vertical-align: middle;
+	font-size: 14px;
+}
+h1 > small, 
+h2 > small,
+h3 > small,
+h4 > small,
+h5 > small,
+h6 > small {
+	margin: 0 10px;
+}
+.alert em {
+	border-bottom: 1px dotted #999999;
+}
+form,
+.table {
+	margin: 0;
+}
+.pagination {
+	margin: 20px 0 10px 0;
+}
+.text-left {
+	text-align: left !important;
+}
+.text-center {
+	text-align: center !important;
+}
+.text-right {
+	text-align: right !important;
+}
+.btn [class^="ui-icon-"],
+.btn [class*=" ui-icon-"],
+.btn [class^="icon-"],
+.btn [class*=" icon-"] {
+	margin-right: 5px;
+}
+.btn-icon-only [class^="ui-icon-"],
+.btn-icon-only [class*=" ui-icon-"],
+.btn-icon-only [class^="icon-"],
+.btn-icon-only [class*=" icon-"] {
+	margin-right: 0;
+}
+.tree-label {
+	padding: 2px 4px;
+}
+.tree li .hitarea {
+	top: 4px;
+}
+.tree-label.loading {
+	padding-right: 30px;
+}
+.tree-label.loading:hover .btn {
+	display: none !important;
+}
+.tree-hover.expandable > .tree-label {
+	background: #f2f2f2;
+}
+.tree-selected {
+	display: none;
+}
+.tree-selected * {
+	visibility: hidden;
+}
+.tree-helper {
+	background: #fff !important;
+	border: 1px solid #ccc;
+	padding: 7px 7px 7px 35px;
+}
+.tree-hover > ul > .tree-selected,
+.tree-placeholder {
+	display: block !important;
+	background: url("/images/tree-placeholder.png") 5px 0 no-repeat !important;
+	margin: 3px 0 !important;
+	height: 8px;
+}
+.dropdown-menu {
+	padding: 3px 0;
+}
+.dropdown-menu .nav-header {
+	padding: 2px 15px;
+}
+.dropdown-menu > li > a {
+	padding: 2px 20px;
+}
+.dropdown-menu .divider {
+	margin: 2px 1px;
+}
+.dropdown-menu li + .nav-header {
+	margin-top: 2px;
+}
+.controls-row > * {
+	margin-left: 30px !important; 
+}
+.controls-row > .dropdown-menu {
+	margin-left: 0 !important; 
+}
+.controls-row > label {
+	padding-top: 5px;
+}
+.controls-row > *:first-child {
+	margin-left: 0 !important;
+}
+.controls-row > [class*="span"] {
+    margin-left: 30px;
+}
+.well {
+	background: #fff;
+	overflow: hidden;
+}
+fieldset > legend {
+	margin-bottom: 10px;
+	font-size: 17px;
+	line-height: 38px;
+}
+.icon-loading {
+	background: url('../images/loading.gif') no-repeat;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	margin-left: 5px;
+}
+.form-horizontal .control-group .control-group {
+	margin-left: -180px;
+}
+.form-horizontal .control-group .dyn-input > .control-group:last-child {
+	margin-bottom: 0;
+}
+.icon-waypoint {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png);
+	background-size: 24px 24px;
+	background-repeat: repeat-y;
+	background-position: right top;
+	height: 25px;
+	width: 24px;
+}
+.icon-place-from {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/start_location_grey800_18dp.png);
+	background-size: 18px 18px;
+    background-position: center 7px;
+    background-repeat: no-repeat;
+    background-color: #fff;
+  	width: 24px;
+    height: 25px;
+}
+.icon-place-to {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/place_outline_red600_18dp.png);
+	background-size: 18px 18px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #fff;
+    width: 24px;
+    height: 25px;
+}
+.place-from, 
+.place-to {
+	position: relative;
+	padding-left: 15px;
+}
+
+.place-from:after {
+    background-color: #F6F6F6;
+    border: 1px solid #000000;
+    border-radius: 50%;
+    top: 50%;
+    margin-top: -5px;
+    height: 6px;
+    width: 6px;
+    left: 0;
+    position: absolute;
+    content: "";
+}
+.place-to:after {
+    background-color: #F6F6F6;
+    border: 1px solid #000000;
+    top: 50%;
+    margin-top: -5px;
+    height: 5px;
+    width: 5px;
+    left: 0;
+    position: absolute;
+    content: "";
+}
+.place-from:before, 
+.place-to:before {
+	left: 3px;
+    top: 50%;
+    background-color: #000000;
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    content: "";
+}
+.place-to:before {
+	top: -50%;
+}
+.dyn-input .control-label {
+	position:relative;
+}
+.dyn-input .control-label .icon-waypoint {
+	position: absolute;
+	top: 2px;
+	right: 0px;
+	width: 100%;
+}
+.map {
+	min-height: 350px;
+}
+#request-list tr td + td .cell {
+	height: 40px;
+}
+#request-list tr td + td + td .cell {
+	height: auto;
+}
+#request-form #itinerary #no-margin,
+#request-form #itinerary #no-margin-last {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png);
+	background-size: 24px 24px;
+	background-repeat: repeat-y;
+	background-position: 136px top;
+}
+#request-form #itinerary #no-margin-last {
+	background-repeat: no-repeat !important;
+}
+#request-form #itinerary #no-margin .control-label,
+#request-form #itinerary #no-margin-last .control-label {
+	padding-top: 0;
+	margin: 0;
+	position:relative;
+	height: 24px;
+}
+#request-form #itinerary .icon-place-from,
+#request-form #itinerary .icon-place-to {
+	position: absolute;
+	right: 0;
+}
+#request-form #itinerary .icon-place-from {
+	top: -2px;
+}
+#request-form #itinerary .icon-place-to {
+	top: 1px;
+}
+#request-form #no-margin,
+#request-form #no-margin-last {
+	margin-bottom: 0 !important;
+}
+#request-form #schedule span,
+#request-form #vehicle span,
+#request-form #driver span,
+#request-form #initial span,
+#request-form #final span  {
+	margin-right: 30px;
+	display: inline-block;
+	float: left;
+}
+#request-form #schedule label {
+	width: 160px;
+	float: left;
+	margin-right: 20px;
+	text-align: right;
+}
+#request-form #driver span:first-child,
+#request-form #initial span:first-child,
+#request-form #final span:first-child {
+	width: 250px;
+	overflow: hidden;
+}
+#request-step #alert-message {
+	margin-top: 20px;
+}
+#request-form #directions {
+	margin: 30px 0;
+}
+#audit-log-compare .well .row {
+	margin-bottom: 7px;
+}
+#audit-log-compare .well .row:last-child {
+	margin-bottom: 0;
+}
+#audit-log-compare .well .row div:first-child {
+	margin-left: 30px;
+	width: 110px;
+	float: left;
+	text-align: right;
+}
+#audit-log-compare .well .row div + div {
+	margin-left: 160px;
+}
+#owner-new .modal-body {
+	padding-bottom: 0;
+}
+#owner-new .form-actions {
+	margin-bottom: 0;
+	margin-left: -15px;
+	margin-right: -15px;
+}
+.text-inline {
+	overflow: hidden;
+	height: 20px;
+	white-space: nowrap;
+	max-width: 650px;
+	text-overflow: ellipsis;
+}
+#dashboard hr {
+	margin: 40px 0;
+}
+.card {
+	padding: 1.5rem;
+	border: 0;
+    box-shadow: 0 0 20px 0 rgb(76 87 125 / 2%);
+    background-color: #F5F8FA;
+    border-radius: 0.475rem;
+    color: #009ef7;
+    font-size: 32px;
+}
+.card-success {
+	background-color: #468847;
+}
+.card-warning {
+	background-color: #c09853;
+}
+.card-important {
+	background-color: #b94a48;
+}
+.card-info {
+	background-color: #3a87ad;
+}
+.card-inverse {
+	background-color: #333333
+}
+.card-success *,
+.card-warning *,
+.card-important *,
+.card-info *,
+.card-inverse * {
+	color: #fff !important;
+	text-shadow: 2px 2px 2px rgba(50, 50, 50, 0.5);
+} 
+.card p {
+	font-size: 0.6em;
+	color: #333;
+}
+.card .header small {
+	font-weight: bold;
+}
+.card .chart {
+	margin: -1.5rem;
+}
+
+.header {
+	font-size: 1em;
+	line-height: 1.25em;
+    margin: 10px 0;
+    font-weight: bold;
+    letter-spacing: -0.03em;
+}
+.header small {
+	display: block;
+	margin: 0;
+	font-weight: normal;
+	font-size: 0.55em;
+	text-shadow: none;
+	white-space: nowrap;
+	line-height: 1;
+	color: #999;
+}
+
+.timeline {
+	position: relative;
+	list-style: none;
+	margin: 25px 0 0 0;
+}
+
+.timeline:before {
+	content: "";
+    position: absolute;
+    left: 57px;
+    width: 3px;
+    top: -10px;
+    bottom: -10px;
+    background-color: #eff2f5;
+}
+
+.timeline li {
+	margin: 10px 0;
+	position: relative;
+	color: #3f4254;
+}
+.timeline li .time {
+	width: 50px;
+	font-size: 14px;
+	display: inline-block;
+	text-align: center;
+	float: left;
+	font-weight: bold;
+}
+.timeline li .badge {
+    background: #fff;
+    width: 3px;
+    height: 3px;
+    border-radius: 100%;
+    padding: 3px;
+    margin-top: 1px;
+    border: 4px solid #999;
+    display: inline-block;
+    float: left;
+}
+.timeline li .badge-success {
+	border-color: #468847;
+}
+.timeline li .badge-warning {
+	border-color: #f89406;
+}
+.timeline li .badge-important {
+	border-color: #b94a48;
+}
+.timeline li .badge-info {
+	border-color: #3a87ad;
+}
+.timeline li .badge-inverse {
+	border-color: #333333;
+}
+.timeline li .text {
+ 	display: block;
+    margin-left: 80px;
+}
+.form-signin {
+	max-width: 300px;
+	margin: 0 auto 20px;
+	padding: 20px 30px 35px 30px;
+	background: url("/images/background.png") center bottom no-repeat;
+	background-color: #fff;
+	border: 1px solid #e5e5e5;
+	text-align: right;
+	overflow: hidden;
+	-webkit-border-radius: 5px;
+	   -moz-border-radius: 5px;
+			border-radius: 5px;
+		-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+		   -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+				box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+
+.form-signin .form-signin-heading {
+	margin: 10px 0 20px 0;
+	text-align: right;
+	font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -.2px;
+    color: #62B400;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 10%), 
+    			 0 0 30px rgb(255 255 255 / 13%);
+    
+}
+.form-signin .form-signin-heading .brand {
+	display: inline-block;
+	text-align: left;
+	width: 195px;
+}
+.form-signin .checkbox {
+	text-align: left;
+	margin-bottom: 15px;
+	display: none;
+}
+.form-signin input[type="text"],
+.form-signin input[type="password"] {
+	font-size: 16px;
+	height: auto;
+	margin-bottom: 25px;
+	padding: 7px 9px;
+}
+#about img {
+	float: right;
+}
+#about address {
+	letter-spacing: -0.02em;
+}
+#page-header {
+	margin: 30px 0;
+}
+#page-header h1 {
+	font-size: 16px;
+	line-height: 20px;
+	margin: 20px 0;
+}
+#signature {
+	margin: 80px auto !important;
+	width: 60%;	
+	border-top: 1px solid #333;
+	padding-top: 10px;
+	margin: 10px;
+	text-align: center;
+}
+
+@media print {
+	@page {
+		margin: 1.5cm;
+		size: A4;
+		orphans:3; 
+		widows:3;
+	}
+	*{
+		-webkit-print-color-adjust: exact !important;
+   		color-adjust: exact !important; 
+   		font-size: 17px !important;
+   	}
+   	#page-header {
+   		margin-top: 0;
+   	}
+   	h2 {
+		font-size: 31.5px !important;
+	}
+	.no-print {
+		display: none;
+	}
+	.form-horizontal .control-group {
+    	margin-bottom: 10px !important;
+	}
+	.form-horizontal .control-label {
+		width: 200px;
+	}
+	.form-horizontal .controls {
+		margin-left: 220px;
+	}
+	fieldset {
+		margin-bottom: 30px;
+	}
+	fieldset legend {
+		font-size: 22px !important;
+	}
+	#request-form #itinerary #no-margin,
+	#request-form #itinerary #no-margin-last {
+		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png) !important;
+		background-size: 24px 24px !important;
+		background-repeat: repeat-y !important;
+		background-position: 176px top !important;
+	}
+	#request-form #itinerary #no-margin-last {
+		background-repeat: no-repeat !important;
+	}
+	.icon-place-from {
+		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/start_location_grey800_18dp.png) !important;
+		background-size: 18px 18px !important;
+	    background-position: center 7px !important;
+	    background-repeat: no-repeat !important;
+	    background-color: #fff !important;
+	}
+	.icon-place-to {
+		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/place_outline_red600_18dp.png) !important;
+		background-size: 18px 18px !important;
+	    background-position: center center !important;
+	    background-repeat: no-repeat !important;
+	    background-color: #fff !important;
+	}
+}
