@@ -358,6 +358,9 @@ fieldset > legend {
 	margin-left: -15px;
 	margin-right: -15px;
 }
+#group-asset-status {
+	display: none;
+}
 .text-inline {
 	overflow: hidden;
 	height: 20px;

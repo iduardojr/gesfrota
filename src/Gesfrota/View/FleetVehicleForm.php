@@ -32,6 +32,9 @@ use PHPBootstrap\Widget\Modal\TgModalLoad;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Domain\Asset;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
+use PHPBootstrap\Widget\Form\Controls\Decorator\AddOn;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -60,6 +63,12 @@ class FleetVehicleForm extends AbstractForm {
 		$input->addFilter('strtoupper');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Placa', $input, null, $general);
+		
+		$input = new TextBox('asset-code');
+		$input->setSpan(2);
+		$input->addFilter('strtoupper');
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$form->buildField('Cód. Patrimonial', $input, null, $general);
 		
 		$modal = new Modal('vehicle-model-search', new Title('Modelo', 3));
 		$modal->setWidth(900);
@@ -113,12 +122,6 @@ class FleetVehicleForm extends AbstractForm {
 		
 		$form->buildField('Ano Fab/Mod', $input, null, $general);
 		
-		$input = new TextBox('asset-code');
-		$input->setSpan(2);
-		$input->addFilter('strtoupper');
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Cód. Patrimonial', $input, null, $general);
-		
 		$input = new TextBox('vin');
 		$input->setSpan(2);
 	    $input->setMask('***************');
@@ -149,6 +152,16 @@ class FleetVehicleForm extends AbstractForm {
 		$input->setOptions(Vehicle::getFleetAllowed());
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Tipo da Frota', $input, null, $general);
+		
+		$input = new ComboBox('asset-status');
+		$input->setSpan(2);
+		$input->setOptions(Asset::getStatusAllowed());
+		$form->buildField('Classificação do Bem', $input, null, $general)->setName('group-asset-status');
+		
+		$input = new NumberBox('asset-value', new Number(new NumberFormat(2, ',', '.'), 'Por favor, informe um número válido'));
+		$input->setSpan(2);
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$form->buildField('Valor do Bem (R$)', $input, null, $general);
 		
 		$input = new CheckBox('active', 'Ativo');
 		$input->setValue(true);
@@ -244,7 +257,9 @@ class FleetVehicleForm extends AbstractForm {
 	    }
 	    $data['year-manufacture'] = $object->getYearManufacture();
 	    $data['year-model'] = $object->getYearModel();
-	    $data['asset-code'] = $object->getAssetCode();
+	    $data['asset-code'] = $object->getAsset()->getCode();
+	    $data['asset-value'] = $object->getAsset()->getValue();
+	    $data['asset-status'] = $object->getAsset()->getStatus();
 	    $data['cards'] = $object->getAllCards();
 		$data['vin'] = $object->getVin();
 		$data['renavam'] = $object->getRenavam();
@@ -292,7 +307,7 @@ class FleetVehicleForm extends AbstractForm {
 			$em->remove($card);
 		}
 		$object->setYear((int) $data['year-manufacture'], (int) $data['year-model']);
-		$object->setAssetCode($data['asset-code']);
+		$object->setAsset(new Asset($data['asset-code'], $data['asset-value'], $data['asset-status']));
 		$object->setVin($data['vin']);
 		$object->setRenavam((int) $data['renavam']);
 		$object->setOdometer((int) $data['odometer']);

@@ -13,7 +13,7 @@ return [
 		'proxies' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'proxies' . DIRECTORY_SEPARATOR 
 	],
 	'google' => [
-		'key' => 'AIzaSyCPrFRmYsGKVGNPqvIUyMIc3KKH1K1g_Hc',
+		'key' => 'AIzaSyD0tfmaW0XRkILSbv6WaFCSeHQNN3BZjxc', //'AIzaSyCPrFRmYsGKVGNPqvIUyMIc3KKH1K1g_Hc',
 		'place' =>  [
 			'location' => '-16.6808356,-49.2585076',
 			'radius' => 50000,

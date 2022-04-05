@@ -34,7 +34,7 @@ class Equipment extends FleetItem {
 	 * @see Entity::getCode()
 	 */
 	public function getCode() {
-		return $this->getAssetCode();
+		return $this->getAsset()->getCode();
 	}
 
 	/**

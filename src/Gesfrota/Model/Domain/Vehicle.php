@@ -12,7 +12,7 @@ class Vehicle extends FleetItem {
 	 * @var string
 	 */
 	const FLEET_TYPE = 'Veículo';
-    
+	
     /**
      * @Column(type="string")
      * @var string
@@ -63,7 +63,7 @@ class Vehicle extends FleetItem {
      */
     protected $odometer;
     
-    
+
     /**
      * @param Agency $unit
      */
