@@ -29,6 +29,8 @@ use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Model\Domain\DisposalItem;
+use Gesfrota\Model\Domain\Disposal;
 
 class FleetController extends AbstractController {
 	
@@ -39,6 +41,15 @@ class FleetController extends AbstractController {
 		$query->join('u.responsibleUnit', 'r');
 		$query->andWhere('r.id = :unit');
 		$query->setParameter('unit', $this->getAgencyActive()->getId());
+		
+		$q1 = $this->getEntityManager()
+		->getRepository(DisposalItem::getClass())
+		->createQueryBuilder('v');
+		$q1->select('IDENTITY(v.asset)');
+		$q1->join('v.disposal', 'd');
+		$q1->where('d.status NOT IN (:disposal)');
+		$query->andWhere('u.id NOT IN (' . $q1->getDQL() . ')');
+		$query->setParameter('disposal', [Disposal::DRAFTED, Disposal::DECLINED]);
 		
 	    $list = new FleetList(new Action($this), new Action($this, 'newVehicle'), new Action($this, 'newEquipment'), new Action($this, 'edit'), new Action($this, 'active'), new Action($this, 'searchVehiclePlate'), new Action($this, 'transferVehicle'));
 		try {

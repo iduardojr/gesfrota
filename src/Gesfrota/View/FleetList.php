@@ -38,7 +38,7 @@ class FleetList extends AbstractList {
 	 * @param Action $active
 	 */
 	public function __construct( Action $filter, Action $newVehicle, $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer  ) {
-		$this->buildPanel('Minha Frota', 'Gerenciar Veículos');
+		$this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);

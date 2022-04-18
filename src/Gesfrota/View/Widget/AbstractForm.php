@@ -2,9 +2,8 @@
 namespace Gesfrota\View\Widget;
 
 use Doctrine\ORM\EntityManager;
-use PHPBootstrap\Widget\Form\Form;
-use PHPBootstrap\Widget\Form\Inputable;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Form\Inputable;
 
 abstract class AbstractForm extends Component {
 	
@@ -14,7 +13,7 @@ abstract class AbstractForm extends Component {
 	protected $attached;
 	
 	/**
-	 * @var Form
+	 * @var BuilderForm
 	 */
 	protected $component;
 	

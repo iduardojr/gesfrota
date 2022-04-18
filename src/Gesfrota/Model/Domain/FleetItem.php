@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @DiscriminatorMap({"V" = "Vehicle", "E" = "Equipment"})
  */
 abstract class FleetItem extends AbstractActivable {
-	
+    
     /**
      * @Column(type="integer")
      * @var integer
@@ -22,10 +22,10 @@ abstract class FleetItem extends AbstractActivable {
     protected $engine;
     
     /**
-     * @Embedded(class="Asset")
-     * @var Asset
+     * @Column(name="asset_code", type="string")
+     * @var string
      */
-    protected $asset;
+    protected $assetCode;
     
     /**
      * @Column(type="integer")
@@ -63,7 +63,6 @@ abstract class FleetItem extends AbstractActivable {
      */
     public function __construct(Agency $unit) {
         $this->setResponsibleUnit($unit);
-        $this->asset = new Asset();
         $this->cards = new ArrayCollection();
         $this->createdAt = $this->updatedAt = new \DateTime();
         parent::__construct();
@@ -112,17 +111,17 @@ abstract class FleetItem extends AbstractActivable {
     }
     
     /**
-     * @return Asset
+     * @return string
      */
-    public function getAsset() {
-    	return $this->asset;
+    public function getAssetCode() {
+    	return $this->assetCode;
     }
     
     /**
-     * @param Asset $asset
+     * @param string $assetCode
      */
-    public function setAsset(Asset $asset) {
-    	$this->asset = $asset;
+    public function setAssetCode($assetCode) {
+    	$this->assetCode = $assetCode;
     }
 
     /**
@@ -149,7 +148,7 @@ abstract class FleetItem extends AbstractActivable {
         }
         $this->fleet = $fleet;
     }
-    
+
     /**
      * Atribui $engine
      * 

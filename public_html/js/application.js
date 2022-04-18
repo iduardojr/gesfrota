@@ -58,8 +58,7 @@ $(function() {
 		$('form[name="fleet-owner-form"]').form({ajax: true, format: 'json'});
 	})
 	$('body').trigger('ajaxComplete');
-	
-	
+		
 	// SUBFORM FLEET OWNER
 	$('body').on('sentform', 'form[name="fleet-owner-form"]', function( e, form ) {
 		$('#owner-new .modal-header h3 .icon-loading').remove();
@@ -541,20 +540,19 @@ $(function() {
 			$('#request_types #type_all').trigger('click');
 	}
 	
-	$('body').on('change', '#fleet-equipment-form #fleet, #fleet-vehicle-form #fleet', function(e) {
-		if ($(this).field('value') == 1) {
-			$('#group-asset-status').show();
-		} else {
-			$('#group-asset-status').hide();
-			$('#asset-status').field('value', 1);
-		}
-	});
-	$('#fleet-equipment-form #fleet, #fleet-vehicle-form #fleet').trigger('change');
-	
 	$('body').on('click', '#user-form #agency-table [data-storage]', function(e) {
 		$('#user-form #agency-id').seek('lookup');
 	});
 	
+	var width = $('.container').width()+50;
+	var height = $(window).width()/1.77-400;
+	$('#disposal-survey-view').css({
+		'width': width,
+		'margin-left': -width/2
+	});
+	$('#disposal-survey-view .modal-body').css({
+		'height': height,
+		'max-height': 'none'
+	});
+	
 });
-  
-

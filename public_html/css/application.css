@@ -358,9 +358,6 @@ fieldset > legend {
 	margin-left: -15px;
 	margin-right: -15px;
 }
-#group-asset-status {
-	display: none;
-}
 .text-inline {
 	overflow: hidden;
 	height: 20px;
@@ -368,8 +365,14 @@ fieldset > legend {
 	max-width: 650px;
 	text-overflow: ellipsis;
 }
+#disposal-survey-form .form-actions { 
+	margin: 0 -15px -15px -15px;
+}
 #dashboard hr {
 	margin: 40px 0;
+}
+#disposal-items-table {
+	margin: 20px 0;
 }
 .card {
 	padding: 1.5rem;
@@ -558,6 +561,19 @@ fieldset > legend {
 	margin: 10px;
 	text-align: center;
 }
+#disposal-item-form .uneditable-input.span1 {
+   	width: 70px !important;
+   	text-align: center;
+}
+#disposal-item-form .output.span1 {
+	width: 70px !important;
+}
+#disposal-item-form .control-group {
+   	margin-bottom: 7px;
+}
+#disposal-item-form #asset-owner-nif {
+	white-space: nowrap;
+}
 
 @media print {
 	@page {
@@ -618,5 +634,14 @@ fieldset > legend {
 	    background-position: center center !important;
 	    background-repeat: no-repeat !important;
 	    background-color: #fff !important;
+	}
+	#disposal-item-page {
+		page-break-after: always;
+	}
+	.icon-map-marker {
+	    background-image: url(/vendor/bootstrap/img/glyphicons-halflings.png) !important;
+	    background-position: 14px 14px !important;
+	    background-repeat: no-repeat !important;
+	    background-position: -24px -72px !important;
 	}
 }

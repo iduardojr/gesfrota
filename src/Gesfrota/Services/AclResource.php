@@ -21,6 +21,7 @@ class AclResource implements Plugin {
 	const Dashboard = 'IndexController';
 	
 	const Fleet = 'FleetController';
+	const Disposal = 'DisposalController';
 	const Driver = 'DriverController';
 	const Requester = 'RequesterController';
 	const Request = 'RequestController';
@@ -59,6 +60,7 @@ class AclResource implements Plugin {
 		$resource = [
 			self::Dashboard,
 			self::Fleet, 
+			self::Disposal, 
 			self::Request, 
 			self::Driver, 
 			self::Requester, 
@@ -66,6 +68,7 @@ class AclResource implements Plugin {
 			self::AdministrativeUnit
 		];
 		$this->acl->allow(FleetManager::getClass(), $resource);
+		$this->acl->deny(FleetManager::getClass(), self::Disposal, ['confirm', 'devolve']);
 		
 		$resource = [
 			self::Request,

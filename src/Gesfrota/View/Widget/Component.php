@@ -36,10 +36,18 @@ class Component implements Renderable {
 	}
 	
 	/**
+	 * @return Box
+	 */
+	public function getPanel() {
+		return $this->panel;
+	}
+	
+	/**
 	 * Constroi o panel
 	 * 
 	 * @param string $title
 	 * @param string $subtext
+	 * @return Box
 	 */
 	protected function buildPanel( $title = null, $subtext = null ) {
 		if ( ! isset($this->panel) ) {

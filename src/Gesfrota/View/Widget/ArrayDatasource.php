@@ -145,5 +145,12 @@ class ArrayDatasource implements DataSource {
 		}
 		return null;
 	}
+	
+	/**
+	 * @return array
+	 */
+	public function getData() {
+		return $this->data;
+	}
 }
 ?>

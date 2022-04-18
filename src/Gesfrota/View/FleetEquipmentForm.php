@@ -17,13 +17,6 @@ use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use PHPBootstrap\Widget\Form\Controls\NumberBox;
-use PHPBootstrap\Validate\Pattern\Number;
-use PHPBootstrap\Format\NumberFormat;
-use PHPBootstrap\Widget\Form\Controls\Decorator\AddOn;
-use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
-use Gesfrota\Model\Domain\Asset;
-use Gesfrota\Model\Domain\Fleet;
 
 class FleetEquipmentForm extends AbstractForm {
     
@@ -55,7 +48,6 @@ class FleetEquipmentForm extends AbstractForm {
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Descrição', $input, null, $general);
 		
-		
 		$input = new ComboBox('engine');
 		$input->setSpan(2);
 		$input->setOptions(Vehicle::getEnginesAllowed());
@@ -67,16 +59,6 @@ class FleetEquipmentForm extends AbstractForm {
 		$input->setOptions(Vehicle::getFleetAllowed());
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Tipo da Frota', $input, null, $general);
-		
-		$input = new ComboBox('asset-status');
-		$input->setSpan(2);
-		$input->setOptions(Asset::getStatusAllowed());
-		$form->buildField('Classificação do Bem', $input, null, $general)->setName('group-asset-status');
-		
-		$input = new NumberBox('asset-value', new Number(new NumberFormat(2, ',', '.'), 'Por favor, informe um número válido'));
-		$input->setSpan(2);
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Valor do Bem (R$)', $input, null, $general);
 		
 		$input = new CheckBox('active', 'Ativo');
 		$input->setValue(true);
@@ -107,9 +89,7 @@ class FleetEquipmentForm extends AbstractForm {
 	 * @see AbstractForm::extract()
 	 */
 	public function extract( Equipment $object ) {
-	    $data['asset-code'] = $object->getAsset()->getCode();
-	    $data['asset-value'] = $object->getAsset()->getValue();
-	    $data['asset-status'] = $object->getAsset()->getStatus();
+	    $data['asset-code'] = $object->getAssetCode();
 	    $data['description'] = $object->getDescription();
 		$data['engine'] = $object->getEngine();
 		$data['fleet'] = $object->getFleet();
@@ -127,7 +107,7 @@ class FleetEquipmentForm extends AbstractForm {
 	 */
 	public function hydrate( Equipment $object, EntityManager $em ) {
 		$data = $this->component->getData();
-		$object->setAsset(new Asset($data['asset-code'], $data['asset-value'], $data['asset-status']));
+		$object->setAssetCode($data['asset-code']);
 		$object->setDescription($data['description']);
 		$object->setEngine((int) $data['engine']);
 		$object->setFleet((int) $data['fleet']);

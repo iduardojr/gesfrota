@@ -1,23 +1,24 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Manager;
+use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\Requester;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\Services\AclResource;
 use PHPBootstrap\Mvc\View\View;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
-use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownDivider;
 use PHPBootstrap\Widget\Dropdown\DropdownHeader;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
+use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Misc\Image;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Nav\Nav;
 use PHPBootstrap\Widget\Nav\NavBrand;
@@ -26,10 +27,6 @@ use PHPBootstrap\Widget\Nav\NavHeader;
 use PHPBootstrap\Widget\Nav\NavItem;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\Navbar;
-use Gesfrota\Model\Domain\Requester;
-use Gesfrota\Model\Domain\Driver;
-use PHPBootstrap\Widget\Layout\Box;
-use PHPBootstrap\Widget\Misc\Image;
 
 
 /**
@@ -105,8 +102,18 @@ class Layout extends View {
 		}
 		
 		$resource1 = 'Gesfrota\\Controller\\FleetController';
-		if ($acl->isAllowed($role, $resource1)) {
-			$nav->addItem(new NavLink('Frota', new TgLink(new Action($resource1))));
+		$resource2 = 'Gesfrota\\Controller\\DisposalController';
+		if ($acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2)) {
+			$drop = new Dropdown();
+			$nav->addItem(new NavLink('Frota', new TgDropdown($drop, false, false)));
+			
+			$drop->addItem(new DropdownHeader('Minha Frota'));
+			if ($acl->isAllowed($role, $resource1)) {
+				$drop->addItem(new DropdownLink('Gerenciar Frota', new TgLink(new Action($resource1))));
+			}
+			if ($acl->isAllowed($role, $resource2)) {
+				$drop->addItem(new DropdownLink('Gerenciar Alienações', new TgLink(new Action($resource2))));
+			}
 		}
 		
 		$resource1 = 'Gesfrota\\Controller\\DriverController';
@@ -127,6 +134,7 @@ class Layout extends View {
 				$nav->addItem(new NavLink('Viagens', new TgLink(new Action($resource1))));
 			}
 		}
+		
 		/*
 		if ($acl->isAllowed($role, AclResource::Reports)) {
 			$nav->addItem(new NavLink('Relatórios'));
@@ -139,7 +147,7 @@ class Layout extends View {
 		
 		$resource1 = 'Gesfrota\\Controller\\AgencyController';
 		$resource2 = 'Gesfrota\\Controller\\AdministrativeUnitController';
-		if ($acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) ) {
+		if ( $acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) ) {
 			$drop->addItem(new DropdownHeader('Estrutura Organizacional'));
 			if ($acl->isAllowed($role, $resource1)) {
 				$drop->addItem(new DropdownLink('Gerenciar Órgãos', new TgLink(new Action($resource1))));
