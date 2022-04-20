@@ -19,7 +19,9 @@ class AgencyController extends AbstractController {
 		$list = new AgencyList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$query->andWhere('u.id > 0');
+			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
 					$query->andWhere('u.name LIKE :name or u.acronym LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');

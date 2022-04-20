@@ -84,10 +84,10 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
+            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'government', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
+        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'government', 'active', 'id'];
     }
 
     /**
@@ -346,6 +346,17 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setActive', [$active]);
 
         return parent::setActive($active);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isGovernment()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'isGovernment', []);
+
+        return parent::isGovernment();
     }
 
     /**

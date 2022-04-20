@@ -334,6 +334,7 @@ class UserController extends AbstractController {
 	public function searchAgencyAction() {
 		try {
 			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$query->andWhere('u.id > 0');
 			$params = $this->request->getQuery();
 			if ( $params['query'] ) {
 				$query->andWhere('u.name LIKE :name');

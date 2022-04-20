@@ -63,19 +63,20 @@ class AccountController extends AbstractController {
 	
 	
 	public function accessAction() {
-		$query = $this->em->getRepository(Agency::getClass())->createQueryBuilder('u');
-		$table = new AccountAccessTable(new Action($this, 'access'), $this->getAgencyActive());
-		$table->setDatasource(new EntityDatasource($query, ['limit' => 0]));
-		$key = $this->request->getQuery('key');
 		try {
-			if ( $key ) {
-				$agency = $this->getEntityManager()->find(Agency::getClass(), $key);
-				if ( ! $agency) {
+			$key = $this->request->getQuery('key');
+			if ($key || $key === '0') {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), (int) $key);
+				if ( ! $agency instanceof Agency ) {
 					throw new \Exception('Órgão não acessível. Órgão <em>#'.$key.'</em> não encontrado.');
 				}
-				Auth::getInstance()->getStorage()->write(['user-id' => $this->getUserActive()->getId(), 'lotation-id' => $key]);
-				$table->setAlert(new Alert('<strong>Ok! </strong>Órgão <em>' . $agency->acronym . ' (#' . $agency->code . ') </em> acessado com sucesso!', Alert::Success));
+				Auth::getInstance()->getStorage()->write(['user-id' => $this->getUserActive()->getId(), 'lotation-id' => (int) $key]);
+				$this->setAlert(new Alert('<strong>Ok! </strong>Órgão <em>' . $agency->acronym . ' (#' . $agency->code . ') </em> acessado com sucesso!', Alert::Success));
 			}
+			$query = $this->em->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$table = new AccountAccessTable(new Action($this, 'access'), $this->getAgencyActive());
+			$table->setDatasource(new EntityDatasource($query, ['limit' => 0]));
+			$table->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
 			$table->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}

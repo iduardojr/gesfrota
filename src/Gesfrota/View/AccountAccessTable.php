@@ -16,7 +16,7 @@ class AccountAccessTable extends AbstractList {
 	 * Construtor
 	 */
 	public function __construct( Action $access, Agency $active ) {
-		$this->buildPanel('Minha Conta', 'Alterar órgão de acesso');
+		$this->buildPanel('Minha Conta', 'Alterar Órgão de Acesso');
 		
 		$table = $this->buildTable('account-access-table');
 		

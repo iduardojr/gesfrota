@@ -61,6 +61,17 @@ class Agency extends AbstractActivable {
 	}
 	
 	/**
+	 * {@inheritDoc}
+	 * @see \Gesfrota\Model\Entity::getCode()
+	 */
+	public function getCode() {
+		if ($this->isGovernment()) {
+			return $this->getAcronym();
+		}
+		return parent::getCode();
+	}
+	
+	/**
 	 * Obtem $name
 	 *
 	 * @return string
@@ -180,6 +191,13 @@ class Agency extends AbstractActivable {
 	public function setActive($active) {
 		parent::setActive($active);
 		$this->owner->accept($this);
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function isGovernment() {
+		return $this->id === 0;
 	}
 	
 	/**
