@@ -53,15 +53,19 @@ class DisposalController extends AbstractController {
 	public function indexAction() {
 		$this->session->cards = null;
 
-		$query = $this->getEntityManager()
-			->getRepository(Disposal::getClass())
-			->createQueryBuilder('u');
-		$query->join('u.requesterUnit', 'r');
-		$query->andWhere('r.id = :unit');
-		$query->setParameter('unit', $this->getAgencyActive()
-			->getId());
-
-		$isManager = ! $this->getUserActive() instanceof Manager;
+		$isManager = $this->getUserActive() instanceof Manager;
+		
+		$query = $this->getEntityManager()->getRepository(Disposal::getClass())->createQueryBuilder('u');
+		
+		if ( ! $isManager ) {
+			$query->join('u.requesterUnit', 'r');
+			$query->andWhere('r.id = :unit');
+			$query->setParameter('unit', $this->getAgencyActive()->getId());
+		} else {
+			$query->andWhere('u.status != :drafted');
+			$query->setParameter('drafted', Disposal::DRAFTED);
+		}
+		
 		$filter = new Action($this);
 		$new = new Action($this, 'new');
 		$remove = new Action($this, 'delete');
@@ -100,33 +104,21 @@ class DisposalController extends AbstractController {
 				'limit' => 12,
 				'processQuery' => function (QueryBuilder $query, array $data) {
 					if (! empty($data['description'])) {
-						$q1 = $this->getEntityManager()
-							->getRepository(Vehicle::getClass())
-							->createQueryBuilder('v');
-						$q1->select('v.id');
-						$q1->join('v.model', 'm1');
-						$q1->join('m1.maker', 'm2');
-						$q1->where('m1.name LIKE :query');
-						$q1->orWhere('m2.name LIKE :query');
-						$q1->orWhere("CONCAT(m2.name, ' ', m1.name) LIKE :query");
-
-						$q2 = $this->getEntityManager()
-							->getRepository(Equipment::getClass())
-							->createQueryBuilder('e');
-						$q2->select('e.id');
-						$q2->andWhere('e.description LIKE :query');
-
-						$query->andWhere('u.id IN (' . $q1->getDQL() . ') OR u.id IN (' . $q2->getDQL() . ')');
+						$query->andWhere('u.description LIKE :query');
 						$query->setParameter('query', '%' . $data['description'] . '%');
 					}
 
-					if (! empty($data['engine'])) {
-						$query->andWhere('u.engine IN (:engine)');
-						$query->setParameter('engine', $data['engine']);
+					if ( !empty($data['date-initial']) ) {
+						$query->andWhere('u.requestedAt >= :initial');
+						$query->setParameter('initial', $data['date-initial']);
 					}
-					if (! empty($data['fleet'])) {}
-					if (! empty($data['only-active'])) {
-						$query->andWhere('u.active = true');
+					if ( !empty($data['date-final']) ) {
+						$query->andWhere('u.requestedAt <= :final');
+						$query->setParameter('final', $data['date-final'] . ' 23:59:59');
+					}
+					if ( !empty($data['status']) ) {
+						$query->andWhere('u.status IN (:status)');
+						$query->setParameter('status', $data['status']);
 					}
 				}
 			));

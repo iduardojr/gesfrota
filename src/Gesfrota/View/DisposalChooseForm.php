@@ -32,7 +32,7 @@ class DisposalChooseForm extends AbstractForm {
 		$input->setAutoComplete(true);
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Descrição', $input, null, $general);
+		$form->buildField('Nome da Lista', $input, null, $general);
 		
 		$table = new DisposalAssetsTable('assets');
 		$table->setDataSource(new ArrayDatasource($assets, 'id'));

@@ -23,6 +23,9 @@ use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Anchor;
+use PHPBootstrap\Widget\Form\Controls\DateBox;
+use PHPBootstrap\Validate\Pattern\Date;
+use PHPBootstrap\Format\DateFormat;
 
 class DisposalList extends AbstractList {
 	
@@ -44,29 +47,25 @@ class DisposalList extends AbstractList {
 		$form = new BuilderForm('form-filter');
 		
 		$input = new TextBox('description');
-		$input->setSpan(4);
-		$form->buildField('Descrição', $input);
+		$input->setSpan(5);
+		$form->buildField('Nome da Lista', $input);
 		
-		$input = new CheckBoxList('engine', true);
-		$input->setOptions(Vehicle::getEnginesAllowed());
-		$form->buildField('Motor a', $input);
+		$input = [];
+		$input[1] = new DateBox('date-initial', new Date(new DateFormat('dd/mm/yyyy')));
+		$input[1]->setSpan(2);
 		
-		$input = new CheckBoxList('fleet', true);
-		$input->setOptions(Vehicle::getFleetAllowed());
-		$form->buildField('Tipo da Frota', $input);
+		$input[2] = new DateBox('date-final', new Date(new DateFormat('dd/mm/yyyy')));
+		$input[2]->setSpan(2);
+		$form->buildField('Período', $input);
 		
-		$input = new CheckBox('only-active', 'Apenas ativos');
-		$form->buildField(null, $input);
+		$input = new CheckBoxList('status', true);
+		$input->setOptions(Disposal::getStatusAllowed());
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
+		$modalFilter->setWidth(750);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
-		
-		$input = new Output('vehicle-description');
-		$form->buildField('Veículo', $input);
-		
-		$input = new Output('responsible-unit-description');
-		$form->buildField('Unidade Responsável', $input);
 		
 		$this->buildToolbar(array(new Button('Novo', new TgLink($new), Button::Primary)),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
@@ -75,7 +74,7 @@ class DisposalList extends AbstractList {
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId(null, clone $filter);
-		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('description', 'Nome da Lista', clone $filter, null, ColumnText::Left);
 		
 		if ($showAgency) {
 			$table->buildColumnText('requesterUnit', 'Órgão', clone $filter, 70);

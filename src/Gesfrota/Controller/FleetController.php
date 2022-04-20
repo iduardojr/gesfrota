@@ -44,9 +44,9 @@ class FleetController extends AbstractController {
 		
 		$q1 = $this->getEntityManager()
 		->getRepository(DisposalItem::getClass())
-		->createQueryBuilder('v');
-		$q1->select('IDENTITY(v.asset)');
-		$q1->join('v.disposal', 'd');
+		->createQueryBuilder('di');
+		$q1->select('IDENTITY(di.asset)');
+		$q1->join('di.disposal', 'd');
 		$q1->where('d.status NOT IN (:disposal)');
 		$query->andWhere('u.id NOT IN (' . $q1->getDQL() . ')');
 		$query->setParameter('disposal', [Disposal::DRAFTED, Disposal::DECLINED]);
@@ -63,10 +63,12 @@ class FleetController extends AbstractController {
 						$q1->where('m1.name LIKE :query');
 						$q1->orWhere('m2.name LIKE :query');
 						$q1->orWhere("CONCAT(m2.name, ' ', m1.name) LIKE :query");
+						$q1->orWhere("v.plate LIKE :query");
 						
 						$q2 = $this->getEntityManager()->getRepository(Equipment::getClass())->createQueryBuilder('e');
 						$q2->select('e.id');
-						$q2->andWhere('e.description LIKE :query');
+						$q2->where('e.description LIKE :query');
+						$q2->orWhere('e.assetCode LIKE :query');
 						
 						$query->andWhere('u.id IN (' . $q1->getDQL() . ') OR u.id IN (' . $q2->getDQL(). ')');
 						$query->setParameter('query', '%' . $data['description'] . '%');
