@@ -92,7 +92,7 @@ class AdministrativeUnit extends Node implements Activable {
 	public function getFullDescription( $separator = ' / ' ) {
 		$nodes = $this->getAncestors();
 		$nodes[] = $this;
-		return implode(' / ', $nodes);
+		return implode($separator, $nodes);
 	}
 	
 	/**
@@ -108,7 +108,7 @@ class AdministrativeUnit extends Node implements Activable {
 			$nodes[] = $ancestor->getAcronym();
 		}
 		$nodes[] = $this->getAcronym() .' - '. $this->getName();
-		return implode(' / ', $nodes);
+		return implode($separator, $nodes);
 	}
 	
 	/**

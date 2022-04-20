@@ -540,8 +540,8 @@ $(function() {
 			$('#request_types #type_all').trigger('click');
 	}
 	
-	$('body').on('click', '#user-form #agency-table [data-storage]', function(e) {
-		$('#user-form #agency-id').seek('lookup');
+	$('body').on('click', '#agency-table [data-storage]', function(e) {
+		$('#agency-id').seek('lookup');
 	});
 	
 	var width = $('.container').width()+50;

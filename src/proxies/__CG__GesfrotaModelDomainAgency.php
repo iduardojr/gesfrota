@@ -84,10 +84,10 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'government', 'active', 'id'];
+            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'government', 'active', 'id'];
+        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
     }
 
     /**
@@ -194,6 +194,17 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
     }
 
     
+    /**
+     * {@inheritDoc}
+     */
+    public function getCode()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getCode', []);
+
+        return parent::getCode();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -390,17 +401,6 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getId', []);
 
         return parent::getId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getCode()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getCode', []);
-
-        return parent::getCode();
     }
 
     /**

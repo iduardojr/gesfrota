@@ -5,22 +5,25 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\User;
+use Gesfrota\View\AdministrativeUnitTable;
 use Gesfrota\View\DriverForm;
 use Gesfrota\View\DriverList;
 use Gesfrota\View\Layout;
+use Gesfrota\View\Widget\EntityDatasource;
+use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Model\Domain\AdministrativeUnit;
-use Gesfrota\View\Widget\EntityDatasource;
-use Gesfrota\View\AdministrativeUnitTable;
-use Gesfrota\View\Widget\PanelQuery;
-use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Misc\Title;
-use Gesfrota\Model\Domain\User;
+use PHPBootstrap\Widget\Modal\Modal;
 
 class DriverController extends AbstractController {
+	
+	use SearchAgency;
 	
 	public function indexAction() {
 		$filter = new Action($this);
@@ -30,18 +33,25 @@ class DriverController extends AbstractController {
 		$search = new Action($this, 'search');
 		$transfer = new Action($this, 'transfer');
 		$reset = new Action($this, 'resetPassword');
+		$showAgencies = $this->getShowAgencies();
 		
-		$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset);
+		$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
 		try {
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
 			$query->from(Driver::getClass(), 'u');
-			$query->join('u.lotation', 'l');
-			$query->where('l.agency = :agency');
-			$query->setParameter('agency', $this->getAgencyActive()->getId());
+			if (! $showAgencies) {
+				$query->join('u.lotation', 'l');
+				$query->where('l.agency = :agency');
+				$query->setParameter('agency', $this->getAgencyActive()->getId());
+			}
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
-				
+				if (!empty($data['agency'])) {
+					$query->join('u.lotation', 'l');
+					$query->where('l.agency = :agency');
+					$query->setParameter('agency', $data['agency']);
+				}
 				if ( !empty($data['name']) ) {
 					$query->andWhere('u.name LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');
@@ -202,53 +212,6 @@ class DriverController extends AbstractController {
 		return new JsonView($data, false);
 	}
 	
-	public function seekUnitAction() {
-		try {
-			$data['administrative-unit-id'] = null;
-			$data['administrative-unit-name'] = null;
-			$data['flash-message'] = null;
-			$id = $this->request->getQuery('query');
-			$entity = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->findOneBy(['id' => $id, 'active' => true, 'agency' => $this->getAgencyActive()->getId()]);
-			if ( (! $entity instanceof AdministrativeUnit)) {
-				throw new NotFoundEntityException('Unidade Administrativa <em>#' . $id . '</em> não encontrada.');
-			}
-			$data['administrative-unit-id'] = $entity->getCode();
-			$data['administrative-unit-name'] = $entity->getName();
-		} catch ( NotFoundEntityException $e ){
-			$data['flash-message'] = new Alert('<strong>Ops! </strong>' . $e->getMessage());
-		} catch ( \Exception $e ) {
-			$data['flash-message'] = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
-		}
-		return new JsonView($data, false);
-	}
-	
-	public function searchUnitAction() {
-		try {
-			$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
-			$query->distinct(true);
-			$query->andWhere('u.agency = :agency');
-			$query->setParameter('agency', $this->getAgencyActive()->getId());
-			$query->orderBy('u.lft');
-			$params = $this->request->getQuery();
-			if ( isset($params['query']) ) {
-				$query->from(AdministrativeUnit::getClass(), 'p0');
-				$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
-				$query->andWhere('p0.name LIKE :name OR p0.acronym LIKE :name');
-				$query->setParameter('name', '%' . $params['query'] . '%');
-			}
-			$datasource = new EntityDatasource($query);
-			$datasource->setOrderBy('lft', 'ASC');
-			$datasource->setPage(isset($params['page']) ? $params['page'] : 1);
-			$table = new AdministrativeUnitTable(new Action($this,'searchUnit', $params));
-			$table->setDataSource($datasource);
-			$widget = new PanelQuery($table, new Action($this,'searchUnit', $params), $params['query'], new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3)));
-		} catch ( \Exception $e ) {
-			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
-		}
-		return new Layout($widget, null);
-	}
-	
-	
 	/**
 	 * @return Crud
 	 */
@@ -261,7 +224,18 @@ class DriverController extends AbstractController {
 	 * @return DriverForm
 	 */
 	private function createForm ( Action $submit ) {
-		return new DriverForm($this->getAgencyActive(), $submit, new Action($this, 'seek'), new Action($this, 'seekUnit'), new Action($this, 'searchUnit'), new Action($this));
+		$seek = new Action($this, 'seek');
+		$seekUnit = new Action($this, 'seekUnit');
+		$searchUnit = new Action($this, 'searchUnit');
+		$seekAgency = new Action($this, 'seekAgency');
+		$seachAgency = new Action($this, 'searchAgency');
+		$cancel = new Action($this);
+		$showAgency = null;
+		if (! $this->getAgencyActive()->isGovernment()) {
+			$showAgency = $this->getAgencyActive();
+			$this->session->selected = $showAgency->getId();
+		}
+		return new DriverForm($submit, $seek, $seekUnit, $searchUnit, $seekAgency, $seachAgency, $cancel, $showAgency);
 	}
 	
 }

@@ -32,14 +32,16 @@ use PHPBootstrap\Widget\Nav\Tabbable;
 class RequesterForm extends AbstractForm {
 	
 	/**
-	 * @param Agency $agency
 	 * @param Action $submit
 	 * @param Action $seek
 	 * @param Action $seekUnit
 	 * @param Action $searchUnit
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
 	 * @param Action $cancel
+	 * @param Agency $showAgency
 	 */
-	public function __construct( Agency $agency, Action $submit, Action $seek, Action $seekUnit, Action $searchUnit, Action $cancel ) {
+	public function __construct( Action $submit, Action $seek, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, Action $cancel, Agency $showAgency = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Requisitantes');
 		$form = $this->buildForm('user-form');
 		
@@ -84,20 +86,32 @@ class RequesterForm extends AbstractForm {
 		
 		$lotation = new Fieldset('Lotação');
 		
+		$modal = new Modal('agency-search', new Title('Órgãos', 3));
+		$modal->setWidth(600);
+		$modal->addButton(new Button('Cancelar', new TgModalClose()));
+		$form->append($modal);
+		$this->modals['agency'] = $modal;
+		
 		$input = [];
 		$input[0] = new TextBox('agency-id');
-		$input[0]->setDisabled(true);
+		$input[0]->setSuggestion(new Seek($seekAgency));
+		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input[0]->setSpan(1);
-		$input[0]->setValue($agency->getCode());
 		
-		$input[1] = new TextBox('agency-name');
-		$input[1]->setDisabled(true);
+		$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+		$input[1]->setEnableQuery(false);
 		$input[1]->setSpan(6);
-		$input[1]->setValue($agency->getName());
 		
 		$form->buildField('Órgão', $input, null, $lotation);
-		$form->unregister($input[0]);
-		$form->unregister($input[1]);
+		if ($showAgency) {
+			$input[0]->setValue($showAgency->getCode());
+			$input[1]->setValue($showAgency->getName());
+			$input[1]->setEnableQuery(true);
+			$input[0]->setDisabled(true);
+			$input[1]->setDisabled(true);
+			$form->unregister($input[0]);
+			$form->unregister($input[1]);
+		}
 		
 		$modal = new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3));
 		$modal->setWidth(900);
@@ -140,6 +154,9 @@ class RequesterForm extends AbstractForm {
 		$data['active'] = $object->getActive();
 		
 		if ($object->getLotation()) {
+			$data['agency-id'] = $object->getLotation()->getAgency()->getCode();
+			$data['agency-name'] = $object->getLotation()->getAgency()->getName();
+			
 			$data['administrative-unit-id'] = $object->getLotation()->getCode();
 			$data['administrative-unit-name'] = $object->getLotation()->getName();
 		}

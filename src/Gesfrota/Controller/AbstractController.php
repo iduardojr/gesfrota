@@ -36,7 +36,6 @@ abstract class AbstractController extends Controller {
 	 * @return Agency
 	 */
 	public function getAgencyActive() {
-		
 		return $this->getEntityManager()->find(Agency::getClass(), ( int ) Auth::getInstance()->getIdentity()['lotation-id']);
 	}
 	
@@ -45,6 +44,23 @@ abstract class AbstractController extends Controller {
 	 */
 	public function getUserActive() {
 		return $this->getEntityManager()->find(User::getClass(), ( int ) Auth::getInstance()->getIdentity()['user-id']);
+	}
+	
+	/**
+	 * @return string[]|null
+	 */
+	public function getShowAgencies() {
+		if ($this->getAgencyActive()->isGovernment()) {
+			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$query->where('u.id > 0');
+			$result = $query->getQuery()->getResult();
+			$options = ['Todos'];
+			foreach($result as $item) {
+				$options[$item->id] = (string) $item;
+			}
+			return $options;
+		} 
+		return null;
 	}
 	
 	/**

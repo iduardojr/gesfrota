@@ -38,14 +38,14 @@ class IndexController extends AbstractController {
 		$layout->initial = $initial;
 		$layout->final = $final;
 		
-		$agency = null;
 		$layout->isDashboardFleetManager = false;
-		if ( $this->getUserActive() instanceof FleetManager) {
+		$agency = $this->getAgencyActive();
+		if ( ! $agency->isGovernment() ) {
 			$layout->isDashboardFleetManager = true;
-			$agency = $this->getAgencyActive();
 			$layout->request_x_driver = $this->getRequestsPerDriver($initial, $final, $agency);
 			$layout->activities = $this->getActivitiesRecent($agency);
 		} else {
+			$agency = null;
 			$layout->request_per_agency = $this->getRequestPerAgency($initial, $final);
 			$layout->fleet_per_agency = $this->getFleetPerAgency($initial, $final);
 		}

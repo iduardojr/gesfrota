@@ -21,21 +21,22 @@ use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
+use Gesfrota\Model\Domain\AdministrativeUnit;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class DriverList extends AbstractList {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $filter
 	 * @param Action $new
 	 * @param Action $edit
 	 * @param Action $active
-	 * @param Action $transfer
 	 * @param Action $search
+	 * @param Action $transfer
 	 * @param Action $password
+	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password) {
+	public function __construct( Action $filter, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $showAgencies = null) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Motorista');
 		
 		$reset = clone $filter;
@@ -43,8 +44,15 @@ class DriverList extends AbstractList {
 		
 		$form = new BuilderForm('form-filter');
 		
+		if ($showAgencies) {
+			$input = new ComboBox('agency');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
+		
 		$input = new TextBox('name');
-		$input->setSpan(3);
+		$input->setSpan(4);
 		$form->buildField('Motorista', $input);
 		
 		$input = new TextBox('nif');
@@ -94,14 +102,19 @@ class DriverList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('name', 'Motorista', clone $filter, null, ColumnText::Left);
-		$table->buildColumnText('nif', 'CPF', clone $filter, 120, ColumnText::Left);
-		$table->buildColumnText('cell', 'Celular', clone $filter, 100, ColumnText::Left);
-		$table->buildColumnText('vehicles', 'CNH', clone $filter, 150, ColumnText::Left, function ($value) {
+		$table->buildColumnText('nif', 'CPF', clone $filter, 120);
+		$table->buildColumnText('cell', 'Celular', clone $filter, 100);
+		$table->buildColumnText('vehicles', 'CNH', clone $filter, 80, null, function ($value) {
 			return implode('', $value);
 		});
 		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});
+		if ($showAgencies) {
+			$table->buildColumnText('lotation', 'Órgão', null, 100, null, function (AdministrativeUnit $value) {
+				return (string) $value->getAgency();
+			});
+		}
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
 		$table->buildColumnAction('active', new Icon('icon-remove'), $active, null, function( Button $button, Driver $obj ) {
 			$button->setIcon(new Icon($obj->getActive() ? 'icon-remove' : 'icon-ok'));

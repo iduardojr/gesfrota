@@ -23,6 +23,8 @@ use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Form\TgFormSubmit;
 use PHPBootstrap\Widget\Modal\TgModalClose;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 
 class RequesterList extends AbstractList {
 	
@@ -36,13 +38,20 @@ class RequesterList extends AbstractList {
 	 * @param Action $transfer
 	 * @param Action $password
 	 */
-	public function __construct( Action $filter, Action $lotation, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password) {
+	public function __construct( Action $filter, Action $lotation, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $showAgencies = null) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Requisitantes');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);
 		
 		$form = new BuilderForm('form-filter');
+		
+		if ($showAgencies) {
+			$input = new ComboBox('agency');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
 		
 		$input = new TextBox('nif');
 		$input->setSpan(2);
@@ -54,10 +63,12 @@ class RequesterList extends AbstractList {
 		$input->setSpan(7);
 		$form->buildField('Nome', $input);
 		
-		$input = new TextBox('lotation');
-		$input->setSuggestion(new Suggest($lotation, 3));
-		$input->setSpan(7);
-		$form->buildField('Lotação', [$input, new Hidden('lotation-id')]);
+		if (!$showAgencies) {
+			$input = new TextBox('lotation');
+			$input->setSuggestion(new Suggest($lotation, 3));
+			$input->setSpan(7);
+			$form->buildField('Lotação', [$input, new Hidden('lotation-id')]);
+		}
 		
 		$input = new CheckBox('only-active', 'Apenas ativos');
 		$form->buildField(null, $input);
@@ -100,12 +111,17 @@ class RequesterList extends AbstractList {
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('name', 'Requisitante', clone $filter, null, ColumnText::Left);
 		$table->buildColumnText('nif', 'CPF', null, 120);
-		$table->buildColumnText('lotation', 'Lotação', null, 300, null, function ($value) {
+		$table->buildColumnText('lotation', 'Lotação', null, 300, null, function (AdministrativeUnit $value) {
 			return $value->getName();
 		});
-		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {
+		$table->buildColumnText('active', 'Status', null, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});
+		if ($showAgencies) {
+			$table->buildColumnText('lotation', 'Órgão', null, 80, null, function (AdministrativeUnit $value) {
+				return (string) $value->getAgency();
+			});
+		}
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
 		$table->buildColumnAction('active', new Icon('icon-remove'), $active, null, function( Button $button, User $user ) {
 			$button->setIcon(new Icon($user->getActive() ? 'icon-remove' : 'icon-ok'));
