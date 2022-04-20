@@ -71,16 +71,19 @@ class AdministrativeUnit extends Node implements Activable {
 	protected $parent;
 	
 	/**
-	 * Construtor
-	 * 
-	 * @param Agency $agency
-	 * @param AdministrativeUnit $parent
+	 * @param AdministrativeUnit|Agency $parent
+	 * @throws \InvalidArgumentException
 	 */
-	public function __construct( Agency $agency, AdministrativeUnit $parent = null ) {
+	public function __construct( $parent ) {
 		parent::__construct();
 		$this->children = new ArrayCollection();
-		$this->setAgency($agency);
-		$this->setParent($parent);
+		if ($parent instanceof Agency) {
+			$this->setAgency($parent);
+		} elseif ($parent instanceof AdministrativeUnit) {
+			$this->setParent($parent);
+		} else {
+			throw new \InvalidArgumentException('parent not is Administrative Unit or Agency.');
+		}
 	}
 	
 	/**
@@ -287,6 +290,9 @@ class AdministrativeUnit extends Node implements Activable {
 	public function setParent( AdministrativeUnit $parent = null ) {
 		if ( $parent && $this->assertReferenceCircular($parent) ) {
 			throw new \DomainException('parent in reference circular');
+		}
+		if ($parent) {
+			$this->setAgency($parent->getAgency());
 		}
 		$this->parent = $parent;
 	}

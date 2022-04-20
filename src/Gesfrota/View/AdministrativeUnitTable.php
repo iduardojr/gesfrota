@@ -14,8 +14,7 @@ use PHPBootstrap\Widget\Table\ColumnText;
 class AdministrativeUnitTable extends BuilderTable  {
 	
 	/**
-	 * Construtor
-	 * 
+	 * @param Action $filter
 	 */
 	public function __construct( Action $filter ) {
 		parent::__construct('administrative-unit-table');

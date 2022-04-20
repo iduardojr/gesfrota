@@ -15,14 +15,21 @@ use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Controller\Helper\SearchAgency;
 
 class AdministrativeUnitController extends AbstractController { 
+	use SearchAgency;
 	
 	public function indexAction() {
-		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
+		$showAgencies = $this->getShowAgencies();
+		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), $showAgencies);
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, $this->createQuery(), array('limit' => 12, 'sort' => 'lft', 'order' => 'asc', 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $this->createQuery(), ['limit' => 12, 'sort' => 'lft', 'order' => 'asc', 'processQuery' => function( QueryBuilder $query, array $data ) {
+				if (!empty($data['agency1'])) {
+					$query->where('u.agency = :agency');
+					$query->setParameter('agency', $data['agency1']);
+				}
 				if ( !empty($data['name']) ) {
 					$query->from(AdministrativeUnit::getClass(), 'p0');
 					$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
@@ -33,9 +40,10 @@ class AdministrativeUnitController extends AbstractController {
 					$query->andWhere('u.active = true');
 					$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
 				}
-			}));
+			}]);
 			$list->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
+			throw $e;
 			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);
@@ -47,8 +55,11 @@ class AdministrativeUnitController extends AbstractController {
 		$form = $this->createForm(new Action($this, 'new'));
 		try {
 			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
+			if (! $parent) {
+				$parent = $this->getAgencyActive();
+			}
 			$helper = $this->createHelperCrud();
-			if ( $helper->create($form, new AdministrativeUnit($this->getAgencyActive(), $parent)) ){
+			if ( $helper->create($form, new AdministrativeUnit($parent)) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription . '</em> criada com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -152,8 +163,10 @@ class AdministrativeUnitController extends AbstractController {
 	private function createQuery() {
 		$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
 		$query->distinct(true);
-		$query->andWhere('u.agency = :agency');
-		$query->setParameter('agency', $this->getAgencyActive()->getId());
+		if (!$this->getAgencyActive()->isGovernment()) {
+			$query->andWhere('u.agency = :agency');
+			$query->setParameter('agency', $this->getAgencyActive()->getId());
+		}
 		$query->orderBy('u.lft');
 		return $query;
 	}
@@ -171,7 +184,17 @@ class AdministrativeUnitController extends AbstractController {
 	 * @return AdministrativeUnitForm
 	 */
 	private function createForm ( Action $submit ) {
-		return new AdministrativeUnitForm($submit, new Action($this, 'seek'), new Action($this, 'search', $submit->getParameters()), new Action($this));
+		$seekUnit = new Action($this, 'seekUnit');
+		$searchUnit = new Action($this, 'searchUnit', $submit->getParameters());
+		$seekAgency = new Action($this, 'seekAgency');
+		$seachAgency = new Action($this, 'searchAgency');
+		$cancel = new Action($this);
+		$showAgency = null;
+		if (! $this->getAgencyActive()->isGovernment()) {
+			$showAgency = $this->getAgencyActive();
+			$this->session->selected = $showAgency->getId();
+		}
+		return new AdministrativeUnitForm($submit, $seekUnit, $searchUnit, $seekAgency, $seachAgency, $cancel, $showAgency);
 	}
 
 }

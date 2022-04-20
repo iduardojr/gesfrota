@@ -13,24 +13,30 @@ use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class AdministrativeUnitList extends AbstractList {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $filter
 	 * @param Action $new
 	 * @param Action $edit
 	 * @param Action $active
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $active ) {
+	public function __construct( Action $filter, Action $new, Action $edit, Action $active, array $showAgencies = null ) {
 		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Unidades Administrativas');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);
 		
 		$form = new BuilderForm('form-filter');
+		
+		if ($showAgencies) {
+			$input = new ComboBox('agency1');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
 		
 		$input = new TextBox('name');
 		$input->setSpan(3);
@@ -51,7 +57,12 @@ class AdministrativeUnitList extends AbstractList {
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId();
-		$table->buildColumnText('partialDescription', 'Descrição', null, null, ColumnText::Left);
+		$table->buildColumnText('partialDescription', 'Descrição', null, null, ColumnText::Left, function ($value, AdministrativeUnit $unit) use ($showAgencies) {
+			if ($showAgencies) {
+				return $unit->getAgency() . ' / '. $value;
+			}
+			return $value;
+		});
 		$table->buildColumnText('active', 'Status', null, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});

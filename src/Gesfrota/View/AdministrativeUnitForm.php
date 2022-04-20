@@ -21,21 +21,52 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Domain\Agency;
 
 
 class AdministrativeUnitForm extends AbstractForm {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $submit
+	 * @param Action $seek
+	 * @param Action $search
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
 	 * @param Action $cancel
+	 * @param Agency $showAgency
 	 */
-	public function __construct( Action $submit, Action $seek, Action $search, Action $cancel ) {
+	public function __construct( Action $submit, Action $seek, Action $search, Action $seekAgency, Action $searchAgency, Action $cancel, Agency $showAgency = null ) {
 		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Unidades Administrativas');
 		$form = $this->buildForm('administrative-unit-form');
 		
 		$general = new Fieldset('Dados Gerais');
+		
+		$modal = new Modal('agency-search', new Title('Órgãos', 3));
+		$modal->setWidth(600);
+		$modal->addButton(new Button('Cancelar', new TgModalClose()));
+		$form->append($modal);
+		$this->modals['agency'] = $modal;
+		
+		$input = [];
+		$input[0] = new TextBox('agency-id');
+		$input[0]->setSuggestion(new Seek($seekAgency));
+		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$input[0]->setSpan(1);
+		
+		$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+		$input[1]->setEnableQuery(false);
+		$input[1]->setSpan(6);
+		
+		$form->buildField('Órgão', $input, null, $general);
+		if ($showAgency) {
+			$input[0]->setValue($showAgency->getCode());
+			$input[1]->setValue($showAgency->getName());
+			$input[1]->setEnableQuery(true);
+			$input[0]->setDisabled(true);
+			$input[1]->setDisabled(true);
+			$form->unregister($input[0]);
+			$form->unregister($input[1]);
+		}
 		
 		$modal = new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3));
 		$modal->setWidth(900);
@@ -101,6 +132,10 @@ class AdministrativeUnitForm extends AbstractForm {
 	 */
 	public function extract( AdministrativeUnit $object ) {
 		$parent = $object->getParent();
+		if ($object->getAgency() && ! $object->getAgency()->isGovernment()) {
+			$data['agency-id'] = $object->getAgency()->getCode();
+			$data['agency-name'] = $object->getAgency()->getName();
+		}
 		if ( $parent ) {
 			$data['administrative-unit-id'] = $parent->getCode();
 			$data['administrative-unit-description'] = $parent->getFullDescription();
@@ -127,7 +162,7 @@ class AdministrativeUnitForm extends AbstractForm {
 		$object->setPhone($data['phone']);
 		if ( $data['administrative-unit-id'] ) {
 			$object->setParent($em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']));
-		}
+		} 
 	}
 
 }
