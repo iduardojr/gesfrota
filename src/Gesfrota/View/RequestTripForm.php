@@ -1,6 +1,8 @@
 <?php
 namespace Gesfrota\View;
 
+use Doctrine\ORM\EntityManager;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\RequestTrip;
 use Gesfrota\View\Widget\AbstractForm;
@@ -22,12 +24,17 @@ use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
+use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Form\Controls\TextArea;
+use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\TimeBox;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Doctrine\ORM\EntityManager;
 
 class RequestTripForm extends AbstractForm {
 	
@@ -35,9 +42,14 @@ class RequestTripForm extends AbstractForm {
 	 * @param Action $submit
 	 * @param Action $cancel
 	 * @param Action $location
+	 * @param Action $seekUnit
+	 * @param Action $searchUnit
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
 	 * @param array $options
+	 * @param boolean $showAgency
 	 */
-	public function __construct( Action $submit, Action $cancel, Action $location, array $options ) {
+	public function __construct( Action $submit, Action $cancel, Action $location, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, array $options, $showAgency = false ) {
 		$this->buildPanel('Minhas Viagens', 'Nova Viagem');
 		$form = $this->buildForm('request-trip-form');
 		
@@ -125,11 +137,54 @@ class RequestTripForm extends AbstractForm {
 		$input[2]->setSpan(1);
 		$form->buildField('Termina em', $input, null, $service)->setName('duration-group');
 		
+		
 		$tab = new Tabbable('request-trip-tabs');
 		$tab->setPlacement(Tabbable::Left);
 		$tab->addItem(new NavLink('Itinerário'), null, new TabPane($itinerary));
 		$tab->addItem(new NavLink('Passageiros'), null, new TabPane($passangers));
 		$tab->addItem(new NavLink('Serviço'), null, new TabPane($service));
+		
+		if ($showAgency) {
+			$requester = new Fieldset('Unidade Requisitante');
+			
+			$modal = new Modal('agency-search', new Title('Órgãos', 3));
+			$modal->setWidth(600);
+			$modal->addButton(new Button('Cancelar', new TgModalClose()));
+			$form->append($modal);
+			
+			$input = [];
+			$input[0] = new TextBox('agency-id');
+			$input[0]->setSuggestion(new Seek($seekAgency));
+			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$input[0]->setSpan(1);
+			
+			$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+			$input[1]->setEnableQuery(false);
+			$input[1]->setSpan(6);
+			
+			$form->buildField('Órgão', $input, null, $requester);
+			
+			
+			$modal = new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3));
+			$modal->setWidth(900);
+			$modal->addButton(new Button('Cancelar', new TgModalClose()));
+			$form->append($modal);
+			
+			$input = [];
+			$input[0] = new TextBox('administrative-unit-id');
+			$input[0]->setSuggestion(new Seek($seekUnit));
+			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$input[0]->setSpan(1);
+			
+			$input[1] = new SearchBox('administrative-unit-name', $searchUnit, $modal);
+			$input[1]->setEnableQuery(false);
+			$input[1]->setSpan(6);
+			
+			$form->buildField('Unidade Administrativa', $input, null, $requester);
+			
+			$tab->addItem(new NavLink('Requisitante'), null, new TabPane($requester));
+		
+		}
 		
 		$form->append($tab);
 
@@ -153,6 +208,13 @@ class RequestTripForm extends AbstractForm {
 			$schedule = new \DateTime('+30min');
 			$schedule->setTime($schedule->format('H'), ceil($schedule->format('i')/$this->getStep())*$this->getStep());
 		} 
+		if ($object->getRequesterUnit()) {
+			$data['agency-id'] = $object->getRequesterUnit()->getAgency()->getCode();
+			$data['agency-name'] = $object->getRequesterUnit()->getAgency()->getName();
+			
+			$data['administrative-unit-id'] = $object->getRequesterUnit()->getCode();
+			$data['administrative-unit-name'] = $object->getRequesterUnit()->getName();
+		}
 		$data['schedule-date'] = $data['schedule-time'] = $schedule;
 		$data['passangers'] = $object->getPassengers();
 		$data['service'] = $object->getService();
@@ -181,6 +243,11 @@ class RequestTripForm extends AbstractForm {
 		$object->setPassengers($data['passangers']);
 		
 		$object->setService($data['service']);
+		if ($data['administrative-unit-id']) {
+			$unit = $em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']);
+			$object->setRequesterUnit($unit);
+		}
+		
 		if ($data['duration'] == 'custom') {
 			$object->setDuration(new \DateTime($data['duration-date'] . ' ' . $data['duration-time']));
 		} else {

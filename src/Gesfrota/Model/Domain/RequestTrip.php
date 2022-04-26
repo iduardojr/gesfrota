@@ -73,6 +73,15 @@ class RequestTrip extends Request {
 		return $this->duration;
 	}
 	
+	/**
+	 * @see Request::setRequesterUnit()
+	 */
+	public function setRequesterUnit(AdministrativeUnit $unit) {
+		parent::setRequesterUnit($unit);
+		if ($this->roundTrip) {
+			$this->roundTrip->setRequesterUnit($unit);
+		}
+	}
 	
 	public function setFrom(Place $from) {
 		parent::setFrom($from);

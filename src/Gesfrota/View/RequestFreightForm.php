@@ -1,6 +1,8 @@
 <?php
 namespace Gesfrota\View;
 
+use Doctrine\ORM\EntityManager;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\RequestFreight;
 use Gesfrota\View\Widget\AbstractForm;
@@ -22,8 +24,14 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
+use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Form\Controls\TextArea;
+use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\TimeBox;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
@@ -36,7 +44,7 @@ class RequestFreightForm extends AbstractForm {
 	 * @param Action $location
 	 * @param array $options
 	 */
-	public function __construct( Action $submit, Action $cancel, Action $location, array $options ) {
+	public function __construct( Action $submit, Action $cancel, Action $location, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, array $options, $showAgency = false ) {
 		$this->buildPanel('Minhas Viagens', 'Nova Entrega');
 		$form = $this->buildForm('request-freight-form');
 		
@@ -108,6 +116,47 @@ class RequestFreightForm extends AbstractForm {
 		$tab->addItem(new NavLink('Encomenda'), null, new TabPane($package));
 		$tab->addItem(new NavLink('Instruções'), null, new TabPane($service));
 		
+		if ($showAgency) {
+			$requester = new Fieldset('Unidade Requisitante');
+			
+			$modal = new Modal('agency-search', new Title('Órgãos', 3));
+			$modal->setWidth(600);
+			$modal->addButton(new Button('Cancelar', new TgModalClose()));
+			$form->append($modal);
+			
+			$input = [];
+			$input[0] = new TextBox('agency-id');
+			$input[0]->setSuggestion(new Seek($seekAgency));
+			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$input[0]->setSpan(1);
+			
+			$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+			$input[1]->setEnableQuery(false);
+			$input[1]->setSpan(6);
+			
+			$form->buildField('Órgão', $input, null, $requester);
+			
+			$modal = new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3));
+			$modal->setWidth(900);
+			$modal->addButton(new Button('Cancelar', new TgModalClose()));
+			$form->append($modal);
+			
+			$input = [];
+			$input[0] = new TextBox('administrative-unit-id');
+			$input[0]->setSuggestion(new Seek($seekUnit));
+			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$input[0]->setSpan(1);
+			
+			$input[1] = new SearchBox('administrative-unit-name', $searchUnit, $modal);
+			$input[1]->setEnableQuery(false);
+			$input[1]->setSpan(6);
+			
+			$form->buildField('Unidade Administrativa', $input, null, $requester);
+			
+			$tab->addItem(new NavLink('Requisitante'), null, new TabPane($requester));
+			
+		}
+		
 		$form->append($tab);
 
 		$submit->setParameter('to', 'send');
@@ -133,6 +182,13 @@ class RequestFreightForm extends AbstractForm {
 			$schedule = new \DateTime('+30min');
 			$schedule->setTime($schedule->format('H'), ceil($schedule->format('i')/$this->getStep())*$this->getStep());
 		} 
+		if ($object->getRequesterUnit()) {
+			$data['agency-id'] = $object->getRequesterUnit()->getAgency()->getCode();
+			$data['agency-name'] = $object->getRequesterUnit()->getAgency()->getName();
+			
+			$data['administrative-unit-id'] = $object->getRequesterUnit()->getCode();
+			$data['administrative-unit-name'] = $object->getRequesterUnit()->getName();
+		}
 		$data['schedule-date'] = $data['schedule-time'] = $schedule;
 		$data['items'] = $object->getItems();
 		$data['service'] = $object->getService();
@@ -142,13 +198,17 @@ class RequestFreightForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( RequestFreight $object ) {
+	public function hydrate( RequestFreight $object, EntityManager $em ) {
 		$data = $this->component->getData();
 		$object->setFrom(new Place($data['from']['place'], $data['from']['description']));
 		$object->setTo(new Place($data['to']['place'], $data['to']['description']));
 		$waypoints = [];
 		foreach($data['waypoints'] as $point) {
 			$waypoints[] = new Place($point['place'], $point['description']);
+		}
+		if ($data['administrative-unit-id']) {
+			$unit = $em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']);
+			$object->setRequesterUnit($unit);
 		}
 		$object->setWaypoints($waypoints);
 		$object->setSchedule(new \DateTime($data['schedule-date'] . ' ' . $data['schedule-time']));

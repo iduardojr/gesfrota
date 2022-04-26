@@ -427,6 +427,13 @@ abstract class Request extends Entity {
 	}
 	
 	/**
+	 * @param AdministrativeUnit $unit
+	 */
+	public function setRequesterUnit(AdministrativeUnit $unit) {
+		$this->requesterUnit = $unit;
+	}
+	
+	/**
 	 * @param Place $from
 	 */
 	public function setFrom(Place $from) {

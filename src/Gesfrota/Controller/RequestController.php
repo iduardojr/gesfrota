@@ -34,10 +34,14 @@ use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
 use Gesfrota\Services\AclResource;
 use Gesfrota\View\RequestFieldSetDecline;
+use Gesfrota\Controller\Helper\SearchAgency;
 
 class RequestController extends AbstractController {
 	
+	use SearchAgency;
+	
 	public function indexAction() {
+		$this->session->selected = null;
 		$filter = new Action($this);
 		$newTrip = new Action($this, 'newTrip');
 		$newFreight = new Action($this, 'newFreight');
@@ -45,6 +49,7 @@ class RequestController extends AbstractController {
 		$print = new Action($this,'print');
 		$do = $closure = null;
 		$user = $this->getUserActive();
+		$showAgencies = $this->getShowAgencies();
 		
 		$isConfirm = AclResource::getInstance()->isAllowed($user, 'RequestController', 'confirm');
 		if ( ! $user instanceof Requester ) {
@@ -88,14 +93,16 @@ class RequestController extends AbstractController {
 				}
 			};
 		}
-		$list = new RequestList($filter, $newTrip, $newFreight, $cancel, $print, $do, $closure);
+		$list = new RequestList($filter, $newTrip, $newFreight, $cancel, $print, $do, $closure, $showAgencies);
 		try {
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
 			$query->from(Request::getClass(), 'u');
-			$query->join('u.requesterUnit', 'l', 'WITH', 'l.agency = :agency');
-			$query->setParameter('agency', $this->getAgencyActive()->getId());
+			if (! $showAgencies) {
+				$query->join('u.requesterUnit', 'l', 'WITH', 'l.agency = :unit');
+				$query->setParameter('unit', $this->getAgencyActive()->getId());
+			}
 			
 			if ($this->getUserActive() instanceof Requester) {
 				$query->where('u.openedBy = :by OR u.requesterUnit = :unit');
@@ -107,9 +114,17 @@ class RequestController extends AbstractController {
 			}
 			
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+				
 				if ( !empty($data['type']) ) {
 					$query->andWhere('u INSTANCE OF ' . ( $data['type'] == 'T' ? RequestTrip::getClass() : RequestFreight::getClass()));
 				}
+				
+				if (!empty($data['agency'])) {
+					$query->join('u.requesterUnit', 'l');
+					$query->where('l.agency = :agency');
+					$query->setParameter('agency', $data['agency']);
+				}
+				
 				if ( !empty($data['from']) ) {
 					$query->andWhere('u.from.description LIKE :from');
 					$query->setParameter('from', '%' . $data['from'] . '%');
@@ -143,8 +158,16 @@ class RequestController extends AbstractController {
 		$submit = new Action($this, 'newTrip');
 		$cancel = new Action($this);
 		$location = new Action($this, 'location');
+		$seekUnit = new Action($this, 'seekUnit');
+		$searchUnit = new Action($this, 'searchUnit');
+		$seekAgency = new Action($this, 'seekAgency');
+		$searchAgency = new Action($this, 'searchAgency');
+		$showAgency = $this->getAgencyActive()->isGovernment();
+		
+		$this->session->selected = $this->getUserActive()->getLotation()->getAgency()->getId();
+		
 		$options = $this->getApplication()->config['google']['maps'];
-		$form = new RequestTripForm($submit, $cancel, $location, $options);
+		$form = new RequestTripForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $options, $showAgency);
 		try {
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form, new RequestTrip($this->getUserActive(), $this->request->getQuery('round-trip'))) ){
@@ -164,8 +187,17 @@ class RequestController extends AbstractController {
 		$submit = new Action($this, 'newFreight');
 		$cancel = new Action($this);
 		$location = new Action($this, 'location');
+		$location = new Action($this, 'location');
+		$seekUnit = new Action($this, 'seekUnit');
+		$searchUnit = new Action($this, 'searchUnit');
+		$seekAgency = new Action($this, 'seekAgency');
+		$searchAgency = new Action($this, 'searchAgency');
+		$showAgency = $this->getAgencyActive()->isGovernment();
+		
+		$this->session->selected = $this->getUserActive()->getLotation()->getAgency()->getId();
+		
 		$options = $this->getApplication()->config['google']['maps'];
-		$form = new RequestFreightForm($submit, $cancel, $location, $options);
+		$form = new RequestFreightForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $options, $showAgency);
 	    try {
 	        $helper = $this->createHelperCrud();
 	        $to = $this->getRequest()->getQuery('to') == 'send' ? RequestFreight::TO_SEND : RequestFreight::TO_RECEIVE;

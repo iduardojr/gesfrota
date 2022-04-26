@@ -22,12 +22,12 @@ use PHPBootstrap\Format\DateFormat;
 use PHPBootstrap\Widget\Button\ButtonGroup;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Action\TgWindows;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 
 class RequestList extends AbstractList {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $filter
 	 * @param Action $newTrip
 	 * @param Action $newFreight
@@ -35,8 +35,9 @@ class RequestList extends AbstractList {
 	 * @param Action $print
 	 * @param Action $do
 	 * @param \Closure $closure
+	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $newTrip, Action $newFreight, Action $cancel, Action $print, Action $do = null, $closure = null ) {
+	public function __construct( Action $filter, Action $newTrip, Action $newFreight, Action $cancel, Action $print, Action $do = null, $closure = null, array $showAgencies = null ) {
 		$this->buildPanel('Minhas Viagens', 'Gerenciar Requisições');
 		
 		$reset = clone $filter;
@@ -61,6 +62,13 @@ class RequestList extends AbstractList {
 		$btnGroup->setToggle(new TgButtonRadio());
 		$input = new Hidden('type');
 		$form->buildField(null, [$btnGroup, $input])->setName('request_types');
+		
+		if ($showAgencies) {
+			$input = new ComboBox('agency');
+			$input->setSpan(3);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
 		
 		$input = new TextBox('from');
 		$input->setSpan(5);
@@ -110,6 +118,11 @@ class RequestList extends AbstractList {
 		$table->buildColumnText('status', 'Status', clone $filter, 70, null, function ( $value ) {
 			return Request::getStatusAllowed()[$value];
 		});
+		if ($showAgencies) {
+			$table->buildColumnText('requesterUnit', 'Órgão', null, 80, null, function (AdministrativeUnit $value) {
+				return (string) $value->getAgency();
+			});
+		}
 		if ($do) {
 			$table->buildColumnAction('do', new Icon('icon-remove'), $do, null, $closure);
 		}

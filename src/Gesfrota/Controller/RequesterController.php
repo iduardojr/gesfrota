@@ -47,8 +47,8 @@ class RequesterController extends AbstractController {
 			$query->from(Requester::getClass(), 'u');
 			if (!$showAgencies) {
 				$query->join('u.lotation', 'l');
-				$query->where('l.agency = :agency');
-				$query->setParameter('agency', $this->getAgencyActive()->getId());
+				$query->where('l.agency = :unit');
+				$query->setParameter('unit', $this->getAgencyActive()->getId());
 			}
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {

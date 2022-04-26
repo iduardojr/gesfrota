@@ -241,6 +241,17 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
+    public function setRequesterUnit(\Gesfrota\Model\Domain\AdministrativeUnit $unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setRequesterUnit', [$unit]);
+
+        return parent::setRequesterUnit($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setFrom(\Gesfrota\Model\Domain\Place $from)
     {
 
