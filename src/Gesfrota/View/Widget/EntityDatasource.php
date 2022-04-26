@@ -63,9 +63,9 @@ class EntityDatasource extends Paginator implements DataSource {
 		$this->defaults = array_merge(array('sort' => $defaults['identify'], 
 											'order' => self::Asc, 
 											'limit' => 10 ), $defaults);
-		$this->setLimit($this->defaults['limit']);
 		unset($this->defaults['page']);
-		$this->page = ( int ) isset($defaults['page']) && $defaults['page'] > 0 ? $defaults['page'] : 1;
+		$this->setLimit($this->defaults['limit']);
+		$this->setPage(( int ) isset($defaults['page']) && $defaults['page'] > 0 ? $defaults['page'] : 1);
 	}
 	
 	/**
