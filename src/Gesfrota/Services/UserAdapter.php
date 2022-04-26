@@ -5,6 +5,7 @@ use PHPBootstrap\Mvc\Auth\Adapter\Adapter;
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\Util\Crypt;
+use Gesfrota\Model\Domain\Manager;
 
 class UserAdapter extends Adapter {
 	
@@ -43,6 +44,11 @@ class UserAdapter extends Adapter {
 	}
 	
 	public function getData() {
+		if ($this->user instanceof Manager) {
+			return ['user-id' => $this->user->getId(),
+					'lotation-id' => 0
+			];
+		}
 		return ['user-id' => $this->user->getId(),
 				'lotation-id' => $this->user->getLotation()->getAgency()->getId()
 		];
