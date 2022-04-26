@@ -571,10 +571,12 @@ fieldset > legend {
 #disposal-item-form .control-group {
    	margin-bottom: 7px;
 }
+#disposal-item-form #section-survey .control-group {
+   	margin-bottom: 5px;
+}
 #disposal-item-form #asset-owner-nif {
 	white-space: nowrap;
 }
-
 @media print {
 	@page {
 		margin: 1.5cm;
@@ -588,7 +590,7 @@ fieldset > legend {
    		font-size: 17px !important;
    	}
    	#page-header {
-   		margin-top: 0;
+   		margin-top: 10px;
    	}
    	h2 {
 		font-size: 31.5px !important;
@@ -637,6 +639,9 @@ fieldset > legend {
 	}
 	#disposal-item-page {
 		page-break-after: always;
+	}
+	#disposal-item-page #section-survey .control-group {
+		margin-bottom: 5px !important;
 	}
 	.icon-map-marker {
 	    background-image: url(/vendor/bootstrap/img/glyphicons-halflings.png) !important;

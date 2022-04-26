@@ -15,6 +15,7 @@ use PHPBootstrap\Widget\Layout\Row;
 use PHPBootstrap\Widget\Misc\Title;
 use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Disposal;
+use PHPBootstrap\Widget\Misc\Image;
 
 class DisposalItemForm extends AbstractForm {
 	
@@ -25,7 +26,15 @@ class DisposalItemForm extends AbstractForm {
     	
     	$disposal = $obj->getDisposal();
     	
-    	$this->buildPanel('Disposição #' . $disposal->getCode(), $disposal->getDescription() )->setName('disposal-item-page');
+    	$panel = $this->buildPanel('Disposição #' . $disposal->getCode(), $disposal->getDescription());
+    	$panel->setName('disposal-item-page');
+    	
+    	$header = new Row(true);
+    	$header->setName('page-header');
+    	$header->append(new Box(1, new Image('/images/brasao-go.png')));
+    	$header->append(new Box(11, new Title('Estado de Goiás<br>'. $obj->getDisposal()->getRequesterUnit()->getName(), 1)));
+    	$panel->prepend($header);
+    	
     	$form = $this->buildForm('disposal-item-form');
     	
     	$form->append($this->buildSectionGeneral($obj->getAsset()));
@@ -34,6 +43,7 @@ class DisposalItemForm extends AbstractForm {
     	   $form->append($this->buildSectionSurvey());
     	} else {
     	    $section = new Fieldset('Inspeção do Equipamento');
+    	    $section->setName('section-survey');
     	    $input = new Output('report');
     	    $form->buildField('Laudo', $input, null, $section);
     	    $form->append($section);
@@ -47,7 +57,8 @@ class DisposalItemForm extends AbstractForm {
 	 */
 	private function buildSectionGeneral(FleetItem $asset) {
 		
-		$section = new Fieldset('Ativo #' . $asset->getAssetCode());
+		$section = new Fieldset('ATIVO #' . $asset->getAssetCode());
+		$section->setName('section-general');
 		$form = $this->component;
 		
 		if ( $asset instanceof Vehicle ) {
@@ -108,6 +119,7 @@ class DisposalItemForm extends AbstractForm {
 	private function buildSectionDebit() {
 		
 		$section = new Fieldset('Débitos do Veículo');
+		$section->setName('section-debit');
 		$form = $this->component;
 		
 		$box1 = new Box(6);
@@ -136,6 +148,7 @@ class DisposalItemForm extends AbstractForm {
 	private function buildSectionSurvey() {
 		
 		$section = new Fieldset('Inspeção do Veículo');
+		$section->setName('section-survey');
 		$form = $this->component;
 		
 		$inputs = [];
@@ -196,12 +209,8 @@ class DisposalItemForm extends AbstractForm {
 	 */
 	private function buildSectionFooter(Disposal $disposal) {
 		$section = new Fieldset(' ');
+		$section->setName('section-footer');
 		$form = $this->component;
-		
-		$input = new Output('requester-unit');
-		$input->setValue($disposal->getRequesterUnit()->getAcronym());
-		$form->buildField('Disponibilidado por', $input, null, $section);
-		$form->unregister($input);
 		
 		$input = new Output('requester-by');
 		$input->setValue($disposal->getRequestedBy()->getNif() . ' ' . $disposal->getRequestedBy()->getName());
