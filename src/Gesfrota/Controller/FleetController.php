@@ -31,30 +31,52 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\Model\Domain\Disposal;
+use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\Agency;
 
 class FleetController extends AbstractController {
 	
+	use SearchAgency;
+	
 	public function indexAction() {
 		$this->session->cards = null;
+		$this->session->selected = null;
 		
+		$filter = new Action($this);
+		$new1 	= new Action($this, 'newVehicle');
+		$new2 	= new Action($this, 'newEquipment');
+		$edit 	= new Action($this, 'edit');
+		$active = new Action($this, 'active');
+		$search = new Action($this, 'searchVehiclePlate');
+		$transfer = new Action($this, 'transferVehicle');
+		
+		$showAgencies = $this->getShowAgencies();
 		$query = $this->getEntityManager()->getRepository(FleetItem::getClass())->createQueryBuilder('u');
-		$query->join('u.responsibleUnit', 'r');
-		$query->andWhere('r.id = :unit');
-		$query->setParameter('unit', $this->getAgencyActive()->getId());
+		
+		
+		if (! $showAgencies ) {
+			$query->join('u.responsibleUnit', 'r');
+			$query->andWhere('r.id = :unit');
+			$query->setParameter('unit', $this->getAgencyActive()->getId());
+		}
 		
 		$q1 = $this->getEntityManager()
-		->getRepository(DisposalItem::getClass())
-		->createQueryBuilder('di');
+			->getRepository(DisposalItem::getClass())
+			->createQueryBuilder('di');
 		$q1->select('IDENTITY(di.asset)');
 		$q1->join('di.disposal', 'd');
 		$q1->where('d.status NOT IN (:disposal)');
 		$query->andWhere('u.id NOT IN (' . $q1->getDQL() . ')');
 		$query->setParameter('disposal', [Disposal::DRAFTED, Disposal::DECLINED]);
 		
-	    $list = new FleetList(new Action($this), new Action($this, 'newVehicle'), new Action($this, 'newEquipment'), new Action($this, 'edit'), new Action($this, 'active'), new Action($this, 'searchVehiclePlate'), new Action($this, 'transferVehicle'));
+	    $list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $transfer, $showAgencies);
 		try {
 			$helper = $this->createHelperCrud();
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+				if (!empty($data['agency'])) {
+					$query->andWhere('u.responsibleUnit = :agency');
+					$query->setParameter('agency', $data['agency']);
+				}
 				if ( !empty($data['description']) ) {
 						$q1 = $this->getEntityManager()->getRepository(Vehicle::getClass())->createQueryBuilder('v');
 						$q1->select('v.id');
@@ -102,7 +124,12 @@ class FleetController extends AbstractController {
 			if ( $entity instanceof Vehicle ) {
 				throw new \DomainException('Veículo <em>' . $entity->getPlate() . ' ' . $entity->getDescription() . '</em> já está registrado em '. $entity->getResponsibleUnit()->getAcronym());
 			}
-			if ( $helper->create($form, new Vehicle($this->getAgencyActive())) ) {
+			if ($this->session->selected > 0) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->session->selected);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			if ( $helper->create($form, new Vehicle($agency)) ) {
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>' . $entity->fleetType . ' <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -119,7 +146,12 @@ class FleetController extends AbstractController {
 		$form = $this->createForm(Equipment::getClass(), new Action($this, 'newEquipment'));
 		try {
 			$helper = $this->createHelperCrud();
-			if ( $helper->create($form, new Equipment($this->getAgencyActive())) ) {
+			if ($this->session->selected > 0) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->session->selected);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			if ( $helper->create($form, new Equipment($agency)) ) {
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>' . $entity->fleetType . ' <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -422,8 +454,11 @@ class FleetController extends AbstractController {
 	 * @return BuilderForm
 	 */
 	private function createForm ( $item, Action $submit ) {
-	    $subform = $this->createSubform();
+	    $subform = null;
 	    $cancel = new Action($this);
+	    $seek['agency'] =  new Action($this, 'seekAgency');
+	    $find['agency'] = new Action($this, 'searchAgency');
+	    $showAgencies = $this->getAgencyActive()->isGovernment();
 	    
 	    if (is_object($item)) {
 	    	$item = get_class($item);
@@ -437,11 +472,11 @@ class FleetController extends AbstractController {
 	    		$find['owner'] = new Action($this, 'searchOwner');
 	    		$newOwnerPerson = new Action($this, 'newOwnerPerson');
 	    		$newOwnerCompany = new Action($this, 'newOwnerCompany');
-	    		return new FleetVehicleForm($submit, $seek['vehicle-plate'], $seek['vehicle'], $find['vehicle'], $seek['owner'], $find['owner'], $newOwnerPerson, $newOwnerCompany, $cancel, $subform);
+	    		return new FleetVehicleForm($submit, $seek['vehicle-plate'], $seek['vehicle'], $find['vehicle'], $seek['agency'], $find['agency'], $seek['owner'], $find['owner'], $newOwnerPerson, $newOwnerCompany, $cancel, $showAgencies, $subform);
 	    		break;
 	    		
 	    	case Equipment::getClass():
-	    		return new FleetEquipmentForm($submit, $cancel, $subform);
+	    		return new FleetEquipmentForm($submit, $cancel, $seek['agency'], $find['agency'], $showAgencies, $subform);
 	    		break;
 	    		
 	    	default:

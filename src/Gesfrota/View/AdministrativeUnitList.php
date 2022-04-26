@@ -22,6 +22,7 @@ class AdministrativeUnitList extends AbstractList {
 	 * @param Action $new
 	 * @param Action $edit
 	 * @param Action $active
+	 * @param array $showAgencies
 	 */
 	public function __construct( Action $filter, Action $new, Action $edit, Action $active, array $showAgencies = null ) {
 		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Unidades Administrativas');

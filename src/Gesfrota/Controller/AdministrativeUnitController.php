@@ -114,49 +114,6 @@ class AdministrativeUnitController extends AbstractController {
 		$this->forward('/');
 	}
 	
-	public function searchAction() {
-		try {
-			$query = $this->createQuery();
-			$params = $this->request->getQuery();
-			if ( $params['key'] > 0 ) {
-				$query->from(AdministrativeUnit::getClass(), 'p');
-				$query->andWhere('u.lft NOT BETWEEN p.lft AND p.rgt');
-				$query->andWhere('p.id = :parent');
-				$query->setParameter('parent', (int) $params['key']);
-			}
-			if ( $params['query'] ) {
-				$query->from(AdministrativeUnit::getClass(), 'p0');
-				$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
-				$query->andWhere('p0.name LIKE :name');
-				$query->setParameter('name', '%' . $params['query'] . '%');
-			}
-			$datasource = new EntityDatasource($query);
-			$datasource->setOrderBy('lft', 'ASC');
-			$datasource->setPage($params['page']);
-			$table = new AdministrativeUnitTable(new Action($this,'search', $params));
-			$table->setDataSource($datasource);
-			$widget = new PanelQuery($table, new Action($this,'search', $params), $params['query']);
-		} catch ( \Exception $e ) {
-			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
-		}
-		return new Layout($widget, null);
-	}
-	
-	public function seekAction() {
-		try {
-			$id = $this->request->getQuery('query');
-			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), (int) $id);
-			if ( ! $entity ) {
-				throw new NotFoundEntityException('Unidade Administrativa <em>#' . $id . '</em> não encontrada.');
-			}
-			return new JsonView(array('administrative-unit-id' => $entity->code, 'administrative-unit-description' => $entity->fullDescription, 'flash-message' => null), false);
-		} catch ( NotFoundEntityException $e ){
-			return new JsonView(array('administrative-unit-description' => '', 'flash-message' => new Alert('<strong>Ops! </strong>' . $e->getMessage())), false);
-		} catch ( \Exception $e ) {
-			return new JsonView(array('administrative-unit-description' => '', 'flash-message' => new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error)), false);
-		}
-	}
-	
 	/**
 	 * @return QueryBuilder
 	 */

@@ -25,6 +25,7 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Badge;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class FleetList extends AbstractList {
 	
@@ -37,7 +38,7 @@ class FleetList extends AbstractList {
 	 * @param Action $edit
 	 * @param Action $active
 	 */
-	public function __construct( Action $filter, Action $newVehicle, $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer  ) {
+	public function __construct( Action $filter, Action $newVehicle, $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer, array $showAgencies = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
@@ -45,9 +46,16 @@ class FleetList extends AbstractList {
 		
 		$form = new BuilderForm('form-filter');
 		
+		if ($showAgencies) {
+			$input = new ComboBox('agency');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
+		
 		$input = new TextBox('description');
 		$input->setSpan(4);
-		$form->buildField('Descrição', $input);
+		$form->buildField('Descrição/Placa', $input);
 		
 		$input = new CheckBoxList('engine', true);
 		$input->setOptions(Vehicle::getEnginesAllowed());
@@ -113,6 +121,9 @@ class FleetList extends AbstractList {
 		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});
+		if ($showAgencies) {
+			$table->buildColumnText('responsibleUnit', 'Órgão', clone $filter, 70);
+		}
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
 		$table->buildColumnAction('active', new Icon('icon-remove'), $active, null, function( Button $button, FleetItem $obj ) {
 		    $button->setIcon(new Icon($obj->getActive() ? 'icon-remove' : 'icon-ok'));

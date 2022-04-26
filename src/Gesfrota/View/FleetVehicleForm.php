@@ -32,6 +32,7 @@ use PHPBootstrap\Widget\Modal\TgModalLoad;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Domain\Agency;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -42,13 +43,18 @@ class FleetVehicleForm extends AbstractForm {
 	 * @param Action $seekVehiclePlate
 	 * @param Action $seekVehicleModel
 	 * @param Action $searchVehicleModel
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
 	 * @param Action $seekOwner
 	 * @param Action $searchOwner
+	 * @param Action $newOwerPerson
+	 * @param Action $newOwerCompany
 	 * @param Action $cancel
+	 * @param boolean $showAgencies
 	 * @param ServiceCardForm $subform
 	 */
-    public function __construct(Action $submit, Action $seekVehiclePlate, Action $seekVehicleModel, Action $searchVehicleModel, Action $seekOwner, Action $searchOwner, Action $newOwerPerson, Action $newOwerCompany, Action $cancel, ServiceCardForm $subform = null ) {
-	    $this->buildPanel('Minha Frota', 'Gerenciar Veículos');
+    public function __construct(Action $submit, Action $seekVehiclePlate, Action $seekVehicleModel, Action $searchVehicleModel, Action $seekAgency, Action $searchAgency, Action $seekOwner, Action $searchOwner, Action $newOwerPerson, Action $newOwerCompany, Action $cancel, $showAgencies = false, ServiceCardForm $subform = null ) {
+	    $this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		$form = $this->buildForm('fleet-vehicle-form');
 		
 		$general = new Fieldset('Identificação do Veículo');
@@ -158,6 +164,26 @@ class FleetVehicleForm extends AbstractForm {
 		$form->buildField('Atualizado em', new Output('updated-at'), null, $general);
 		
 		$owner = new Fieldset('Proprietário');
+		
+		if ($showAgencies) {
+			$modal = new Modal('agency-search', new Title('Órgãos', 3));
+			$modal->setWidth(600);
+			$modal->addButton(new Button('Cancelar', new TgModalClose()));
+			$form->append($modal);
+			
+			$input = [];
+			$input[0] = new TextBox('agency-id');
+			$input[0]->setSuggestion(new Seek($seekAgency));
+			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$input[0]->setSpan(1);
+			
+			$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+			$input[1]->setEnableQuery(false);
+			$input[1]->setSpan(6);
+			
+			$form->buildField('Órgão', $input, null, $owner);
+		}
+		
 		$owner->setName('owner');
 		
 		$modal = new Modal('owner-search', new Title('Proprietário', 3));
@@ -169,6 +195,7 @@ class FleetVehicleForm extends AbstractForm {
 		$input = array();
 		$input[0] = new TextBox('owner-id');
 		$input[0]->setSuggestion(new Seek($seekOwner));
+		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input[0]->setSpan(1);
 		
 		$input[1] = new SearchBox('owner-name', $searchOwner, $modal);
@@ -238,6 +265,10 @@ class FleetVehicleForm extends AbstractForm {
 	        $data['vehicle-family-id'] = $model->getFamily()->getCode();
 	        $data['vehicle-family-name'] = $model->getFamily()->getName();
 	    }
+	    if ($object->getResponsibleUnit()) {
+	    	$data['agency-id'] = $object->getResponsibleUnit()->getCode();
+	    	$data['agency-name'] = $object->getResponsibleUnit()->getName();
+	    }
 	    if ($object->getOwner()) {
 	    	$data['owner-id'] = $object->getOwner()->getCode();
 	    	$data['owner-name'] = $object->getOwner()->getName();
@@ -269,27 +300,32 @@ class FleetVehicleForm extends AbstractForm {
 		if (isset($data['vehicle-model-id'])) {
 		    $object->setModel($em->find(VehicleModel::getClass(), $data['vehicle-model-id']));
 		}
+		if (isset($data['agency-id'])) {
+			$object->setResponsibleUnit($em->find(Agency::getClass(), $data['agency-id']));
+		}
 		if (isset($data['owner-id'])) {
 			$object->setOwner($em->find(Owner::getClass(), $data['owner-id']));
 		} else {
 			$object->setOwner(null);
 		}
-		$oldcards = $object->getAllCards();
-		foreach( $data['cards'] as $dto ) {
-			if ($dto->getId()) {
-				unset($oldcards[$dto->getId()]);
-				$card = $em->find(ServiceCard::getClass(), $dto->getId());
-			} else {
-				$card = new ServiceCard();
-				$em->persist($card);
+		if (isset($data['cards'])) {
+			$oldcards = $object->getAllCards();
+			foreach( $data['cards'] as $dto ) {
+				if ($dto->getId()) {
+					unset($oldcards[$dto->getId()]);
+					$card = $em->find(ServiceCard::getClass(), $dto->getId());
+				} else {
+					$card = new ServiceCard();
+					$em->persist($card);
+				}
+				$card->setNumber($dto->getNumber());
+				$provider = $em->find(ServiceProvider::getClass(), $dto->getServiceProvider()->getId());
+				$card->setServiceProvider($provider);
+				$object->addCard($card);
 			}
-			$card->setNumber($dto->getNumber());
-			$provider = $em->find(ServiceProvider::getClass(), $dto->getServiceProvider()->getId());
-			$card->setServiceProvider($provider);
-			$object->addCard($card);
-		}
-		foreach ( $oldcards as $card ) {
-			$em->remove($card);
+			foreach ( $oldcards as $card ) {
+				$em->remove($card);
+			}
 		}
 		$object->setYear((int) $data['year-manufacture'], (int) $data['year-model']);
 		$object->setAssetCode($data['asset-code']);

@@ -31,6 +31,8 @@ trait SearchAgency {
 			$this->session->selected = $entity->getId();
 			$data['agency-id'] = $entity->getCode();
 			$data['agency-name'] = $entity->getName();
+			$data['owner-id'] = $entity->getOwner()->getCode();
+			$data['owner-name'] = $entity->getOwner()->getName();
 		} catch ( NotFoundEntityException $e ){
 			$data['flash-message'] = new Alert('<strong>Ops! </strong>' . $e->getMessage());
 		} catch ( \Exception $e ) {

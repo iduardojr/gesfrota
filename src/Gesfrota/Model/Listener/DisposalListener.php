@@ -12,5 +12,11 @@ class DisposalListener {
             throw new \DomainException('It is not allowed to delete the Disposal.');
         }
     }
+    
+    public function prePersist(Disposal $disposal, LifecycleEventArgs $event) { 
+    	if ($disposal->getRequesterUnit()->isGovernment()) {
+    		throw new \DomainException('Not allowed to persist Discard because the requesting unit is Government.');
+    	}
+    }
 }
 

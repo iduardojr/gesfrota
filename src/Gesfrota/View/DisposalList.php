@@ -26,6 +26,10 @@ use PHPBootstrap\Widget\Misc\Anchor;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Widget\Dropdown\Dropdown;
+use PHPBootstrap\Widget\Dropdown\DropdownLink;
+use PHPBootstrap\Widget\Dropdown\TgDropdown;
 
 class DisposalList extends AbstractList {
 	
@@ -36,15 +40,22 @@ class DisposalList extends AbstractList {
 	 * @param Action $do
 	 * @param \Closure $doClosure
 	 * @param Action $print
-	 * @param boolean $showAgency
+	 * @param boolean $showAgencies
 	 */
-	public function __construct( Action $filter, Action $new, Action $remove, Action $do, \Closure $doClosure, Action $print, $showAgency = false  ) {
+	public function __construct( Action $filter, Action $new, Action $remove, Action $do, \Closure $doClosure, Action $print, array $showAgencies = null  ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);
 		
 		$form = new BuilderForm('form-filter');
+		
+		if ($showAgencies) {
+			$input = new ComboBox('agency');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$form->buildField('Órgão', $input);
+		}
 		
 		$input = new TextBox('description');
 		$input->setSpan(5);
@@ -67,8 +78,8 @@ class DisposalList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar(array(new Button('Novo', new TgLink($new), Button::Primary)),
-							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
+		$this->buildToolbar([new Button('Nova', new TgLink($new), Button::Primary)],
+							[new Button(['Filtrar', new Icon('icon-filter')], new TgModalOpen($modalFilter), [Button::Link, Button::Mini], $btnFilter)]);
 		
 		$table = $this->buildTable('disposal-list');
 		$table->buildPagination(clone $filter);
@@ -76,7 +87,7 @@ class DisposalList extends AbstractList {
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('description', 'Nome da Lista', clone $filter, null, ColumnText::Left);
 		
-		if ($showAgency) {
+		if ($showAgencies) {
 			$table->buildColumnText('requesterUnit', 'Órgão', clone $filter, 70);
 		}
 		
