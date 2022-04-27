@@ -67,9 +67,11 @@ class Vehicle extends FleetItem {
     /**
      * @param Agency $unit
      */
-    public function __construct(Agency $unit) {
+    public function __construct(Agency $unit = null) {
         parent::__construct($unit);
-        $this->setOwner($unit->getOwner());
+        if ( $unit ) {
+       	 	$this->setOwner($unit->getOwner());
+        }
     }
     
     /**

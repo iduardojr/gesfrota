@@ -109,10 +109,10 @@ class Layout extends View {
 			
 			$drop->addItem(new DropdownHeader('Minha Frota'));
 			if ($acl->isAllowed($role, $resource1)) {
-				$drop->addItem(new DropdownLink('Gerenciar Frota', new TgLink(new Action($resource1))));
+				$drop->addItem(new DropdownLink('Gerenciar Veículos e Equipamentos', new TgLink(new Action($resource1))));
 			}
 			if ($acl->isAllowed($role, $resource2)) {
-				$drop->addItem(new DropdownLink('Gerenciar Alienações', new TgLink(new Action($resource2))));
+				$drop->addItem(new DropdownLink('Gerenciar Disposições para Alienação', new TgLink(new Action($resource2))));
 			}
 		}
 		

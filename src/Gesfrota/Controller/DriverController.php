@@ -20,23 +20,26 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
+use Gesfrota\Model\Domain\Disposal;
 
 class DriverController extends AbstractController {
 	
 	use SearchAgency;
 	
 	public function indexAction() {
-		$filter = new Action($this);
-		$new = new Action($this, 'new');
-		$edit = new Action($this, 'edit');
-		$active = new Action($this, 'active');
-		$search = new Action($this, 'search');
-		$transfer = new Action($this, 'transfer');
-		$reset = new Action($this, 'resetPassword');
-		$showAgencies = $this->getShowAgencies();
-		
-		$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
 		try {
+			$this->session->selected = null;
+			$filter = new Action($this);
+			$new = new Action($this, 'new');
+			$edit = new Action($this, 'edit');
+			$active = new Action($this, 'active');
+			$search = new Action($this, 'search');
+			$transfer = new Action($this, 'transfer');
+			$reset = new Action($this, 'resetPassword');
+			$showAgencies = $this->getShowAgencies();
+			
+			$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
+		
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
@@ -85,14 +88,15 @@ class DriverController extends AbstractController {
 	}
 	
 	public function newAction() {
-		$form = $this->createForm(new Action($this, 'new'));
 		try {
+			$form = $this->createForm(new Action($this, 'new'));
 			$helper = $this->createHelperCrud();
 			$nif = $this->getRequest()->getPost('nif');
 			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
 			if ( $entity instanceof User) {
 				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
 			}
+			$this->session->selected = $this->getAgencyActive()->getId();
 			if ( $helper->create($form, new Driver($this->getAgencyActive())) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
@@ -107,10 +111,14 @@ class DriverController extends AbstractController {
 	}
 	
 	public function editAction() {
-		$id = $this->request->getQuery('key');
-		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 		try {
+			$id = $this->request->getQuery('key');
+			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
+			$entity = $this->getEntityManager()->find(Driver::getClass(), (int) $id);
+			if ( $entity instanceof Driver ) {
+				$this->session->selected = $entity->getLotation()->getAgency()->getId();
+			}
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $id) ) {
 				$entity = $helper->getEntity();

@@ -3,13 +3,13 @@ namespace Gesfrota\Controller;
 
 use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
+use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Services\Log;
+use Gesfrota\View\AuditLog;
 use Gesfrota\View\AuditLogTable;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
-use Gesfrota\Controller\Helper\NotFoundEntityException;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\View\AuditLog;
 
 class AuditController extends AbstractController { 
 		

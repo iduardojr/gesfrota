@@ -78,7 +78,7 @@ class AdministrativeUnitForm extends AbstractForm {
 		$input[0]->setSuggestion(new Seek($seek));
 		$input[0]->setSpan(1);
 		
-		$input[1] = new SearchBox('administrative-unit-description', $search, $modal);
+		$input[1] = new SearchBox('administrative-unit-name', $search, $modal);
 		$input[1]->setEnableQuery(false);
 		$input[1]->setSpan(6);
 		
@@ -138,7 +138,7 @@ class AdministrativeUnitForm extends AbstractForm {
 		}
 		if ( $parent ) {
 			$data['administrative-unit-id'] = $parent->getCode();
-			$data['administrative-unit-description'] = $parent->getFullDescription();
+			$data['administrative-unit-name'] = $parent->getFullDescription();
 		}
 		$data['name'] = $object->getName();
 		$data['acronym'] = $object->getAcronym();

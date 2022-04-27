@@ -61,7 +61,7 @@ abstract class FleetItem extends AbstractActivable {
     /**
      * @param Agency $unit
      */
-    public function __construct(Agency $unit) {
+    public function __construct(Agency $unit = null) {
         $this->setResponsibleUnit($unit);
         $this->cards = new ArrayCollection();
         $this->createdAt = $this->updatedAt = new \DateTime();

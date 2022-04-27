@@ -21,6 +21,7 @@ class AdministrativeUnitController extends AbstractController {
 	use SearchAgency;
 	
 	public function indexAction() {
+		$this->session->selected = null;
 		$showAgencies = $this->getShowAgencies();
 		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), $showAgencies);
 		try {
@@ -51,12 +52,16 @@ class AdministrativeUnitController extends AbstractController {
 	
 	
 	public function newAction() {
-		$id = $this->request->getQuery('key');
-		$form = $this->createForm(new Action($this, 'new'));
 		try {
+			$id = $this->request->getQuery('key');
+			$form = $this->createForm(new Action($this, 'new'));
+			
 			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
-			if (! $parent) {
+			if (! $parent instanceof AdministrativeUnit) {
 				$parent = $this->getAgencyActive();
+				$this->session->selected = $parent->getId();
+			} else {
+				$this->session->selected = $parent->getAgency()->getId();
 			}
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form, new AdministrativeUnit($parent)) ){
@@ -77,10 +82,15 @@ class AdministrativeUnitController extends AbstractController {
 	
 	
 	public function editAction() {
-		$id = $this->request->getQuery('key');
-		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 		try {
+			$id = $this->request->getQuery('key');
+			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
+		
+			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
+			if ( $entity instanceof AdministrativeUnit) {
+				$this->session->selected = $entity->getAgency()->getId();
+			}
 			$helper->setException(new NotFoundEntityException('Não foi possível editar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
 			if ( $helper->update($form, $id) ){
 				$entity = $helper->getEntity();

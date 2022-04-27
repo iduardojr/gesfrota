@@ -29,18 +29,19 @@ class RequesterController extends AbstractController {
 	use SearchAgency;
 	
 	public function indexAction() {
-		$filter = new Action($this);
-		$new = new Action($this, 'new');
-		$lotation = new Action($this, 'lotation');
-		$edit = new Action($this, 'edit');
-		$active = new Action($this, 'active');
-		$search = new Action($this, 'search');
-		$transfer = new Action($this, 'transfer');
-		$reset = new Action($this, 'resetPassword');
-		$showAgencies = $this->getShowAgencies();
-		
-		$list = new RequesterList($filter, $lotation, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
 		try {
+			$filter = new Action($this);
+			$new = new Action($this, 'new');
+			$lotation = new Action($this, 'lotation');
+			$edit = new Action($this, 'edit');
+			$active = new Action($this, 'active');
+			$search = new Action($this, 'search');
+			$transfer = new Action($this, 'transfer');
+			$reset = new Action($this, 'resetPassword');
+			$showAgencies = $this->getShowAgencies();
+			
+			$list = new RequesterList($filter, $lotation, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
+		
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
@@ -104,14 +105,15 @@ class RequesterController extends AbstractController {
 	}
 	
 	public function newAction() {
-		$form = $this->createForm(new Action($this, 'new'));
 		try {
+			$form = $this->createForm(new Action($this, 'new'));
 			$helper = $this->createHelperCrud();
 			$nif = $this->getRequest()->getPost('nif');
 			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
 			if ( $entity instanceof User) {
 				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
 			}
+			$this->session->selected = $this->getAgencyActive()->getId();
 			if ( $helper->create($form) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Requisitante <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
@@ -130,6 +132,10 @@ class RequesterController extends AbstractController {
 			$id = (int) $this->request->getQuery('key');
 			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
+			$entity = $this->getEntityManager()->find(Requester::getClass(), (int) $id);
+			if ( $entity instanceof Requester ) {
+				$this->session->selected = $entity->getLotation()->getAgency()->getId();
+			}
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Requisitante. Requisitante <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $id) ){
 				$entity = $helper->getEntity();

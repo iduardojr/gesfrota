@@ -15,6 +15,7 @@ use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\DisposalAppraisalForm;
+use Gesfrota\View\DisposalAssetsTable;
 use Gesfrota\View\DisposalChooseForm;
 use Gesfrota\View\DisposalConfirmForm;
 use Gesfrota\View\DisposalItemForm;
@@ -31,7 +32,6 @@ use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
-use Gesfrota\View\DisposalAssetsTable;
 
 
 class DisposalController extends AbstractController {
@@ -49,7 +49,7 @@ class DisposalController extends AbstractController {
 			$query->andWhere('r.id = :unit');
 			$query->setParameter('unit', $this->getAgencyActive()->getId());
 		}
-		
+
 		$filter = new Action($this);
 		$new = new Action($this, 'new');
 		$remove = new Action($this, 'delete');

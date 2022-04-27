@@ -61,11 +61,11 @@ class AclResource implements Plugin {
 			self::Dashboard,
 			self::Fleet, 
 			self::Disposal, 
-			self::Request, 
-			self::Driver, 
-			self::Requester, 
+			//self::Request, 
+			//self::Driver, 
+			//self::Requester, 
 			self::Account,
-			self::AdministrativeUnit
+			//self::AdministrativeUnit
 		];
 		$this->acl->allow(FleetManager::getClass(), $resource);
 		$this->acl->deny(FleetManager::getClass(), self::Disposal, ['confirm', 'devolve']);
