@@ -540,8 +540,36 @@ $(function() {
 			$('#request_types #type_all').trigger('click');
 	}
 	
-	$('body').on('click', '#agency-table [data-storage]', function(e) {
+	$('body').on('click', '#agency-search #agency-table [data-storage]', function(e) {
 		$('#agency-id').seek('lookup');
+	});
+	
+	$('body').on('click', '#transfer-from-modal [data-storage]', function(e) {
+		$.each( $(this).data('storage'), function( key, value ) {
+			$('#from-' + key ).trigger($.Event('update'), value);
+		});
+		$('#from-agency-id').seek('lookup');
+	});
+	
+	$('body').on('click', '#transfer-to-modal [data-storage]', function(e) {
+		$.each( $(this).data('storage'), function( key, value ) {
+			$('#to-' + key ).trigger($.Event('update'), value);
+		});
+		$('#to-agency-id').seek('lookup');
+	});
+	
+	$('body').on('click', '#transfer-unit-from-modal [data-storage]', function(e) {
+		$.each( $(this).data('storage'), function( key, value ) {
+			$('#from-' + key ).trigger($.Event('update'), value);
+		});
+		$('#from-administrative-unit-id').seek('lookup');
+	});
+	
+	$('body').on('click', '#transfer-unit-to-modal [data-storage]', function(e) {
+		$.each( $(this).data('storage'), function( key, value ) {
+			$('#to-' + key ).trigger($.Event('update'), value);
+		});
+		$('#to-administrative-unit-id').seek('lookup');
 	});
 	
 	var width = $('.container').width()+50;

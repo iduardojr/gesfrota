@@ -123,7 +123,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
     /**
      * Forces initialization of the proxy
      */
-    public function __load()
+    public function __load(): void
     {
         $this->__initializer__ && $this->__initializer__->__invoke($this, '__load', []);
     }
@@ -132,7 +132,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific loading logic
      */
-    public function __isInitialized()
+    public function __isInitialized(): bool
     {
         return $this->__isInitialized__;
     }
@@ -141,7 +141,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific loading logic
      */
-    public function __setInitialized($initialized)
+    public function __setInitialized($initialized): void
     {
         $this->__isInitialized__ = $initialized;
     }
@@ -150,7 +150,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific loading logic
      */
-    public function __setInitializer(\Closure $initializer = null)
+    public function __setInitializer(\Closure $initializer = null): void
     {
         $this->__initializer__ = $initializer;
     }
@@ -159,7 +159,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific loading logic
      */
-    public function __getInitializer()
+    public function __getInitializer(): ?\Closure
     {
         return $this->__initializer__;
     }
@@ -168,7 +168,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific loading logic
      */
-    public function __setCloner(\Closure $cloner = null)
+    public function __setCloner(\Closure $cloner = null): void
     {
         $this->__cloner__ = $cloner;
     }
@@ -177,7 +177,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * {@inheritDoc}
      * @internal generated method: use only when explicitly handling proxy specific cloning logic
      */
-    public function __getCloner()
+    public function __getCloner(): ?\Closure
     {
         return $this->__cloner__;
     }
@@ -188,7 +188,7 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
      * @deprecated no longer in use - generated code now relies on internal components rather than generated public API
      * @static
      */
-    public function __getLazyProperties()
+    public function __getLazyProperties(): array
     {
         return self::$lazyPropertiesDefaults;
     }

@@ -11,13 +11,21 @@ use Gesfrota\View\AgencyList;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\View\TransferForm;
+use Gesfrota\View\TransferFleetTable;
 
 
 class AgencyController extends AbstractController {
 	
 	public function indexAction() {
-		$list = new AgencyList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
 		try {
+			$filter = new Action($this);
+			$new = new Action($this, 'new');
+			$transfer1 = new Action(TransferFleetController::getClass());
+			$transfer2 = new Action(TransferUsersController::getClass());
+			$edit = new Action($this, 'edit');
+			$active = new Action($this, 'active');
+			$list = new AgencyList($filter, $new, $transfer1, $transfer2, $edit, $active);
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 			$query->andWhere('u.id > 0');
@@ -38,8 +46,8 @@ class AgencyController extends AbstractController {
 	}
 	
 	public function newAction() {
-		$form = $this->createForm(new Action($this, 'new'));
 		try {
+			$form = $this->createForm(new Action($this, 'new'));
 			$helper = $this->createHelperCrud();
 			if ( $helper->create($form) ){
 				$entity = $helper->getEntity();
@@ -55,9 +63,9 @@ class AgencyController extends AbstractController {
 	}
 	
 	public function editAction() {
-		$id = $this->request->getQuery('key');
-		$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 		try {
+			$id = $this->request->getQuery('key');
+			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $id) ) {

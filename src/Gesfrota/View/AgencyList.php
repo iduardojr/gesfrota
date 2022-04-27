@@ -17,14 +17,14 @@ use PHPBootstrap\Widget\Table\ColumnText;
 class AgencyList extends AbstractList {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $filter
 	 * @param Action $new
+	 * @param Action $transferFleet
+	 * @param Action $transferUser
 	 * @param Action $edit
 	 * @param Action $active
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $active ) {
+	public function __construct( Action $filter, Action $new, Action $transferFleet, Action $transferUser, Action $edit, Action $active) {
 		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Orgãos');
 		
 		$reset = clone $filter;
@@ -43,7 +43,9 @@ class AgencyList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary), 
+		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary),
+							new Button('Transferir Frota', new TgLink($transferFleet), Button::Success),
+							new Button('Transferir Usuários', new TgLink($transferUser), Button::Success),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
 		$table = $this->buildTable('agency-list');
