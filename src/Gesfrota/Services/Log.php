@@ -25,6 +25,18 @@ class Log {
 	protected $id;
 	
 	/**
+	 * @Column(type="string", name="classname")
+	 * @var string
+	 */
+	protected $className;
+	
+	/**
+	 * @Column(type="integer")
+	 * @var integer
+	 */
+	protected $oid;
+	
+	/**
 	 * @Column(type="array", name="old_value")
 	 * @var array
 	 */
@@ -62,11 +74,6 @@ class Log {
 	 */
 	protected $referer;
 	
-	/**
-	 * @Column(type="string", name="classname")
-	 * @var string
-	 */
-	protected $className;
 	
 	/**
 	 * @param string $referer
@@ -83,6 +90,7 @@ class Log {
 		$this->oldValue = $oldValue;
 		$this->newValue = $newValue;
 		$this->className = str_replace('DoctrineProxies\\__CG__\\', '', get_class(is_object($oldValue) ? $oldValue : $newValue));
+		$this->oid = is_object($oldValue) ? $oldValue->getId() : $newValue->getId();
 	}
 	
 	/**
@@ -92,8 +100,32 @@ class Log {
 		return $this->id;
 	}
 	
+	/**
+	 * @return string
+	 */
 	public function getCode() {
 		return Format::code($this->id, 6);
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassName() {
+		return $this->className;
+	}
+	
+	/**
+	 * @return integer
+	 */
+	public function getOID() {
+		return $this->oid;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getInstance() {
+		return $this->className . ' #'.$this->oid;
 	}
 
 	/**
@@ -139,13 +171,6 @@ class Log {
 	}
 	
 	/**
-	 * @return string
-	 */
-	public function getClassName() {
-		return $this->className;
-	}
-	
-	/**
 	 * @param Entity $object
 	 */
 	protected function transform(Entity $object) {
@@ -166,6 +191,7 @@ class Log {
 		unset($vars['__isInitialized__']);
 		unset($vars['__cloner__']);
 		unset($vars['__initializer__']);
+		unset($vars['id']);
 		return $vars;
 	}
 	

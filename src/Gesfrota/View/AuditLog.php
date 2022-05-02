@@ -38,9 +38,9 @@ class AuditLog extends Component {
 		$input1->setValue($log->getReferer());
 		$form->buildField('URI', $input1, null, $fieldset);
 		
-		$input1 = new Uneditable('classname');
+		$input1 = new Uneditable('instance');
 		$input1->setSpan(7);
-		$input1->setValue($log->getClassName());
+		$input1->setValue($log->getInstance());
 		$form->buildField('Objeto', $input1, null, $fieldset);
 		
 		$input1 = new Uneditable('user');
