@@ -4,28 +4,32 @@ namespace Gesfrota\View;
 use Gesfrota\Util\Format;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
+use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Format\TimeFormat;
+use PHPBootstrap\Validate\Pattern\Date;
+use PHPBootstrap\Validate\Pattern\Time;
+use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
+use PHPBootstrap\Widget\Form\Controls\TimeBox;
+use PHPBootstrap\Widget\Misc\Badge;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Form\Controls\DateBox;
-use PHPBootstrap\Widget\Form\Controls\TimeBox;
-use PHPBootstrap\Validate\Pattern\Date;
-use PHPBootstrap\Format\DateFormat;
-use PHPBootstrap\Format\TimeFormat;
-use PHPBootstrap\Validate\Pattern\Time;
-use PHPBootstrap\Widget\Misc\Badge;
+use Gesfrota\Services\Log;
 
 class AuditLogTable extends AbstractList {
 	
 	/**
 	 * @param Action $filter
 	 * @param Action $view
+	 * @param array $optClass
 	 */
-	public function __construct( Action $filter, Action $view ) {
+	public function __construct( Action $filter, Action $view, array $optClasses = [] ) {
 		$this->buildPanel('Segurança', 'Auditória');
 		
 		$reset = clone $filter;
@@ -48,6 +52,25 @@ class AuditLogTable extends AbstractList {
 		$input = new TextBox('user');
 		$input->setSpan(4);
 		$form->buildField('Usuário', $input);
+		
+		$inputs = [];
+		$input = new ComboBox('object-class');
+		$input->setSpan(3);
+		$input->addOption('', 'Todos');
+		foreach($optClasses as $value) {
+			$input->addOption($value, str_replace('Gesfrota\\Model\\Domain\\', '', $value));
+		}
+		$inputs[] = $input;
+		
+		$input = new TextBox('object-id');
+		$input->setPlaceholder('ID');
+		$input->setSpan(1);
+		//$input->setRequired(new Required($inputs[0], 'Por favor, selecione a classe do objeto'));
+		$inputs[] = $input;
+		
+		
+		
+		$form->buildField('Objeto', $inputs);
 		
 		$inputs = [];
 		$input = new DateBox('date-initial', new Date(new DateFormat('dd/mm/yyyy')));
@@ -88,7 +111,7 @@ class AuditLogTable extends AbstractList {
 			return Format::code($value, 6);
 		});
 		$table->buildColumnText('referer', 'URI', clone $filter, null, ColumnText::Left);
-		$table->buildColumnText('className', null, null, null, ColumnText::Right, function($value) {
+		$table->buildColumnText('instance', null, null, null, ColumnText::Right, function($value) {
 			return new Badge(str_replace('Gesfrota\\Model\\Domain\\', '', $value));
 		});
 		$table->buildColumnText('user', 'Usuário', clone $filter, 200, null, function ( $value ) {

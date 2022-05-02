@@ -15,7 +15,7 @@ class LoggerListener {
 		Logger::getInstance()->update($object);
 	}
 	
-	public function postRemove(Entity $object, LifecycleEventArgs $event) {
+	public function preRemove(Entity $object, LifecycleEventArgs $event) {
 		Logger::getInstance()->remove($object);
 	}
 }

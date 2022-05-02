@@ -10,16 +10,47 @@ use Gesfrota\View\AuditLogTable;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Disposal;
+use Gesfrota\Model\Domain\DisposalItem;
+use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\FleetManager;
+use Gesfrota\Model\Domain\Manager;
+use Gesfrota\Model\Domain\Owner;
+use Gesfrota\Model\Domain\OwnerPerson;
+use Gesfrota\Model\Domain\OwnerCompany;
+use Gesfrota\Model\Domain\ServiceProvider;
+use Gesfrota\Model\Domain\Survey;
+use Gesfrota\Model\Domain\VehicleFamily;
+use Gesfrota\Model\Domain\VehicleMaker;
+use Gesfrota\Model\Domain\VehicleModel;
+use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Model\Domain\Equipment;
+use Gesfrota\Model\Domain\RequestTrip;
+use Gesfrota\Model\Domain\RequestFreight;
+use Gesfrota\Model\Domain\ServiceCard;
 
 class AuditController extends AbstractController { 
 		
 	public function indexAction() {
-		$table = new AuditLogTable(new Action($this), new Action($this, 'view'));
+		$table = new AuditLogTable(new Action($this), new Action($this, 'view'), $this->getOptClassname());
 		$helper = new Crud($this->getEntityManager(), Log::class, $this);
 		$helper->read($table, null, ['sort' => 'created', 'order' => 'desc', 'limit' => 25, 'processQuery' => function( QueryBuilder $query, array $data ) {
 			if ( !empty($data['id']) ) {
 				$query->andWhere('u.id IN (:id)');
 				$query->setParameter('id', explode(',', $data['id']));
+			}
+			
+			if ( !empty($data['object-class'])) {
+				$query->andWhere('u.className = :className');
+				$query->setParameter('className', $data['object-class']);
+				
+				if (!empty($data['object-id'])) {
+					$query->andWhere('u.oid = :oid');
+					$query->setParameter('oid', $data['object-id']);
+				}
 			}
 			if ( !empty($data['uri']) ) {
 				$query->andWhere('u.referer LIKE :uri');
@@ -63,6 +94,41 @@ class AuditController extends AbstractController {
 			$this->forward('/');
 		}
 		
+	}
+	
+	/**
+	 * @return array
+	 */
+	private function getOptClassname() {
+		
+		$opt = [];
+		$opt[] = Agency::getClass();
+		$opt[] = AdministrativeUnit::getClass();
+		
+		$opt[] = OwnerPerson::getClass();
+		$opt[] = OwnerCompany::getClass();
+		$opt[] = ServiceProvider::getClass();
+		
+		$opt[] = Requester::getClass();
+		$opt[] = Driver::getClass();
+		$opt[] = FleetManager::getClass();
+		$opt[] = Manager::getClass();
+		
+		$opt[] = VehicleFamily::getClass();
+		$opt[] = VehicleMaker::getClass();
+		$opt[] = VehicleModel::getClass();
+		$opt[] = Vehicle::getClass();
+		$opt[] = Equipment::getClass();
+		$opt[] = ServiceCard::getClass();
+		
+		$opt[] = RequestTrip::getClass();
+		$opt[] = RequestFreight::getClass();
+		
+		$opt[] = Disposal::getClass();
+		$opt[] = DisposalItem::getClass();
+		$opt[] = Survey::getClass();
+		
+		return $opt;
 	}
 	
 }
