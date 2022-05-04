@@ -7,12 +7,22 @@
 		"symfony/yaml" : "2.*",
 		"symfony/cache" : "^5.3",
 		"phpmailer/phpmailer" : "^6.5",
-		"iduardojr/phpbootstrap" : "1.0.3"
+		"iduardojr/phpbootstrap" : ">=1.0.4"
 	},
 	"minimum-stability" : "stable",
 	"config" : {
 		"allow-plugins" : {
 			"composer/package-versions-deprecated" : true
+		}
+	},
+	"autoload" : {
+		"psr-4" : {
+			"Gesfrota\\" : "src/Gesfrota"
+		}
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"Gesfrota\\" : "src/Gesfrota"
 		}
 	}
 }

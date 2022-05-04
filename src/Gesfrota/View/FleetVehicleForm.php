@@ -33,6 +33,8 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use Gesfrota\Model\Domain\Agency;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
+use Gesfrota\Model\Domain\Fleet;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -119,17 +121,42 @@ class FleetVehicleForm extends AbstractForm {
 		
 		$form->buildField('Ano Fab/Mod', $input, null, $general);
 		
+		$context = new class implements InputContext {
+			/**
+			 * @var ComboBox
+			 */
+			protected $input;
+			
+			public function __construct() {
+			}
+			
+			public function setInput(ComboBox $input) {
+				$this->input = $input;
+			}
+			
+			public function getContextIdentify() {
+				return $this->input->getContextIdentify(Fleet::OWN);
+			}
+			
+			public function getContextValue() {
+				if ($this->input->getValue() == Fleet::OWN) {
+					return Fleet::OWN;
+				}
+				return null;
+			}
+		};
+		
 		$input = new TextBox('asset-code');
 		$input->setSpan(2);
 		$input->addFilter('strtoupper');
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$input->setRequired(new Required($context, 'Por favor, preencha esse campo'));
 		$form->buildField('Cód. Patrimonial', $input, null, $general);
 		
 		$input = new TextBox('vin');
 		$input->setSpan(2);
-	    $input->setMask('***************');
+	    $input->setMask('*****************');
 	    $input->addFilter('strtoupper');
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+	    $input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Chassi', $input, null, $general);
 		
 		$input = new TextBox('renavam');
@@ -155,6 +182,8 @@ class FleetVehicleForm extends AbstractForm {
 		$input->setOptions(Vehicle::getFleetAllowed());
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Tipo da Frota', $input, null, $general);
+		
+		$context->setInput($input);
 		
 		$input = new CheckBox('active', 'Ativo');
 		$input->setValue(true);

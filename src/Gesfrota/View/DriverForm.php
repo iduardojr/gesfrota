@@ -141,12 +141,6 @@ class DriverForm extends AbstractForm {
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Nº CNH', $input, null, $cnh);
 		
-		$input = new TextBox('renach');
-		$input->setSpan(2);
-		$input->setMask('aa99999999999');
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Renach', $input, null, $cnh);
-		
 		$input = new CheckBoxList('vehicles', true);
 		$input->setOptions(Driver::getLicenseAllowed());
 		$form->buildField('Categoria', $input, null, $cnh);
@@ -189,7 +183,6 @@ class DriverForm extends AbstractForm {
 		}
 		
 		$data['license'] = $object->getLicense();
-		$data['renach'] = $object->getRenach();
 		$data['vehicles'] = $object->getVehicles();
 		$data['expires'] = $object->getExpires();
 		$this->component->setData($data);
@@ -214,7 +207,6 @@ class DriverForm extends AbstractForm {
 		}
 		
 		$object->setLicense((int) $data['license']);
-		$object->setRenach($data['renach']);
 		
 		$object->setVehicles($data['vehicles']);
 		$object->setExpires(new \DateTime($data['expires']));

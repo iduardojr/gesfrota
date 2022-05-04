@@ -19,12 +19,6 @@ class Driver extends User {
 	protected $license;
 	
 	/**
-	 * @Column(type="string")
-	 * @var string
-	 */
-	protected $renach;
-	
-	/**
 	 * @Column(type="simple_array")
 	 * @var array
 	 */
@@ -42,13 +36,6 @@ class Driver extends User {
 	 */
 	public function getLicense() {
 		return $this->license;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getRenach() {
-		return $this->renach;
 	}
 
 	/**
@@ -70,13 +57,6 @@ class Driver extends User {
 	 */
 	public function setLicense(int $license) {
 		$this->license = $license;
-	}
-
-	/**
-	 * @param string $renach
-	 */
-	public function setRenach($renach) {
-		$this->renach = $renach;
 	}
 
 	/**

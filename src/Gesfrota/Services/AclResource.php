@@ -62,7 +62,7 @@ class AclResource implements Plugin {
 			self::Fleet, 
 			self::Disposal, 
 			//self::Request, 
-			//self::Driver, 
+			self::Driver, 
 			//self::Requester, 
 			self::Account,
 			//self::AdministrativeUnit
