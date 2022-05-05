@@ -32,10 +32,8 @@ class VehicleModelController extends AbstractController {
 			$helper = $this->createHelperCrud();
 			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
-			        $query->from(VehicleMaker::getClass(), 'p');
-			        $query->andWhere('u.name LIKE :query');
-			        $query->orWhere('p.name LIKE :query');
-			        $query->orWhere("CONCAT(p.name, ' ', u.name) LIKE :query");
+			        $query->join('u.maker', 'p');
+			        $query->andWhere("u.name LIKE :query OR p.name LIKE :query OR CONCAT(p.name, ' ', u.name) LIKE :query");
 			        $query->setParameter('query', '%' . $data['name'] . '%');
 				}
 				
