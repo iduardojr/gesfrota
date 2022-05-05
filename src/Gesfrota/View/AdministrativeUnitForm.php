@@ -162,7 +162,9 @@ class AdministrativeUnitForm extends AbstractForm {
 		$object->setPhone($data['phone']);
 		if ( $data['administrative-unit-id'] ) {
 			$object->setParent($em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']));
-		} 
+		} elseif ( $data['agency-id'] ) {
+			$object->setAgency($em->find(Agency::getClass(), $data['agency-id']));
+		}
 	}
 
 }

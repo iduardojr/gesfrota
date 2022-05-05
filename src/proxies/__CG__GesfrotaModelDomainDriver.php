@@ -84,10 +84,10 @@ class Driver extends \Gesfrota\Model\Domain\Driver implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'license', 'renach', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
+            return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'license', 'renach', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
+        return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
     }
 
     /**
@@ -208,17 +208,6 @@ class Driver extends \Gesfrota\Model\Domain\Driver implements \Doctrine\ORM\Prox
     /**
      * {@inheritDoc}
      */
-    public function getRenach()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getRenach', []);
-
-        return parent::getRenach();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getVehicles()
     {
 
@@ -247,17 +236,6 @@ class Driver extends \Gesfrota\Model\Domain\Driver implements \Doctrine\ORM\Prox
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setLicense', [$license]);
 
         return parent::setLicense($license);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setRenach($renach)
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setRenach', [$renach]);
-
-        return parent::setRenach($renach);
     }
 
     /**
