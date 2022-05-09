@@ -13,6 +13,7 @@ use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class VehicleMakerList extends AbstractList {
 	
@@ -36,6 +37,11 @@ class VehicleMakerList extends AbstractList {
 		$input->setSpan(3);
 		$form->buildField('Descrição', $input);
 		
+		$input = new ComboBox('type');
+		$input->setOptions(['Todos'] + VehicleMaker::getTypesAllowed());
+		$input->setSpan(3);
+		$form->buildField('Descrição', $input);
+		
 		$input = new CheckBox('only-active', 'Apenas ativos');
 		$form->buildField(null, $input);
 		
@@ -51,6 +57,9 @@ class VehicleMakerList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('type', 'Tipo', clone $filter, 150, null, function ( $value ) {
+			return VehicleMaker::getTypesAllowed()[$value];
+		});
 		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});

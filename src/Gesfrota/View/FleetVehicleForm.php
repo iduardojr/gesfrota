@@ -35,6 +35,7 @@ use PHPBootstrap\Widget\Nav\Tabbable;
 use Gesfrota\Model\Domain\Agency;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 use Gesfrota\Model\Domain\Fleet;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -64,7 +65,7 @@ class FleetVehicleForm extends AbstractForm {
 		$input = new TextBox('plate');
 		$input->setSuggestion(new Seek($seekVehiclePlate));
 		$input->setSpan(2);
-		$input->setMask('aaa-9*99');
+		$input->setMask('aaa9*99');
 		$input->addFilter('strtoupper');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Placa', $input, null, $general);
@@ -76,14 +77,18 @@ class FleetVehicleForm extends AbstractForm {
 		$this->modals['vehicle-model'] = $modal;
 		
 		$input = array();
-		$input[0] = new TextBox('vehicle-model-id');
+		$input[0] = new TextBox('vehicle-model-fipe');
 		$input[0]->setSuggestion(new Seek($seekVehicleModel));
-		$input[0]->setSpan(1);
+		$input[0]->setSpan(2);
 		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		
+		$input[1] = new Hidden('vehicle-model-id');
+		$form->buildField('Fipe', $input, null, $general);
+		
+		$input = array();
 		$input[1] = new SearchBox('vehicle-model-name', $searchVehicleModel, $modal);
-		$input[1]->setEnableQuery(true);
-		$input[1]->setSpan(6);
+		$input[1]->setEnableQuery(false);
+		$input[1]->setSpan(7);
 		
 		$form->buildField('Modelo', $input, null, $general);
 		
@@ -287,7 +292,8 @@ class FleetVehicleForm extends AbstractForm {
 	    $data['plate'] = $object->getPlate();
 	    $model = $object->getModel();
 	    if ($model) {
-	        $data['vehicle-model-id'] = $model->getCode();
+	        $data['vehicle-model-id'] = $model->getId();
+	        $data['vehicle-model-fipe'] = $model->getFipe();
 	        $data['vehicle-model-name'] = $model->getName();
 	        $data['vehicle-maker-id'] = $model->getMaker()->getCode();
 	        $data['vehicle-maker-name'] = $model->getMaker()->getName();

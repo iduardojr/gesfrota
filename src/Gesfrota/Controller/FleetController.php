@@ -342,17 +342,19 @@ class FleetController extends AbstractController {
 	public function seekVehicleAction() {
 		try {
 			$data['vehicle-model-id'] = '';
+			$data['vehicle-model-fipe'] = '';
 			$data['vehicle-model-name'] = '';
 			$data['vehicle-maker-id'] = '';
 			$data['vehicle-maker-name'] = '';
 			$data['vehicle-family-id'] = '';
 			$data['vehicle-family-name'] = '';
-			$id = $this->request->getQuery('query');
-			$entity = $this->getEntityManager()->find(VehicleModel::getClass(), (int) $id);
+			$code = $this->request->getQuery('query');
+			$entity = $this->getEntityManager()->getRepository(VehicleModel::getClass())->findOneBy(['fipe' => $code]);
 			if ( ! $entity instanceof VehicleModel ) {
-				throw new NotFoundEntityException('Modelo de Veículo <em>#' . $id . '</em> não encontrado.');
+				throw new NotFoundEntityException('Modelo de Veículo <em>#' . $code . '</em> não encontrado.');
 			}
-			$data['vehicle-model-id'] = $entity->getCode();
+			$data['vehicle-model-id'] = $entity->getId();
+			$data['vehicle-model-fipe'] = $entity->getCode();
 			$data['vehicle-model-name'] = $entity->getName();
 			$data['vehicle-maker-id'] = $entity->getMaker()->getCode();
 			$data['vehicle-maker-name'] = $entity->getMaker()->getName();

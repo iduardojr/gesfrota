@@ -94,7 +94,6 @@ class Vehicle extends FleetItem {
      */
     public function getDescription() {
         $descr = (string) $this->getModel();
-        $descr.= ' (' . $this->getEnginesAllowed()[$this->getEngine()] . ')';
         $descr.= ' ' . implode('/', $this->getYear());
         return $descr;
     }

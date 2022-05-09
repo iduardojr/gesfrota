@@ -2,6 +2,7 @@
 namespace Gesfrota\Model\Domain;
 
 use Gesfrota\Model\AbstractActivable;
+use Gesfrota\Model\Entity;
 
 /**
  * Modelo de Veículo
@@ -35,6 +36,13 @@ class VehicleModel extends AbstractActivable {
 	 * @var VehicleMaker
 	 */
 	protected $maker;
+	
+	/**
+	 * @see Entity::getCode()
+	 */
+	public function getCode() {
+		return $this->getFipe();
+	}
 	
 	/**
 	 * Construtor

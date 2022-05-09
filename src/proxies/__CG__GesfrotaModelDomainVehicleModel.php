@@ -197,6 +197,17 @@ class VehicleModel extends \Gesfrota\Model\Domain\VehicleModel implements \Doctr
     /**
      * {@inheritDoc}
      */
+    public function getCode()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getCode', []);
+
+        return parent::getCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getName()
     {
 
@@ -335,17 +346,6 @@ class VehicleModel extends \Gesfrota\Model\Domain\VehicleModel implements \Doctr
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getId', []);
 
         return parent::getId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getCode()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getCode', []);
-
-        return parent::getCode();
     }
 
     /**

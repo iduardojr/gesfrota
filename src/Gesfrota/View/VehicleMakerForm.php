@@ -11,6 +11,7 @@ use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class VehicleMakerForm extends AbstractForm {
 	
@@ -30,6 +31,12 @@ class VehicleMakerForm extends AbstractForm {
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Nome', $input, null, $general);
+		
+		$input = new ComboBox('type');
+		$input->setOptions(VehicleMaker::getTypesAllowed());
+		$input->setSpan(3);
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$form->buildField('Tipo', $input, null, $general);
 		
 			
 		$input = new CheckBox('active', 'Ativo');
@@ -52,6 +59,7 @@ class VehicleMakerForm extends AbstractForm {
 	 */
 	public function extract( VehicleMaker $object ) {
 		$data['name'] = $object->getName();
+		$data['type'] = $object->getType();
 		$data['active'] = $object->getActive();
 		$this->component->setData($data);
 	}
@@ -62,6 +70,7 @@ class VehicleMakerForm extends AbstractForm {
 	public function hydrate( VehicleMaker $object ) {
 		$data = $this->component->getData();
 		$object->setName($data['name']);
+		$object->setType($data['type']);
 		$object->setActive($data['active']);
 	}
 

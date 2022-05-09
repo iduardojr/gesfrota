@@ -84,10 +84,10 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'name', 'active', 'id'];
+            return ['__isInitialized__', 'name', 'type', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'name', 'active', 'id'];
+        return ['__isInitialized__', 'name', 'type', 'active', 'id'];
     }
 
     /**
@@ -214,6 +214,28 @@ class VehicleMaker extends \Gesfrota\Model\Domain\VehicleMaker implements \Doctr
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setName', [$name]);
 
         return parent::setName($name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getType()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getType', []);
+
+        return parent::getType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setType($type)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setType', [$type]);
+
+        return parent::setType($type);
     }
 
     /**

@@ -76,7 +76,7 @@ class FleetList extends AbstractList {
 		$input = new TextBox('vehicle-plate');
 		$input->setSuggestion(new Seek($seekVehicle));
 		$input->setSpan(2);
-		$input->setMask('aaa-9*99');
+		$input->setMask('aaa9*99');
 		$form->buildField('Placa', $input);
 		
 		$input = new Output('vehicle-description');
@@ -104,7 +104,12 @@ class FleetList extends AbstractList {
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId(null, clone $filter);
-		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left, function ($value, FleetItem $obj) {
+			if ($obj instanceof Vehicle) {
+				$value .= ' <small class="pull-right">' . $obj->getModel()->getCode() . '</small>';
+			}
+			return $value;
+		});
 		$table->buildColumnText('class', null, null, 70, null, function ( $value ) {
 			$label = new Badge(constant($value.'::FLEET_TYPE'));
 			if ($value == Vehicle::getClass()) {
