@@ -147,10 +147,12 @@ class Crud {
 			$datasource->setFilter($list->getFormFilter()->getData());
 			if ( $datasource->hasFilter() ) {
 				$list->setAlert(new Alert($datasource->getTotal() . ' resultado(s) encontrado(s) pela pesquisa', Alert::Info));
+				$get['page'] = 1;
 			}
 		}
 		if ( isset($get['reset']) ) {
 			$datasource->setFilter(array());
+			$get['page'] = 1;
 		}
 		if ( $datasource->hasFilter() ) {
 			$storage['data']['filter'] = $datasource->getFilter();

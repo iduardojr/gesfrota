@@ -221,6 +221,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível confirmar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
 			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this, 'decline', ['key' => $id]), $this->createFildesetConfirm());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -246,6 +247,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível recusar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
 			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this,'decline', ['key' => $id]), new RequestFieldSetDecline());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -271,6 +273,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível iniciar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
 			$form = new RequestForm($entity, new Action($this,'initiate', ['key' => $id]), new Action($this), null, new RequestFieldsetInitiate());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -296,6 +299,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível finilizar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
 			$form = new RequestForm($entity, new Action($this,'finish', ['key' => $id]), new Action($this), null, new RequestFieldsetFinish());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -321,6 +325,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível cancelar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
 			$form = new RequestForm($entity, new Action($this,'cancel', ['key' => $id]), new Action($this), null, new RequestFieldSetCancel());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -365,7 +370,7 @@ class RequestController extends AbstractController {
 			$query->join('u.responsibleUnit', 'r');
 			$query->andWhere('u.active = true');
 			$query->andWhere('r.id = :unit');
-			$query->setParameter('unit', $this->getAgencyActive()->getId());
+			$query->setParameter('unit', $this->session->selected);
 			$query->andWhere('u.plate = :plate');
 			$query->setParameter('plate', $plate);
 			
@@ -390,7 +395,17 @@ class RequestController extends AbstractController {
 	public function seekDriverAction() {
 		try {
 			$id = $this->request->getQuery('query');
-			$entity = $this->getEntityManager()->find(Driver::getClass(), (int) $id);
+			
+			$query = $this->getEntityManager()->getRepository(Driver::getClass())->createQueryBuilder('u');
+			$query->distinct(true);
+			$query->join('u.lotation', 'u1');
+			$query->andWhere('u.active = true');
+			$query->andWhere('u.id = :id');
+			$query->andWhere('u1.agency = :agency');
+			$query->setParameter('agency', $this->session->selected);
+			$query->setParameter('id', (int) $id);
+			
+			$entity = $query->getQuery()->getSingleResult();
 			if ( ! $entity instanceof Driver ) {
 				throw new NotFoundEntityException('Motorista <em>#' . $id . '</em> não encontrado.');
 			}
@@ -409,7 +424,7 @@ class RequestController extends AbstractController {
 			$query->andWhere('u.active = true');
 			$query->join('u.lotation', 'u1');
 			$query->andWhere('u1.agency = :agency');
-			$query->setParameter('agency', $this->getAgencyActive()->getId());
+			$query->setParameter('agency', $this->session->selected);
 			$params = $this->request->getQuery();
 			
 			if ( $params['query'] ) {
@@ -435,7 +450,7 @@ class RequestController extends AbstractController {
 			$query->join('u.responsibleUnit', 'r');
 			$query->andWhere('u.active = true');
 			$query->andWhere('r.id = :unit');
-			$query->setParameter('unit', $this->getAgencyActive()->getId());
+			$query->setParameter('unit', $this->session->selected);
 			$params = $this->request->getQuery();
 			
 			$params = $this->request->getQuery();

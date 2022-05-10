@@ -40,7 +40,7 @@ class VehicleMakerList extends AbstractList {
 		$input = new ComboBox('type');
 		$input->setOptions(['Todos'] + VehicleMaker::getTypesAllowed());
 		$input->setSpan(3);
-		$form->buildField('Descrição', $input);
+		$form->buildField('Tipo de Veículo', $input);
 		
 		$input = new CheckBox('only-active', 'Apenas ativos');
 		$form->buildField(null, $input);
@@ -57,7 +57,7 @@ class VehicleMakerList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('name', 'Nome', clone $filter, null, ColumnText::Left);
-		$table->buildColumnText('type', 'Tipo', clone $filter, 150, null, function ( $value ) {
+		$table->buildColumnText('type', 'Tipo', clone $filter, 200, null, function ( $value ) {
 			return VehicleMaker::getTypesAllowed()[$value];
 		});
 		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {

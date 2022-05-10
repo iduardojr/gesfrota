@@ -30,7 +30,7 @@ class VehicleModelController extends AbstractController {
 		$list = new VehicleModelList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), $families);
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, null, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, null, ['limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
 			        $query->join('u.maker', 'p');
 			        $query->andWhere("u.name LIKE :query OR p.name LIKE :query OR CONCAT(p.name, ' ', u.name) LIKE :query");
@@ -45,7 +45,7 @@ class VehicleModelController extends AbstractController {
 				if ( !empty($data['only-active']) ) {
 					$query->andWhere('u.active = true');
 				}
-			}));
+			}]);
 			$list->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
 			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));

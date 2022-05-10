@@ -36,7 +36,7 @@ class VehicleMakerForm extends AbstractForm {
 		$input->setOptions(VehicleMaker::getTypesAllowed());
 		$input->setSpan(3);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Tipo', $input, null, $general);
+		$form->buildField('Tipo de Veículo', $input, null, $general);
 		
 			
 		$input = new CheckBox('active', 'Ativo');

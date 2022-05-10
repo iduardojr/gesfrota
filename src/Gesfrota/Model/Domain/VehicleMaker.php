@@ -17,17 +17,16 @@ class VehicleMaker extends AbstractActivable {
 	const CARS = 1;
 	
 	/**
+	 * Motos
+	 * @var integer
+	 */
+	const MOTORCYCLES = 2;
+	
+	/**
 	 * Caminhões e micro-ônibus
 	 * @var integer
 	 */
-	const TRUCKS = 2;
-	
-	/**
-	 * Motos
-	 * 
-	 * @var integer
-	 */
-	const MOTORCYCLES = 3;
+	const TRUCKS = 3;
 	
 	/**
 	 * @Column(type="string")
@@ -101,8 +100,8 @@ class VehicleMaker extends AbstractActivable {
 	 */
 	public static function getTypesAllowed() {
 		return [self::CARS => 'Carros e Utilitários Pequenos',
-				self::TRUCKS => 'Caminhões e Micro-Ônibus',
-				self::MOTORCYCLES => 'Motos'
+				self::MOTORCYCLES => 'Motos',
+				self::TRUCKS => 'Caminhões e Micro-Ônibus'
 		];
 		
 	}

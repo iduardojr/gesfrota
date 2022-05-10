@@ -23,6 +23,10 @@ class VehicleMakerController extends AbstractController {
 					$query->andWhere('u.name LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');
 				}
+				if ( !empty($data['type']) ) {
+					$query->andWhere('u.type = :type');
+					$query->setParameter('type', $data['type']);
+				}
 				if ( !empty($data['only-active']) ) {
 					$query->andWhere('u.active = true');
 				}
