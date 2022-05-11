@@ -11,8 +11,6 @@ use Gesfrota\View\AgencyList;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\View\TransferForm;
-use Gesfrota\View\TransferFleetTable;
 
 
 class AgencyController extends AbstractController {

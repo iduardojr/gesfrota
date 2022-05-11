@@ -374,6 +374,19 @@ fieldset > legend {
 #disposal-items-table {
 	margin: 20px 0;
 }
+#fleet-vehicle-form .span1 {
+	width: 78px !important;
+}
+#fleet-vehicle-form .span2 {
+	width: 200px !important;
+}
+#fleet-vehicle-form select.span2 {
+	width: 214px !important;
+}
+.controls-row .help-inline {
+	margin-left: 0 !important;
+	margin-top: 5px !important;
+}
 .card {
 	padding: 1.5rem;
 	border: 0;

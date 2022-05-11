@@ -36,10 +36,19 @@ use Gesfrota\Model\Domain\Agency;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 use Gesfrota\Model\Domain\Fleet;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
+use PHPBootstrap\Widget\Action\TgStorage;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
+use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Tooltip\Tooltip;
 
 class FleetVehicleForm extends AbstractForm {
     
     private $modals = [];
+    
+    /**
+     * @var Button
+     */
+    private $ownerDefault;
 	
 	/**
 	 * @param Action $submit
@@ -64,7 +73,7 @@ class FleetVehicleForm extends AbstractForm {
 		
 		$input = new TextBox('plate');
 		$input->setSuggestion(new Seek($seekVehiclePlate));
-		$input->setSpan(2);
+		$input->setSpan(1);
 		$input->setMask('aaa9*99');
 		$input->addFilter('strtoupper');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
@@ -79,16 +88,16 @@ class FleetVehicleForm extends AbstractForm {
 		$input = array();
 		$input[0] = new TextBox('vehicle-model-fipe');
 		$input[0]->setSuggestion(new Seek($seekVehicleModel));
-		$input[0]->setSpan(2);
+		$input[0]->setPlaceholder('Codigo Fipe');
+		$input[0]->setMask('999999-9');
+		$input[0]->setSpan(1);
 		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		
 		$input[1] = new Hidden('vehicle-model-id');
-		$form->buildField('Fipe', $input, null, $general);
 		
-		$input = array();
-		$input[1] = new SearchBox('vehicle-model-name', $searchVehicleModel, $modal);
-		$input[1]->setEnableQuery(false);
-		$input[1]->setSpan(7);
+		$input[2] = new SearchBox('vehicle-model-name', $searchVehicleModel, $modal);
+		$input[2]->setEnableQuery(false);
+		$input[2]->setSpan(6);
 		
 		$form->buildField('Modelo', $input, null, $general);
 		
@@ -151,12 +160,6 @@ class FleetVehicleForm extends AbstractForm {
 			}
 		};
 		
-		$input = new TextBox('asset-code');
-		$input->setSpan(2);
-		$input->addFilter('strtoupper');
-		$input->setRequired(new Required($context, 'Por favor, preencha esse campo'));
-		$form->buildField('Cód. Patrimonial', $input, null, $general);
-		
 		$input = new TextBox('vin');
 		$input->setSpan(2);
 	    $input->setMask('*****************');
@@ -189,6 +192,12 @@ class FleetVehicleForm extends AbstractForm {
 		$form->buildField('Tipo da Frota', $input, null, $general);
 		
 		$context->setInput($input);
+		
+		$input = new TextBox('asset-code');
+		$input->setSpan(2);
+		$input->addFilter('strtoupper');
+		$input->setRequired(new Required($context, 'Por favor, preencha esse campo'));
+		$form->buildField('Cód. Patrimonial', $input, null, $general);
 		
 		$input = new CheckBox('active', 'Ativo');
 		$input->setValue(true);
@@ -232,8 +241,14 @@ class FleetVehicleForm extends AbstractForm {
 		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input[0]->setSpan(1);
 		
+		if (! $showAgencies) {
+			$this->ownerDefault = new Button(new Icon('icon-star'));
+			$this->ownerDefault->setTooltip(new Tooltip('Proprietário Favorito'));
+			$input[0] = new Embed([$input[0], $this->ownerDefault]);
+		}
+		
 		$input[1] = new SearchBox('owner-name', $searchOwner, $modal);
-		$input[1]->setEnableQuery(true);
+		$input[1]->setEnableQuery(false);
 		$input[1]->setSpan(6);
 		
 		
@@ -248,7 +263,7 @@ class FleetVehicleForm extends AbstractForm {
 		$drop->addItem(new DropdownLink('Pessoa Jurídica', new TgModalLoad($newOwerCompany, $modal)));
 		
 		$input = new ButtonGroup(new Button('Novo Proprietário', null, Button::Primary), new Button(null, new TgDropdown($drop), Button::Primary));
-		$form->buildField(null, $input, null, $owner);
+		$control = $form->buildField(null, $input, null, $owner);
 		
 		$form->buildField("<br>", [], null, $owner);
 		
@@ -303,6 +318,10 @@ class FleetVehicleForm extends AbstractForm {
 	    if ($object->getResponsibleUnit()) {
 	    	$data['agency-id'] = $object->getResponsibleUnit()->getCode();
 	    	$data['agency-name'] = $object->getResponsibleUnit()->getName();
+	    	
+	    	$owner = $object->getResponsibleUnit()->getOwner();
+	    	//$this->ownerDefault->setLabel($object->getResponsibleUnit()->getAcronym());
+	    	$this->ownerDefault->setToggle(new TgStorage(['owner-id' => $owner->getCode(), 'owner-name' => $owner->getName()]));
 	    }
 	    if ($object->getOwner()) {
 	    	$data['owner-id'] = $object->getOwner()->getCode();

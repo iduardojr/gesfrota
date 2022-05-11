@@ -1,12 +1,13 @@
 $(function() {
 	
 	$('body').on('errorform', 'form', function( e, ui ){
+		$('.control-group', ui.form).removeClass('error');
+		$('.control-group', ui.form).find('.validate').remove(); 
+		$('.tab-error', ui.form).removeClass('tab-error');
 		$.each(ui.invalidList, function (i, error) {
 			var group = $(error.element).closest('.control-group'),
 				tabpane = group.closest('.tab-pane'),
 				tab = $('[data-toggle=tab][data-target="#' + tabpane.attr('id') + '"]');
-			group.find('.validate')
-				 .remove(); 
 			group.addClass('error')
 				 .find('.controls')
 				 .append('<span class="validate help-inline">' + error.message + '</span>');
@@ -113,7 +114,7 @@ $(function() {
 		$(this).mask(mask, opt);
 	});
 	
-	$('body').on('change', '#duration', function (e) {
+	$('body').on('change', '#request-trip-form #duration', function (e) {
 		if($('#duration').field('value') == 'custom') {
 			$('#duration-group').show();
 		} else {
@@ -121,7 +122,16 @@ $(function() {
 		}
 	});
 	
-	$('#duration').trigger('change');
+	$('body').on('change', '#fleet-vehicle-form #fleet', function (e) {
+		if($(this).field('value') == 2) {
+			$('#asset-code').field('disabled', true);
+		} else {
+			$('#asset-code').field('disabled', false);
+		}
+	});
+	
+	$('#request-trip-form #duration').trigger('change');
+	$('#fleet-vehicle-form #fleet').trigger('change');
 	
 	$.fn.datepicker.defaults.language = 'pt-BR';
 	
