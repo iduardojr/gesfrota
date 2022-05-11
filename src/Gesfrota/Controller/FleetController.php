@@ -33,6 +33,7 @@ use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\Model\Domain\Disposal;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
+use Doctrine\ORM\Query\Expr\Join;
 
 class FleetController extends AbstractController {
 	
@@ -374,18 +375,17 @@ class FleetController extends AbstractController {
 			$query = $this->getEntityManager()->getRepository(VehicleModel::getClass())->createQueryBuilder('u');
 			$query->distinct(true);
 			$params = $this->request->getQuery();
-			if ( $params['query'] ) {
-				$query->from(VehicleMaker::getClass(), 'p');
-				$query->andWhere('u.name LIKE :query');
+			if ( !empty($params['query']) ) {
+				$query->join('u.maker', 'p');
+				$query->where('u.name LIKE :query');
 				$query->orWhere('p.name LIKE :query');
 				$query->orWhere("CONCAT(p.name, ' ', u.name) LIKE :query");
 				$query->setParameter('query', '%' . $params['query'] . '%');
 			}
-			
-			$datasource = new EntityDatasource($query);
-			$datasource->setPage(isset($params['page']) ? $params['page'] : 1);
+			$ds = new EntityDatasource($query);
+			$ds->setPage(isset($params['page']) ? $params['page'] : 1);
 			$table = new VehicleModelTable(new Action($this,'searchVehicle', $params));
-			$table->setDataSource($datasource);
+			$table->setDataSource($ds);
 			$modal = $this->createForm(Vehicle::getClass(), new Action($this))->getModalVehicleModel();
 			$widget = new PanelQuery($table, new Action($this,'searchVehicle', $params), $params['query'], $modal);
 		} catch ( \Exception $e ) {
