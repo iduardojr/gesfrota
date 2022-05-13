@@ -18,6 +18,12 @@ class VehicleModel extends AbstractActivable {
 	protected $name;
 	
 	/**
+	 * @Column(type="string", name="full_name" )
+	 * @var string
+	 */
+	protected $fullName;
+	
+	/**
 	 * @Column(type="string")
 	 * @var string
 	 */
@@ -64,7 +70,7 @@ class VehicleModel extends AbstractActivable {
 	 * @return string
 	 */
 	public function getDescription() {
-	    return (string) $this->getMaker() . ' ' . $this->getName();
+	    return (string) $this->fullName;
 	}
 	
 	/**

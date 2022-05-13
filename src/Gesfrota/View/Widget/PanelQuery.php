@@ -9,6 +9,7 @@ use PHPBootstrap\Widget\Table\Table;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Pagination\AbstractPagination;
 use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Table\Column;
 
 
 class PanelQuery extends Box {
@@ -38,6 +39,13 @@ class PanelQuery extends Box {
 		$pagination = $table->getPagination();
 		if ( $pagination instanceof AbstractPagination ) {
 			$toggle = $pagination->getToggle();
+			if ( $toggle instanceof TgAjax ) {
+				$toggle->setTarget($this);
+			}
+		}
+		$columns = $table->getColumns();
+		foreach ($columns as $col) {
+			$toggle = $col->getToggle();
 			if ( $toggle instanceof TgAjax ) {
 				$toggle->setTarget($this);
 			}

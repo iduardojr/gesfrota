@@ -84,10 +84,10 @@ class VehicleModel extends \Gesfrota\Model\Domain\VehicleModel implements \Doctr
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'name', 'fipe', 'family', 'maker', 'active', 'id'];
+            return ['__isInitialized__', 'name', 'fullName', 'fipe', 'family', 'maker', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'name', 'fipe', 'family', 'maker', 'active', 'id'];
+        return ['__isInitialized__', 'name', 'fullName', 'fipe', 'family', 'maker', 'active', 'id'];
     }
 
     /**

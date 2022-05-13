@@ -32,9 +32,12 @@ class VehicleModelController extends AbstractController {
 			$helper = $this->createHelperCrud();
 			$helper->read($list, null, ['limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
-			        $query->join('u.maker', 'p');
-			        $query->andWhere("u.name LIKE :query OR p.name LIKE :query OR CONCAT(p.name, ' ', u.name) LIKE :query");
-			        $query->setParameter('query', '%' . $data['name'] . '%');
+					$words = explode(' ', $data['name']);
+					foreach($words as $key => $word) {
+						$query->andWhere('u.fullName LIKE :query1'.$key . ' OR u.fullName LIKE :query2' . $key);
+						$query->setParameter('query1'.$key, $word . '%');
+						$query->setParameter('query2'.$key, '% '. $word. '%');
+					}
 				}
 				
 				if ( !empty($data['family']) ) {
@@ -48,6 +51,7 @@ class VehicleModelController extends AbstractController {
 			}]);
 			$list->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
+			throw $e;
 			$list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);

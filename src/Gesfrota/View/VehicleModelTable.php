@@ -23,8 +23,8 @@ class VehicleModelTable extends BuilderTable {
 				
 		$this->buildColumnTextId();
 		$this->buildColumnText('name', 'Modelo', null, null, ColumnText::Left);
-		$this->buildColumnText('maker', 'Fabricante', clone $filter, 3, ColumnText::Left);
-		$this->buildColumnText('family', 'Família', clone $filter, 3, ColumnText::Left);
+		$this->buildColumnText('maker', 'Fabricante', null, 3, ColumnText::Left);
+		$this->buildColumnText('family', 'Família', null, 3, ColumnText::Left);
 		$this->buildColumnAction('select', new Icon('icon-ok'), null, null, function( Button $button, VehicleModel $object ) {
 		    $data['vehicle-model-id'] = $object->getId();
 		    $data['vehicle-model-name'] = $object->getName();

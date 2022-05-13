@@ -56,7 +56,7 @@ class VehicleModelList extends AbstractList {
 		$table = $this->buildTable('vehicle-model-list');
 		$table->buildPagination(clone $filter);
 		
-		$table->buildColumnTextId(null, clone $filter);
+		$table->buildColumnText('fipe', '#', clone $filter, 70);
 		$table->buildColumnText('name', 'Modelo', clone $filter, null, ColumnText::Left);
 		$table->buildColumnText('maker', 'Fabricante', clone $filter, 3, ColumnText::Left);
 		$table->buildColumnText('family', 'Família', clone $filter, 3, ColumnText::Left);

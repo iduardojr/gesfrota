@@ -4,6 +4,7 @@ namespace Gesfrota\View\Widget;
 use Doctrine\ORM\QueryBuilder;
 use PHPBootstrap\Widget\Pagination\Paginator;
 use PHPBootstrap\Widget\Table\DataSource;
+use Doctrine\ORM\Query\Expr\Select;
 
 
 /**
@@ -291,11 +292,14 @@ class EntityDatasource extends Paginator implements DataSource {
 			}
 			
 			$query->setFirstResult($offset)
-				   ->setMaxResults($limit)
-				   ->orderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
+				   ->setMaxResults($limit);
 			
 			if ( isset($this->defaults['processQuery']) ) {
 				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
+			}
+				   
+			if ($this->getSort()) {
+				$query->addOrderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
 			}
 			
 			$this->data = $query->getQuery()->getResult();

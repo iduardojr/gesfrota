@@ -23,6 +23,7 @@ use Gesfrota\View\Widget\WaypointsInput;
 use PHPBootstrap\Mvc\Application;
 use PHPBootstrap\Render\RenderKit;
 use PHPBootstrap\Widget\Action\Action;
+use Gesfrota\Util\MatchAgainst;
 
 // MODE
 $isDevMode = getenv('APPLICATION_ENV') == 'development';
@@ -78,6 +79,7 @@ $paths = array_merge($paths, $config['paths'], array(dirname(__DIR__), dirname(_
 set_include_path(implode(PATH_SEPARATOR, $paths)); 
 
 $doctrine = Setup::createAnnotationMetadataConfiguration($config['doctrine']['paths'], $isDevMode, $config['doctrine']['proxies']);
+$doctrine->addCustomStringFunction('MATCH', MatchAgainst::class);
 $paths = explode(PATH_SEPARATOR, get_include_path());
 
 // ROUTER

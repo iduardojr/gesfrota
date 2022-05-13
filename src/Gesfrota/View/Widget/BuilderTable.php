@@ -16,6 +16,7 @@ use PHPBootstrap\Widget\Pagination\Paginator;
 use PHPBootstrap\Widget\Pagination\Scrolling\Sliding;
 use Gesfrota\Model\Entity;
 use PHPBootstrap\Widget\Toggle\Togglable;
+use PHPBootstrap\Widget\Toggle\Parameterizable;
 
 class BuilderTable extends Table {
 	
@@ -74,17 +75,20 @@ class BuilderTable extends Table {
 	 *
 	 * @param string $name
 	 * @param string $label
-	 * @param Action $sort
+	 * @param Action|Parameterizable $sort
 	 * @param integer $span
 	 * @param string $align
 	 * @param callback $filter
 	 * @return ColumnText
 	 */
-	public function buildColumnText( $name, $label, Action $sort = null, $span = null, $align = null, $filter = null ) {
+	public function buildColumnText( $name, $label, $sort = null, $span = null, $align = null, $filter = null ) {
 		$column = new ColumnText($name, $label);
 		if ( $sort !== null ) {
+			if ($sort instanceof Action) {
+				$sort = new TgLink($sort);
+			}
 			$sort->setParameter('sort', $name);
-			$column->setToggle(new TgLink($sort));
+			$column->setToggle($sort);
 		}
 		$column->setSpan($span);
 		$column->setAlign($align);

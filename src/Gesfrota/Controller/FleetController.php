@@ -375,14 +375,15 @@ class FleetController extends AbstractController {
 			$query = $this->getEntityManager()->getRepository(VehicleModel::getClass())->createQueryBuilder('u');
 			$query->distinct(true);
 			$params = $this->request->getQuery();
-			if ( !empty($params['query']) ) {
-				$query->join('u.maker', 'p');
-				$query->where('u.name LIKE :query');
-				$query->orWhere('p.name LIKE :query');
-				$query->orWhere("CONCAT(p.name, ' ', u.name) LIKE :query");
-				$query->setParameter('query', '%' . $params['query'] . '%');
-			}
 			$ds = new EntityDatasource($query);
+			if ( !empty($params['query']) ) {
+				$words = explode(' ', $params['query']);
+				foreach($words as $key => $word) {
+					$query->andWhere('u.fullName LIKE :query1'.$key . ' OR u.fullName LIKE :query2' . $key);
+					$query->setParameter('query1'.$key, $word . '%');
+					$query->setParameter('query2'.$key, '% '. $word. '%');
+				}
+			}
 			$ds->setPage(isset($params['page']) ? $params['page'] : 1);
 			$table = new VehicleModelTable(new Action($this,'searchVehicle', $params));
 			$table->setDataSource($ds);
