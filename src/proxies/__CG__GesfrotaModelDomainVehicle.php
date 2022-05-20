@@ -84,10 +84,10 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'plate', 'yearModel', 'yearManufacture', 'vin', 'renavam', 'model', 'owner', 'odometer', 'engine', 'assetCode', 'fleet', 'responsibleUnit', 'cards', 'createdAt', 'updatedAt', 'active', 'id'];
+            return ['__isInitialized__', 'plate', 'yearModel', 'yearManufacture', 'vin', 'renavam', 'model', 'owner', 'odometer', 'engine', 'assetCode', 'fleet', 'responsibleUnit', 'resultCenters', 'cards', 'createdAt', 'updatedAt', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'plate', 'yearModel', 'yearManufacture', 'vin', 'renavam', 'model', 'owner', 'odometer', 'engine', 'assetCode', 'fleet', 'responsibleUnit', 'cards', 'createdAt', 'updatedAt', 'active', 'id'];
+        return ['__isInitialized__', 'plate', 'yearModel', 'yearManufacture', 'vin', 'renavam', 'model', 'owner', 'odometer', 'engine', 'assetCode', 'fleet', 'responsibleUnit', 'resultCenters', 'cards', 'createdAt', 'updatedAt', 'active', 'id'];
     }
 
     /**
@@ -417,6 +417,28 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
+    public function getFleetType()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getFleetType', []);
+
+        return parent::getFleetType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAssetCode()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAssetCode', []);
+
+        return parent::getAssetCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getEngine()
     {
 
@@ -472,17 +494,6 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function getAssetCode()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAssetCode', []);
-
-        return parent::getAssetCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function setAssetCode($assetCode)
     {
 
@@ -500,17 +511,6 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setResponsibleUnit', [$unit]);
 
         return parent::setResponsibleUnit($unit);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getFleetType()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getFleetType', []);
-
-        return parent::getFleetType();
     }
 
     /**
@@ -577,6 +577,61 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAllCards', []);
 
         return parent::getAllCards();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addResultCenter(\Gesfrota\Model\Domain\ResultCenter $unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'addResultCenter', [$unit]);
+
+        return parent::addResultCenter($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeResultCenter($unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'removeResultCenter', [$unit]);
+
+        return parent::removeResultCenter($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeAllResultCenters()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'removeAllResultCenters', []);
+
+        return parent::removeAllResultCenters();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAllResultCenters()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAllResultCenters', []);
+
+        return parent::getAllResultCenters();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getResultCentersActived()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getResultCentersActived', []);
+
+        return parent::getResultCentersActived();
     }
 
     /**

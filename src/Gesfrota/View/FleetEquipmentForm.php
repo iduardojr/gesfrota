@@ -24,6 +24,9 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use Gesfrota\Model\Domain\Agency;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
+use Gesfrota\Model\Domain\ResultCenter;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 
 class FleetEquipmentForm extends AbstractForm {
     
@@ -33,10 +36,11 @@ class FleetEquipmentForm extends AbstractForm {
 	 * @param Action $cancel
 	 * @param Action $seekAgency
 	 * @param Action $searchAgency
+	 * @param array $optResultCenter
 	 * @param boolean $showAgencies
 	 * @param ServiceCardForm $subform
 	 */
-	public function __construct(Action $submit, Action $cancel, Action $seekAgency, Action $searchAgency, $showAgencies = false, ServiceCardForm $subform = null ) {
+	public function __construct(Action $submit, Action $cancel, Action $seekAgency, Action $searchAgency, array $optResultCenter, $showAgencies = false, ServiceCardForm $subform = null ) {
 	    $this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		$form = $this->buildForm('fleet-equipment-form');
 		
@@ -71,6 +75,17 @@ class FleetEquipmentForm extends AbstractForm {
 			
 			$form->buildField('Órgão', $input, null, $general);
 		}
+		
+		$required = new Hidden('result-center-required');
+		$required->setValue(count($optResultCenter) > 0 ? 1 : '');
+		
+		$input = new ChosenBox('results-center', true);
+		$input->setOptions($optResultCenter);
+		$input->setSpan(7);
+		$input->setPlaceholder('Selecione uma ou mais opções');
+		$input->setTextNoResult('Nenhum resultado encontrado para ');
+		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$form->buildField('Centro de Resultado', [$input, $required], null, $general)->setName('results-center-group');
 		
 		$input = new ComboBox('engine');
 		$input->setSpan(2);
@@ -119,6 +134,7 @@ class FleetEquipmentForm extends AbstractForm {
 	    	$data['agency-id'] = $object->getResponsibleUnit()->getCode();
 	    	$data['agency-name'] = $object->getResponsibleUnit()->getName();
 	    }
+	    $data['results-center'] = array_keys($object->getAllResultCenters());
 		$data['engine'] = $object->getEngine();
 		$data['fleet'] = $object->getFleet();
 		$data['active'] = $object->getActive();
@@ -143,6 +159,12 @@ class FleetEquipmentForm extends AbstractForm {
 		$object->setActive($data['active']);
 		if (isset($data['agency-id'])) {
 			$object->setResponsibleUnit($em->find(Agency::getClass(), $data['agency-id']));
+		}
+		$object->removeAllResultCenters();
+		if (isset($data['results-center'])) {
+			foreach($data['results-center'] as $key) {
+				$object->addResultCenter($em->find(ResultCenter::getClass(), $key));
+			}
 		}
 		if (isset($data['cards'])) {
 			$oldcards = $object->getAllCards();

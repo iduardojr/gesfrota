@@ -84,10 +84,10 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
+            return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'resultCenters', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'active', 'id'];
+        return ['__isInitialized__', 'name', 'acronym', 'nif', 'contact', 'phone', 'email', 'owner', 'resultCenters', 'active', 'id'];
     }
 
     /**
@@ -368,6 +368,28 @@ class Agency extends \Gesfrota\Model\Domain\Agency implements \Doctrine\ORM\Prox
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'isGovernment', []);
 
         return parent::isGovernment();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isResultCenterRequired()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'isResultCenterRequired', []);
+
+        return parent::isResultCenterRequired();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getResultCentersActived()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getResultCentersActived', []);
+
+        return parent::getResultCentersActived();
     }
 
     /**

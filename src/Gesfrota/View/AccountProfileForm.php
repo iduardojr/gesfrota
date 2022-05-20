@@ -44,8 +44,8 @@ class AccountProfileForm extends AbstractForm {
 		
 		$input = new TextBox('cell');
 		$input->setSpan(2);
-		$input->setMask(Mask::PhoneBR);
-		$input->setPattern(new Pattern(Pattern::PhoneBR, 'Por favor, informe um telefone'));
+		$input->setMask(Mask::CellBR);
+		$input->setPattern(new Pattern(Pattern::CellBR, 'Por favor, informe um telefone'));
 		$form->buildField('Celular', $input);
 		
 		$input = new ComboBox('gender');

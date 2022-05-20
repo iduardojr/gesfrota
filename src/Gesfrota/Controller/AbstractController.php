@@ -54,7 +54,7 @@ abstract class AbstractController extends Controller {
 			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 			$query->where('u.id > 0');
 			$result = $query->getQuery()->getResult();
-			$options = ['Todos'];
+			$options = ['' => 'Todos'];
 			foreach($result as $item) {
 				$options[$item->id] = (string) $item;
 			}

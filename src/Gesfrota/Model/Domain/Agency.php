@@ -2,6 +2,8 @@
 namespace Gesfrota\Model\Domain;
 
 use Gesfrota\Model\AbstractActivable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Orgão
@@ -53,10 +55,17 @@ class Agency extends AbstractActivable {
 	protected $owner;
 	
 	/**
+	 * @OneToMany(targetEntity="ResultCenter", mappedBy="agency")
+	 * @var ArrayCollection
+	 */
+	protected $resultCenters;
+	
+	/**
 	 * Construtor
 	 */
 	public function __construct() {
 		$this->owner = new OwnerCompany($this);
+		$this->resultCenters = new ArrayCollection();
 		parent::__construct();
 	}
 	
@@ -198,6 +207,27 @@ class Agency extends AbstractActivable {
 	 */
 	public function isGovernment() {
 		return $this->id === 0;
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function isResultCenterRequired() {
+		return count($this->getResultCentersActived()) ? true : false;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getResultCentersActived() {
+		$options = [];
+		$criteria = new Criteria();
+		$criteria->where(Criteria::expr()->eq('active', true));
+		$result = $this->resultCenters->matching($criteria);
+		foreach($result as $item) {
+			$options[$item->id] = $item->description;
+		}
+		return $options;
 	}
 	
 	/**

@@ -115,7 +115,7 @@ class AuditLogTable extends AbstractList {
 			return new Badge(str_replace('Gesfrota\\Model\\Domain\\', '', $value));
 		});
 		$table->buildColumnText('user', 'Usuário', clone $filter, 200, null, function ( $value ) {
-			return $value->getName();
+			return (string) $value;
 		});
 		$table->buildColumnText('agency', 'Órgão', clone $filter, 100, null, function ( $value ) {
 			return $value->getAcronym() ;

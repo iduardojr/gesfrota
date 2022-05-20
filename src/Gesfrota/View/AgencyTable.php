@@ -21,8 +21,8 @@ class AgencyTable extends BuilderTable {
 		
 		$this->buildPagination(new TgAjax(clone $filter, $this));
 				
-		$this->buildColumnTextId();
-		$this->buildColumnText('acronym', 'Sigla', null, 70);
+		$this->buildColumnTextId(50);
+		$this->buildColumnText('acronym', 'Sigla', null, 100, ColumnText::Left);
 		$this->buildColumnText('name', 'Descrição', null, null, ColumnText::Left);
 		$this->buildColumnAction('select', new Icon('icon-ok'), null, null, function( Button $button, Agency $agency ) {
 			$data['agency-id'] = $agency->getCode();

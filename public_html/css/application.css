@@ -168,6 +168,12 @@ form,
 .controls-row > [class*="span"] {
     margin-left: 30px;
 }
+.controls .chosen-container[class*="span"] {
+	margin-left: 0 !important;
+}
+.loading {
+    background: url(/vendor/phpbootstrap/images/loading.gif) center right no-repeat !important;
+}
 .well {
 	background: #fff;
 	overflow: hidden;
@@ -589,6 +595,9 @@ fieldset > legend {
 }
 #disposal-item-form #asset-owner-nif {
 	white-space: nowrap;
+}
+#fleet-vehicle-form #results_center_chosen {
+	width: 630px;
 }
 @media print {
 	@page {

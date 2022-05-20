@@ -19,7 +19,7 @@ class AdministrativeUnitTable extends BuilderTable  {
 	public function __construct( Action $filter ) {
 		parent::__construct('administrative-unit-table');
 		
-		$this->buildPagination(new TgAjax(clone $filter, $this))->setSize(Pagination::Mini);
+		$this->buildPagination(new TgAjax(clone $filter, $this));
 				
 		$this->buildColumnTextId();
 		$this->buildColumnText('partialDescription', 'Descrição', null, 900, ColumnText::Left);

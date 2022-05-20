@@ -5,41 +5,35 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
-use Gesfrota\Model\Domain\User;
-use Gesfrota\View\Layout;
-use Gesfrota\View\UserForm;
-use Gesfrota\View\UserList;
-use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
+use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\User;
+use Gesfrota\Services\Logger;
+use Gesfrota\View\Layout;
+use Gesfrota\View\UserForm;
+use Gesfrota\View\UserList;
 use PHPBootstrap\Mvc\View\JsonView;
-use Gesfrota\Model\Domain\Agency;
-use Gesfrota\View\Widget\EntityDatasource;
-use Gesfrota\View\AgencyTable;
-use Gesfrota\View\Widget\PanelQuery;
-use Gesfrota\Model\Domain\AdministrativeUnit;
-use Gesfrota\View\AdministrativeUnitTable;
-use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Misc\Title;
-use Doctrine\ORM\Query\ResultSetMapping;
+use PHPBootstrap\Widget\Action\Action;
+use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
-use PHPBootstrap\Widget\Action\TgLink;
-use Gesfrota\Services\Logger;
-use Gesfrota\Controller\Helper\SearchAgency;
+use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Model\Domain\ResultCenter;
 
 class UserController extends AbstractController { 
 	
 	use SearchAgency;
 	
 	public function indexAction() {
-		$filter = new Action($this);
+		$this->setAgencySelected(null);
 		
+		$filter = new Action($this);
 		$newManager = new Action($this, 'newManager');
 		$newFleetManager = new Action($this, 'newFleetManager');
 		$newDriver = new Action($this, 'newDriver');
@@ -66,7 +60,7 @@ class UserController extends AbstractController {
 		$agencies = $query->getQuery()->getResult();
 		
 		$list = new UserList($filter, $newManager, $newFleetManager, $newDriver, $newRequester, $edit, $active, $reset, $profile, $agencies);
-		$this->session->selected = $this->getAgencyActive()->getId();
+		
 		try {
 			$helper = $this->createHelperCrud();
 			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
@@ -194,13 +188,13 @@ class UserController extends AbstractController {
 		try {
 			$id = (int) $this->request->getQuery('key');
 			$user = $this->getEntityManager()->find(User::getClass(), $id);
-			if ( ! $user ) {
+			if ( ! $user instanceof User ) {
 				throw new NotFoundEntityException('Não foi possível editar o Usuário. Usuário <em>#' . $id . '</em> não encontrado.');
 			}
-			$this->session->selected = $user->getLotation()->getAgency()->getId();
+			$this->setAgencySelected($user->getLotation()->getAgency());
+			
 			$form = $this->createForm($user, new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
-			$helper->setException(new NotFoundEntityException('Não foi possível editar o Usuário. Usuário <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $user) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>' . $entity->userType. ' <em>#' . $entity->code . ' ' . $entity->name .  '</em> alterado com sucesso!', Alert::Success));
@@ -330,8 +324,37 @@ class UserController extends AbstractController {
 		$seekUnit = new Action($this, 'seekUnit');
 		$searchUnit = new Action($this, 'searchUnit');
 		$cancel = new Action($this);
-		return new UserForm($user, $submit, $seek, $seekAgency, $searchAgency, $seekUnit, $searchUnit, $cancel);
+		
+		$optResultCenter = [];
+		$criteria = ['active' => true, 'agency' => $this->getAgencySelected()->getId()];
+		$rs = $this->getEntityManager()->getRepository(ResultCenter::getClass())->findBy($criteria);
+		foreach ($rs as $result) {
+			$optResultCenter[$result->id] = $result->description;
+		}
+		
+		return new UserForm($user, $submit, $seek, $seekAgency, $searchAgency, $seekUnit, $searchUnit, $cancel, $optResultCenter);
 	}
+	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
+	}
+
 	
 }
 ?>

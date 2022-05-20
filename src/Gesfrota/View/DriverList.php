@@ -23,6 +23,8 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Validate\Required\Required;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class DriverList extends AbstractList {
 	
@@ -34,9 +36,10 @@ class DriverList extends AbstractList {
 	 * @param Action $search
 	 * @param Action $transfer
 	 * @param Action $password
+	 * @param array $optResultCenter
 	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $showAgencies = null) {
+	public function __construct( Action $filter, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $optResultCenter, array $showAgencies = null) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Motorista');
 		
 		$reset = clone $filter;
@@ -49,6 +52,16 @@ class DriverList extends AbstractList {
 			$input->setSpan(2);
 			$input->setOptions($showAgencies);
 			$form->buildField('Órgão', $input);
+		}
+		
+		if ( $showAgencies || $optResultCenter) {
+			$input = new ChosenBox('results-center', true);
+			$input->setOptions($optResultCenter);
+			$input->setSpan(4);
+			$input->setPlaceholder('Selecione uma ou mais opções');
+			$input->setTextNoResult('Nenhum resultado encontrado para ');
+			$input->setDisabled($optResultCenter ? false : true);
+			$form->buildField('Centro de Resultado', $input);
 		}
 		
 		$input = new TextBox('name');
@@ -74,10 +87,20 @@ class DriverList extends AbstractList {
 		$form = new BuilderForm('transfer-driver-form');
 		$form->append(new Panel(null, 'flash-message-driver'));
 		
+		if ($showAgencies) {
+			$showAgencies[''] = 'Selecionar Órgão';
+			$input = new ComboBox('agency-to');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$form->buildField('Transferir Para', $input);
+		}
+		
 		$input = new TextBox('driver-nif');
 		$input->setSuggestion(new Seek($search));
 		$input->setSpan(2);
 		$input->setMask('999.999.999-99');
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('CPF', $input);
 		
 		$input = new Output('driver-name');

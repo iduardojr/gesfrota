@@ -13,7 +13,6 @@ use Gesfrota\Model\Domain\OwnerPerson;
 use Gesfrota\Model\Domain\ServiceCard;
 use Gesfrota\Model\Domain\ServiceProvider;
 use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\VehicleMaker;
 use Gesfrota\Model\Domain\VehicleModel;
 use Gesfrota\View\FleetEquipmentForm;
 use Gesfrota\View\FleetList;
@@ -33,7 +32,7 @@ use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\Model\Domain\Disposal;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
-use Doctrine\ORM\Query\Expr\Join;
+use Gesfrota\Model\Domain\ResultCenter;
 
 class FleetController extends AbstractController {
 	
@@ -42,7 +41,7 @@ class FleetController extends AbstractController {
 	public function indexAction() {
 		try {
 			$this->session->cards = null;
-			$this->session->selected = null;
+			$this->setAgencySelected(null);
 			
 			$filter = new Action($this);
 			$new1 	= new Action($this, 'newVehicle');
@@ -53,8 +52,20 @@ class FleetController extends AbstractController {
 			$transfer = new Action($this, 'transferVehicle');
 			
 			$showAgencies = $this->getShowAgencies();
-			$query = $this->getEntityManager()->getRepository(FleetItem::getClass())->createQueryBuilder('u');
 			
+			$helper = $this->createHelperCrud();
+			
+			$storage = $helper->getStorage();
+			if ($this->request->getPost('agency')) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->request->getPost('agency'));
+			} elseif ( isset($storage['data']['filter']['agency']) && ! empty($storage['data']['filter']['agency']) ) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $storage['data']['filter']['agency']);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			$optResultCenter = $agency->getResultCentersActived();
+			
+			$query = $this->getEntityManager()->getRepository(FleetItem::getClass())->createQueryBuilder('u');
 			
 			if (! $showAgencies ) {
 				$query->join('u.responsibleUnit', 'r');
@@ -71,13 +82,16 @@ class FleetController extends AbstractController {
 			$query->andWhere('u.id NOT IN (' . $q1->getDQL() . ')');
 			$query->setParameter('disposal', [Disposal::DRAFTED, Disposal::DECLINED]);
 			
-		    $list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $transfer, $showAgencies);
+			$list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $transfer, $optResultCenter, $showAgencies);
 		
-			$helper = $this->createHelperCrud();
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
 					$query->andWhere('u.responsibleUnit = :agency');
 					$query->setParameter('agency', $data['agency']);
+				}
+				if (!empty($data['results-center'])) {
+					$query->andWhere(':rc MEMBER OF u.resultCenters');
+					$query->setParameter('rc', $data['results-center']);
 				}
 				if ( !empty($data['description']) ) {
 						$q1 = $this->getEntityManager()->getRepository(Vehicle::getClass())->createQueryBuilder('v');
@@ -130,7 +144,6 @@ class FleetController extends AbstractController {
 				}
 			}
 			$agency = null;
-			$this->session->selected = $this->getAgencyActive()->getId();
 			if (! $this->getAgencyActive()->isGovernment()) {
 				$agency = $this->getAgencyActive();
 			}
@@ -152,7 +165,6 @@ class FleetController extends AbstractController {
 		try {
 			$helper = $this->createHelperCrud();
 			$agency = null;
-			$this->session->selected = $this->getAgencyActive()->getId();
 			if (! $this->getAgencyActive()->isGovernment()) {
 				$agency = $this->getAgencyActive();
 			}
@@ -177,7 +189,7 @@ class FleetController extends AbstractController {
 			if ( ! $entity instanceof FleetItem ) {
 			    throw new NotFoundEntityException('Não foi possível editar o Item da Frota. Item da Frota <em>#' . $id . '</em> não encontrado.');
 			}
-			$this->session->selected = $entity->getResponsibleUnit()->getId();
+			$this->setAgencySelected($entity->getResponsibleUnit());
 			$form = $this->createForm($entity, new Action($this, 'edit', array('key' => $id)));
 			
 			$helper = $this->createHelperCrud();
@@ -398,11 +410,13 @@ class FleetController extends AbstractController {
 	public function transferVehicleAction() {
 		try {
 			$plate = strtoupper($this->request->getPost('vehicle-plate'));
+			$to = $this->request->getPost('agency-to');
 			$entity = $this->getEntityManager()->getRepository(Vehicle::getClass())->findOneBy(['plate' => $plate]);
-			if ( $entity === null ) {
+			$agency = $to ? $this->getEntityManager()->find(Agency::getClass(), $to) : $this->getAgencyActive();
+			if ( ! $entity instanceof Vehicle ) {
 				throw new \DomainException('Veículo <em>' . $plate . '</em> não encontrado.');
 			}
-			$entity->setResponsibleUnit($this->getAgencyActive());
+			$entity->setResponsibleUnit($agency);
 			$this->getEntityManager()->flush();
 			$this->setAlert(new Alert('<strong>Ok! </strong>Veículo <em>#' . $entity->code . ' ' . $entity->description .  '</em> transferido com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ) {
@@ -468,9 +482,15 @@ class FleetController extends AbstractController {
 	    $find['agency'] = new Action($this, 'searchAgency');
 	    $showAgencies = $this->getAgencyActive()->isGovernment();
 	    
-	    if (is_object($item)) {
+	    if ($item instanceof  FleetItem) {
 	    	$item = get_class($item);
 	    } 
+	    $optResultCenter = [];
+	    $criteria = ['active' => true, 'agency' => $this->getAgencySelected()->getId()];
+	    $rs = $this->getEntityManager()->getRepository(ResultCenter::getClass())->findBy($criteria);
+	    foreach ($rs as $result) {
+	    	$optResultCenter[$result->id] = $result->description;
+	    }
 	    switch ($item) {
 	    	case Vehicle::getClass():
 	    		$seek['vehicle-plate'] =  new Action($this, 'seekVehiclePlate');
@@ -480,11 +500,11 @@ class FleetController extends AbstractController {
 	    		$find['owner'] = new Action($this, 'searchOwner');
 	    		$newOwnerPerson = new Action($this, 'newOwnerPerson');
 	    		$newOwnerCompany = new Action($this, 'newOwnerCompany');
-	    		return new FleetVehicleForm($submit, $seek['vehicle-plate'], $seek['vehicle'], $find['vehicle'], $seek['agency'], $find['agency'], $seek['owner'], $find['owner'], $newOwnerPerson, $newOwnerCompany, $cancel, $showAgencies, $subform);
+	    		return new FleetVehicleForm($submit, $seek['vehicle-plate'], $seek['vehicle'], $find['vehicle'], $seek['agency'], $find['agency'], $seek['owner'], $find['owner'], $newOwnerPerson, $newOwnerCompany, $cancel, $optResultCenter, $showAgencies, $subform);
 	    		break;
 	    		
 	    	case Equipment::getClass():
-	    		return new FleetEquipmentForm($submit, $cancel, $seek['agency'], $find['agency'], $showAgencies, $subform);
+	    		return new FleetEquipmentForm($submit, $cancel, $seek['agency'], $find['agency'], $optResultCenter, $showAgencies, $subform);
 	    		break;
 	    		
 	    	default:
@@ -509,6 +529,25 @@ class FleetController extends AbstractController {
 		return new ServiceCardForm(new Action($this, 'addCard'), new Action($this, 'removeCard'), $options, $this->session);
 	}
 	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
+	}
 	
 }
 ?>

@@ -28,6 +28,9 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Domain\ResultCenter;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 
 class RequesterForm extends AbstractForm {
 	
@@ -39,9 +42,10 @@ class RequesterForm extends AbstractForm {
 	 * @param Action $seekAgency
 	 * @param Action $searchAgency
 	 * @param Action $cancel
+	 * @param array $optResultCenter
 	 * @param Agency $showAgency
 	 */
-	public function __construct( Action $submit, Action $seek, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, Action $cancel, Agency $showAgency = null ) {
+	public function __construct( Action $submit, Action $seek, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, Action $cancel, array $optResultCenter, Agency $showAgency = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Requisitantes');
 		$form = $this->buildForm('user-form');
 		
@@ -129,6 +133,20 @@ class RequesterForm extends AbstractForm {
 		$input[1]->setSpan(6);
 		
 		$form->buildField('Unidade Administrativa', $input, null, $lotation);
+
+		$required = new Hidden('result-center-required');
+		$required->setValue(count($optResultCenter) > 0 ? '1' : null);
+		
+		$input = new ChosenBox('results-center', true);
+		$input->setOptions($optResultCenter);
+		$input->setSpan(7);
+		$input->setPlaceholder('Selecione uma ou mais opções');
+		$input->setTextNoResult('Nenhum resultado encontrado para ');
+		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$form->buildField('Centro de Resultado', [$input, $required], null, $lotation)->setName('results-center-group');
+		$form->unregister($required);
+		
+		$form->buildField("<br>", [], null, $lotation);
 		
 		$tab = new Tabbable('user-tabs');
 		$tab->setPlacement(Tabbable::Left);
@@ -161,6 +179,8 @@ class RequesterForm extends AbstractForm {
 			$data['administrative-unit-name'] = $object->getLotation()->getName();
 		}
 		
+		$data['results-center'] = array_keys($object->getAllResultCenters());
+		
 		$this->component->setData($data);
 	}
 
@@ -180,7 +200,12 @@ class RequesterForm extends AbstractForm {
 			$unit = $em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']);
 			$object->setLotation($unit);
 		}
-		
+		$object->removeAllResultCenters();
+		if (isset($data['results-center'])) {
+			foreach($data['results-center'] as $key) {
+				$object->addResultCenter($em->find(ResultCenter::getClass(), $key));
+			}
+		}
 		$object->setActive($data['active']);
 	}
 	

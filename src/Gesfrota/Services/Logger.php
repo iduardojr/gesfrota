@@ -41,6 +41,11 @@ class Logger implements Plugin {
 	protected $initiated;
 	
 	/**
+	 * @var array
+	 */
+	protected $posted;
+	
+	/**
 	 * @var Logger
 	 */
 	protected static $instance;
@@ -50,6 +55,7 @@ class Logger implements Plugin {
 	 */
 	protected function __construct() {
 		$this->initiated = false;
+		$this->posted = [];
 	}
 	
 	/**
@@ -94,6 +100,9 @@ class Logger implements Plugin {
 			$log = new Log($this->request->getUri(), $this->user, $this->agency, $newValue, $oldValue);
 			$this->em->persist($log);
 			$this->em->flush();
+			if ($log->getUser() == null) {
+				$this->posted[] = $log;
+			}
 			return $log;
 		}
 		return null;
@@ -155,6 +164,12 @@ class Logger implements Plugin {
 			try {
 				$that->em->flush();
 				$that->em->commit();
+				foreach ($that->posted as $log) {
+					$ref = new \ReflectionProperty($log, 'user');
+					$ref->setAccessible(true);
+					$ref->setValue($log, $that->user);
+					$that->em->flush();
+				}
 				return true;
 			} catch (\Exception $e) {
 				$that->em->rollback();

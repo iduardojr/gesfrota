@@ -25,6 +25,8 @@ use PHPBootstrap\Widget\Form\TgFormSubmit;
 use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use Gesfrota\Model\Domain\AdministrativeUnit;
+use PHPBootstrap\Validate\Required\Required;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class RequesterList extends AbstractList {
 	
@@ -37,8 +39,10 @@ class RequesterList extends AbstractList {
 	 * @param Action $search
 	 * @param Action $transfer
 	 * @param Action $password
+	 * @param array $optResultCenter
+	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $lotation, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $showAgencies = null) {
+	public function __construct( Action $filter, Action $lotation, Action $new, Action $edit, Action $active, Action $search, Action $transfer, Action $password, array $optResultCenter, array $showAgencies = null) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Requisitantes');
 		
 		$reset = clone $filter;
@@ -60,31 +64,51 @@ class RequesterList extends AbstractList {
 		$form->buildField('CPF', $input);
 		
 		$input = new TextBox('name');
-		$input->setSpan(7);
+		$input->setSpan(5);
 		$form->buildField('Nome', $input);
 		
 		if (!$showAgencies) {
 			$input = new TextBox('lotation');
 			$input->setSuggestion(new Suggest($lotation, 3));
-			$input->setSpan(7);
+			$input->setSpan(5);
 			$form->buildField('Lotação', [$input, new Hidden('lotation-id')]);
+		}
+		
+		if ( $showAgencies || $optResultCenter) {
+			$input = new ChosenBox('results-center', true);
+			$input->setOptions($optResultCenter);
+			$input->setSpan(5);
+			$input->setPlaceholder('Selecione uma ou mais opções');
+			$input->setTextNoResult('Nenhum resultado encontrado para ');
+			$input->setDisabled($optResultCenter ? false : true);
+			$form->buildField('Centro de Resultado', $input);
 		}
 		
 		$input = new CheckBox('only-active', 'Apenas ativos');
 		$form->buildField(null, $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
-		$modalFilter->setWidth(900);
+		$modalFilter->setWidth(700);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
 		$form = new BuilderForm('transfer-requester-form');
 		$form->append(new Panel(null, 'flash-message-requester'));
 		
+		if ($showAgencies) {
+			$showAgencies[''] = 'Selecionar Órgão';
+			$input = new ComboBox('agency-to');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$form->buildField('Transferir Para', $input);
+		}
+		
 		$input = new TextBox('requester-nif');
 		$input->setSuggestion(new Seek($search));
 		$input->setSpan(2);
 		$input->setMask('999.999.999-99');
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('CPF', $input);
 		
 		$input = new Output('requester-name');

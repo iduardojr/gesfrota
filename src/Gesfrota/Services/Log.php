@@ -85,7 +85,9 @@ class Log {
 	public function __construct($referer, User $user, Agency $agency, $newValue, $oldValue) {
 		$this->created = new \DateTime('now');
 		$this->referer = $referer;
-		$this->user = $user;
+		if ($newValue instanceof User && $user->getId() !== $newValue->getId()) {
+			$this->user = $user;
+		}
 		$this->agency = $agency;
 		$this->oldValue = $oldValue;
 		$this->newValue = $newValue;
@@ -148,7 +150,7 @@ class Log {
 	public function getCreated() {
 		return $this->created;
 	}
-
+	
 	/**
 	 * @return User
 	 */

@@ -9,34 +9,36 @@ use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\View\AdministrativeUnitForm;
-use Gesfrota\View\AdministrativeUnitList;
 use Gesfrota\View\Layout;
+use Gesfrota\View\ResultCenterList;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\View\ResultCenterForm;
 
-class AdministrativeUnitController extends AbstractController { 
+class ResultCenterController extends AbstractController { 
+	
 	use SearchAgency;
 	
 	public function indexAction() {
-		$this->setAgencySelected(null);
-		$showAgencies = $this->getShowAgencies();
-		$list = new AdministrativeUnitList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), $showAgencies);
 		try {
+			$this->setAgencySelected(null);
+			$showAgencies = $this->getShowAgencies();
+			$list = new ResultCenterList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'), $showAgencies);
+			$query = $this->getEntityManager()->getRepository(ResultCenter::getClass())->createQueryBuilder('u');
+			
 			$helper = $this->createHelperCrud();
-			$helper->read($list, $this->createQuery(), ['limit' => 20, 'sort' => 'lft', 'order' => 'asc', 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $query, ['limit' => 12, 'sort' => 'agency', 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
 					$query->where('u.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
 				}
-				if ( !empty($data['name']) ) {
-					$query->from(AdministrativeUnit::getClass(), 'p0');
-					$query->andWhere('u.lft BETWEEN p0.lft AND p0.rgt');
-					$query->andWhere('p0.name LIKE :name OR p0.acronym LIKE :name');
-					$query->setParameter('name', '%' . $data['name'] . '%');
+				if ( !empty($data['description']) ) {
+					$query->andWhere('u.description LIKE :description');
+					$query->setParameter('description', '%' . $data['description'] . '%');
 				}
 				if ( !empty($data['only-active']) ) {
 					$query->andWhere('u.active = true');
-					$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
 				}
 			}]);
 			$list->setAlert($this->getAlert());
@@ -50,19 +52,13 @@ class AdministrativeUnitController extends AbstractController {
 	
 	public function newAction() {
 		try {
-			$id = $this->request->getQuery('key');
 			$form = $this->createForm(new Action($this, 'new'));
 			
-			$parent = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
-			if (! $parent instanceof AdministrativeUnit) {
-				$parent = $this->getAgencyActive();
-			} else {
-				$this->setAgencySelected($parent->getAgency());
-			}
 			$helper = $this->createHelperCrud();
-			if ( $helper->create($form, new AdministrativeUnit($parent)) ){
+			$agency = $this->getAgencyActive()->isGovernment() ? null : $this->getAgencyActive();
+			if ( $helper->create($form, new ResultCenter($agency)) ){
 				$entity = $helper->getEntity();
-				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription . '</em> criada com sucesso!', Alert::Success));
+				$this->setAlert(new Alert('<strong>Ok! </strong>Centro de Resultado <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
@@ -80,17 +76,18 @@ class AdministrativeUnitController extends AbstractController {
 	public function editAction() {
 		try {
 			$id = $this->request->getQuery('key');
+			$entity = $this->getEntityManager()->find(ResultCenter::getClass(), $id);
+			if ( ! $entity instanceof ResultCenter ) {
+				throw new NotFoundEntityException('Não foi possível editar o Centro de Resultado. Centro de Resultado <em>#' . $id . '</em> não encontrado.');
+			}
+			$this->setAgencySelected($entity->getAgency());
+			
 			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
 		
-			$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), ( int ) $id);
-			if ( $entity instanceof AdministrativeUnit) {
-				$this->setAgencySelected($entity->getAgency());
-			}
-			$helper->setException(new NotFoundEntityException('Não foi possível editar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
-			if ( $helper->update($form, $id) ){
+			if ( $helper->update($form, $entity) ){
 				$entity = $helper->getEntity();
-				$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription .  '</em> alterada com sucesso!', Alert::Success));
+				$this->setAlert(new Alert('<strong>Ok! </strong>Centro de Resultado <em>#' . $entity->code . ' ' . $entity->description .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( NotFoundEntityException $e ){
@@ -108,10 +105,10 @@ class AdministrativeUnitController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$helper->setException(new NotFoundEntityException('Não foi possível ativar/desativar a Unidade Administrativa. Unidade Administrativa <em>#' . $id . '</em> não encontrada.'));
+			$helper->setException(new NotFoundEntityException('Não foi possível ativar/desativar o Centro de Resultado. Centro de Resultado <em>#' . $id . '</em> não encontrado.'));
 			$helper->active($id);
 			$entity = $helper->getEntity();
-			$this->setAlert(new Alert('<strong>Ok! </strong>Unidade Administrativa <em>#' . $entity->code . ' ' . $entity->fullDescription . '</em> ' . ( $entity->active ? 'ativada' : 'desativada' ) . ' com sucesso!', Alert::Success));
+			$this->setAlert(new Alert('<strong>Ok! </strong>Centro de Resultado <em>#' . $entity->code . ' ' . $entity->description . '</em> ' . ( $entity->active ? 'ativado' : 'desativado' ) . ' com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ){
 			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
@@ -121,33 +118,17 @@ class AdministrativeUnitController extends AbstractController {
 	}
 	
 	/**
-	 * @return QueryBuilder
-	 */
-	private function createQuery() {
-		$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
-		$query->distinct(true);
-		if (!$this->getAgencyActive()->isGovernment()) {
-			$query->andWhere('u.agency = :agency');
-			$query->setParameter('agency', $this->getAgencyActive()->getId());
-		}
-		$query->orderBy('u.lft');
-		return $query;
-	}
-	
-	/**
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), AdministrativeUnit::getClass(), $this);
+		return new Crud($this->getEntityManager(), ResultCenter::getClass(), $this);
 	}
 	
 	/**
 	 * @param Action $submit
-	 * @return AdministrativeUnitForm
+	 * @return ResultCenterForm
 	 */
 	private function createForm ( Action $submit ) {
-		$seekUnit = new Action($this, 'seekUnit');
-		$searchUnit = new Action($this, 'searchUnit', $submit->getParameters());
 		$seekAgency = new Action($this, 'seekAgency');
 		$seachAgency = new Action($this, 'searchAgency');
 		$cancel = new Action($this);
@@ -155,7 +136,7 @@ class AdministrativeUnitController extends AbstractController {
 		if (! $this->getAgencyActive()->isGovernment()) {
 			$showAgency = $this->getAgencyActive();
 		}
-		return new AdministrativeUnitForm($submit, $seekUnit, $searchUnit, $seekAgency, $seachAgency, $cancel, $showAgency);
+		return new ResultCenterForm($submit, $seekAgency, $seachAgency, $cancel, $showAgency);
 	}
 	
 	/**
@@ -170,13 +151,12 @@ class AdministrativeUnitController extends AbstractController {
 		}
 		return $this->getAgencyActive();
 	}
-
+	
 	/**
 	 * @param Agency $agency
 	 */
 	protected function setAgencySelected(Agency $agency = null) {
 		$this->session->agency_selected = $agency ? $agency->getId() : null;
 	}
-
 }
 ?>

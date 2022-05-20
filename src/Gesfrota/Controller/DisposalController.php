@@ -33,13 +33,12 @@ use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
 
-
 class DisposalController extends AbstractController {
 	
 	use SearchAgency;
 
 	public function indexAction() {
-		$this->session->selected = null;
+		$this->setAgencySelected(null);
 		$showAgencies = $this->getShowAgencies();
 		$isManager = $this->getUserActive() instanceof Manager;
 		$query = $this->getEntityManager()->getRepository(Disposal::getClass())->createQueryBuilder('u');
@@ -119,11 +118,7 @@ class DisposalController extends AbstractController {
 	public function newAction() {
 		try {
 			
-			if ($this->session->selected > 0) {
-				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->session->selected);
-			} else {
-				$agency = $this->getAgencyActive();
-			}
+			$agency = $this->getAgencySelected();
 			
 			$new 	= new Action($this, 'new');
 			$cancel = new Action($this);
@@ -389,7 +384,7 @@ class DisposalController extends AbstractController {
 			if ( ! $entity instanceof Agency ) {
 				throw new NotFoundEntityException('Órgão <em>#' . $id . '</em> não encontrado.');
 			}
-			$this->session->selected = $entity->getId();
+			$this->setAgencySelected($entity);
 			$data['agency-id'] = $entity->getCode();
 			$data['agency-name'] = $entity->getName();
 			
@@ -441,6 +436,27 @@ class DisposalController extends AbstractController {
 	private function createHelperCrud() {
 		return new Crud($this->getEntityManager(), Disposal::getClass(), $this);
 	}
+	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
+	}
+
 
 }
 ?>

@@ -92,6 +92,13 @@ abstract class Request extends Entity {
      * @var AdministrativeUnit
      */
     protected $requesterUnit;
+    
+    /**
+     * @ManyToOne(targetEntity="ResultCenter")
+     * @JoinColumn(name="center_result_id", referencedColumnName="id")
+     * @var ResultCenter
+     */
+    protected $resultCenter;
 	
     /**
      * @ManyToOne(targetEntity="Vehicle", cascade={"all"})
@@ -196,7 +203,9 @@ abstract class Request extends Entity {
 	public function __construct(User $user) {
 		parent::__construct();
 		$this->openedBy = $user;
-		$this->requesterUnit = $user->getLotation();
+		if (! $user instanceof Manager) {
+			$this->requesterUnit = $user->getLotation();
+		}
 		$this->status = self::OPENED;
 		$this->openedAt = new \DateTime('now');
 	}
@@ -427,9 +436,26 @@ abstract class Request extends Entity {
 	}
 	
 	/**
+	 * @return ResultCenter
+	 */
+	public function getResultCenter() {
+		return $this->resultCenter;
+	}
+
+	/**
 	 * @param AdministrativeUnit $unit
+	 * @throws \DomainException
 	 */
 	public function setRequesterUnit(AdministrativeUnit $unit) {
+		if (! $this->openedBy instanceof Manager) {
+			if ( $this->openedBy instanceof FleetManager ) {
+				if ( $this->openedBy->getLotation()->getAgency() !== $unit->getAgency() ) {
+					throw new \DomainException('the Requester Unit #' . $unit->getCode(). ' not is valid.');
+				}
+			} elseif ($this->openedBy->getLotation() !== $unit) {
+				throw new \DomainException('the Requester Unit #' . $unit->getCode(). ' not is valid.');
+			}
+		}
 		$this->requesterUnit = $unit;
 	}
 	
@@ -488,9 +514,25 @@ abstract class Request extends Entity {
 		if ($schedule === null) {
 			$schedule = $now;
 		} else if ($schedule < $now ) {
-			throw new \DomainException('the schedule cannot be in the past');
+			throw new \DomainException('the schedule cannot be in the past.');
 		}
 		$this->schedule = $schedule;
+	}
+	
+	/**
+	 * @param ResultCenter $unit
+	 * @throws \DomainException
+	 */
+	public function setResultCenter(ResultCenter $unit) {
+		if ( $this->openedBy->getLotation() != $this->requesterUnit && ( $this->openedBy instanceof Manager || $this->openedBy instanceof FleetManager )) {
+			$actived = $this->requesterUnit->getAgency()->getResultCentersActived();
+		} else {
+			$actived = $this->openedBy->getResultCentersActived();
+		}
+		if (! isset($actived[$unit->getId()])) {
+			throw new \DomainException('the result center #' . $unit->getCode(). ' not is valid.');
+		}
+		$this->resultCenter = $unit;
 	}
 	
 	/**
@@ -501,7 +543,18 @@ abstract class Request extends Entity {
 	 */
 	public function toConfirm(User $user, Vehicle $vehicle, Driver $driver) {
 		if ($this->status != self::OPENED) {
-			throw new \DomainException('request cannot be confirmed.');
+			throw new \DomainException('request cannot be confirmed: request is not opened.');
+		}
+		if ($this->requesterUnit->getAgency()->isResultCenterRequired()) {
+			$allowed = $vehicle->getResultCentersActived();
+			if ( ! isset($allowed[$this->getResultCenter()->getId()]) ) {
+				throw new \DomainException('request cannot be confirmed: result center of vehicle not allowed.');
+			}
+			
+			$allowed = $driver->getResultCentersActived();
+			if ( ! isset($allowed[$this->getResultCenter()->getId()]) ) {
+				throw new \DomainException('request cannot be confirmed: result center of driver not allowed.');
+			}
 		}
 		$this->vehicle = $vehicle;
 		$this->driver = $driver;

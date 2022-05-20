@@ -26,19 +26,24 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Badge;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Validate\Required\Required;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class FleetList extends AbstractList {
 	
 	/**
-	 * Construtor
 	 * 
 	 * @param Action $filter
 	 * @param Action $newVehicle
 	 * @param Action $newGear
 	 * @param Action $edit
 	 * @param Action $active
+	 * @param Action $seekVehicle
+	 * @param Action $transfer
+	 * @param array $optResultCenter
+	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $newVehicle, $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer, array $showAgencies = null ) {
+	public function __construct( Action $filter, Action $newVehicle, Action $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer, array $optResultCenter, array $showAgencies = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
@@ -51,6 +56,15 @@ class FleetList extends AbstractList {
 			$input->setSpan(2);
 			$input->setOptions($showAgencies);
 			$form->buildField('Órgão', $input);
+		}
+		if ( $showAgencies || $optResultCenter) {
+			$input = new ChosenBox('results-center', true);
+			$input->setOptions($optResultCenter);
+			$input->setSpan(4);
+			$input->setPlaceholder('Selecione uma ou mais opções');
+			$input->setTextNoResult('Nenhum resultado encontrado para ');
+			$input->setDisabled($optResultCenter ? false : true);
+			$form->buildField('Centro de Resultado', $input);
 		}
 		
 		$input = new TextBox('description');
@@ -73,10 +87,21 @@ class FleetList extends AbstractList {
 		$btnFilter->setName('remove-filter');
 		
 		$form = new BuilderForm('transfer-vehicle-form');
+		
+		if ($showAgencies) {
+			$showAgencies[''] = 'Selecionar Órgão';
+			$input = new ComboBox('agency-to');
+			$input->setSpan(2);
+			$input->setOptions($showAgencies);
+			$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+			$form->buildField('Transferir Para', $input);
+		}
+		
 		$input = new TextBox('vehicle-plate');
 		$input->setSuggestion(new Seek($seekVehicle));
 		$input->setSpan(2);
 		$input->setMask('aaa9*99');
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Placa', $input);
 		
 		$input = new Output('vehicle-description');

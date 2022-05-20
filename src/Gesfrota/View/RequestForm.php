@@ -172,6 +172,13 @@ class RequestForm extends AbstractForm {
 		$form->buildField('Unidade Administrativa', $input, null, $info);
 		$form->unregister($input);
 		
+		if ($request->getResultCenter()) {
+			$input = new Output('result-center');
+			$input->setValue($request->getResultCenter()->getDescription());
+			$form->buildField('Centro de Resultado', $input, null, $info);
+			$form->unregister($input);
+		}
+		
 		if ($request instanceof RequestTrip) {
 			
 			$input = new Output('passangers');

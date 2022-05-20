@@ -3,6 +3,8 @@ namespace Gesfrota\Model\Domain;
 
 use Gesfrota\Util\Crypt;
 use Gesfrota\Model\AbstractActivable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Usuário
@@ -82,9 +84,20 @@ abstract class User extends AbstractActivable {
 	 */
 	protected $lotation;
 	
+	/**
+	 * @ManyToMany(targetEntity="ResultCenter", indexBy="id")
+	 * @JoinTable(name="users_has_center_results",
+	 *      joinColumns={@JoinColumn(name="user_id", referencedColumnName="id")},
+	 *      inverseJoinColumns={@JoinColumn(name="center_result_id", referencedColumnName="id")}
+	 *      )
+	 * @var ArrayCollection
+	 */
+	protected $resultCenters;
+	
 	public function __construct() {
 		$this->setPassword(null);
 		parent::__construct();
+		$this->resultCenters = new ArrayCollection();
 	}
 	
 	/**
@@ -246,7 +259,55 @@ abstract class User extends AbstractActivable {
 	 * @param AdministrativeUnit $unit
 	 */
 	public function setLotation(AdministrativeUnit $unit) {
+		if ($unit->getAgency() !== $this->lotation->getAgency()) {
+			$this->removeAllResultCenters();
+		}
 		$this->lotation = $unit;
+	}
+	
+	/**
+	 * @param ResultCenter $unit
+	 * @return bool
+	 */
+	public function addResultCenter(ResultCenter $unit) {
+		return $this->resultCenters->set($unit->getId(), $unit);
+	}
+	
+	/**
+	 * @param integer|ResultCenter $unit
+	 * @return false|ResultCenter
+	 */
+	public function removeResultCenter($unit) {
+		if ($unit instanceof ResultCenter) {
+			return $this->resultCenters->removeElement($unit);
+		} else {
+			return $this->resultCenters->remove($unit);
+		}
+	}
+	
+	public function removeAllResultCenters() {
+		$this->resultCenters->clear();
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getAllResultCenters() {
+		return $this->resultCenters->toArray();
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getResultCentersActived() {
+		$options = [];
+		$criteria = new Criteria();
+		$criteria->where(Criteria::expr()->eq('active', true));
+		$result = $this->resultCenters->matching($criteria);
+		foreach($result as $item) {
+			$options[$item->id] = $item->description;
+		}
+		return $options;
 	}
 	
 	/**

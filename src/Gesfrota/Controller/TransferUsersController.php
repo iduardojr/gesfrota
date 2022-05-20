@@ -77,8 +77,7 @@ class TransferUsersController extends AbstractController {
 					$query->orderBy('u.lft');
 					$query->setMaxResults(1);
 					$query->setParameter('agency', $agencyTo->getId());
-					$result = $query->getQuery()->getResult();
-					$unitTo = isset($result[0]) ? $result[0] : null;
+					$unitTo = $query->getQuery()->getOneOrNullResult();
 				}
 				if (! $unitTo instanceof AdministrativeUnit ) {
 					throw new \DomainException('Não foi possível Transferir Usuários: Órgão de Destino não possui uma unidade administrativa.');

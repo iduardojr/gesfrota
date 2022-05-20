@@ -6,17 +6,21 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\Request;
 use Gesfrota\Model\Domain\RequestFreight;
 use Gesfrota\Model\Domain\RequestTrip;
-use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Services\AclResource;
 use Gesfrota\View\DriverTable;
 use Gesfrota\View\FleetVehicleTable;
 use Gesfrota\View\Layout;
 use Gesfrota\View\RequestFieldSetCancel;
+use Gesfrota\View\RequestFieldSetDecline;
 use Gesfrota\View\RequestFieldsetConfirm;
 use Gesfrota\View\RequestFieldsetFinish;
 use Gesfrota\View\RequestFieldsetInitiate;
@@ -28,74 +32,93 @@ use Gesfrota\View\Widget\EntityDatasource;
 use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
-use Gesfrota\Services\AclResource;
-use Gesfrota\View\RequestFieldSetDecline;
-use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\Manager;
+use Gesfrota\Model\Domain\FleetManager;
 
 class RequestController extends AbstractController {
 	
 	use SearchAgency;
 	
 	public function indexAction() {
-		$this->session->selected = null;
-		$filter = new Action($this);
-		$newTrip = new Action($this, 'newTrip');
-		$newFreight = new Action($this, 'newFreight');
-		$cancel = new Action($this, 'cancel');
-		$print = new Action($this,'print');
-		$do = $closure = null;
-		$user = $this->getUserActive();
-		$showAgencies = $this->getShowAgencies();
-		
-		$isConfirm = AclResource::getInstance()->isAllowed($user, 'RequestController', 'confirm');
-		if ( ! $user instanceof Requester ) {
-			$do = new Action($this);
-			$closure = function( Button $button, Request $obj ) use ($user, $isConfirm) {
-				$allowed = $obj->getStateAllowed();
-				$allow = array_keys($allowed);
-				$allow = array_shift($allow);
-				if ( !empty($allowed) ) {
-					$button->setIcon(new Icon($allowed[$allow][0]));
-					$button->setTooltip(new Tooltip($allowed[$allow][1]));
-					switch ($allow) {
-						case Request::CONFIRMED:
-							$for = 'confirm';
-							$button->setDisabled(!$isConfirm);
-							break;
-							
-						case Request::INITIATED:
-							$for = 'initiate';
-							if ($user instanceof Driver) {
-								$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
-							}
-							break;
-							
-						case Request::FINISHED:
-							$for = 'finish';
-							if ($user instanceof Driver) {
-								$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
-							}
-							break;
-							
-						case Request::CANCELED:
-							$for = 'cancel';
-							break;
-					}
-					$button->getToggle()->getAction()->setMethodName($for);
-				} else {
-					$button->setDisabled(true);
-					$button->setIcon(new Icon('icon-stop'));
-					$button->setTooltip(new Tooltip($obj->getRequestType() . ' Encerrada'));
-				}
-			};
-		}
-		$list = new RequestList($filter, $newTrip, $newFreight, $cancel, $print, $do, $closure, $showAgencies);
 		try {
+			$this->setAgencySelected(null);
+			$this->setResultCenterSelected(null);
+			$filter = new Action($this);
+			$newTrip = new Action($this, 'newTrip');
+			$newFreight = new Action($this, 'newFreight');
+			$cancel = new Action($this, 'cancel');
+			$print = new Action($this,'print');
+			$do = $closure = null;
+			$user = $this->getUserActive();
+			$showAgencies = $this->getShowAgencies();
+			
 			$helper = $this->createHelperCrud();
+			
+			$storage = $helper->getStorage();
+			if ($this->request->getPost('agency')) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->request->getPost('agency'));
+			} elseif ( isset($storage['data']['filter']['agency']) && ! empty($storage['data']['filter']['agency']) ) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $storage['data']['filter']['agency']);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			
+			if ($user instanceof Manager || $user instanceof FleetManager) {
+				$optResultCenter = $agency->getResultCentersActived();
+			} else {
+				$optResultCenter = [];
+			}
+			
+			
+			$isConfirm = AclResource::getInstance()->isAllowed($user, 'RequestController', 'confirm');
+			if ( ! $user instanceof Requester ) {
+				$do = new Action($this);
+				$closure = function( Button $button, Request $obj ) use ($user, $isConfirm) {
+					$allowed = $obj->getStateAllowed();
+					$allow = array_keys($allowed);
+					$allow = array_shift($allow);
+					if ( !empty($allowed) ) {
+						$button->setIcon(new Icon($allowed[$allow][0]));
+						$button->setTooltip(new Tooltip($allowed[$allow][1]));
+						switch ($allow) {
+							case Request::CONFIRMED:
+								$for = 'confirm';
+								$button->setDisabled(!$isConfirm);
+								break;
+								
+							case Request::INITIATED:
+								$for = 'initiate';
+								if ($user instanceof Driver) {
+									$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
+								}
+								break;
+								
+							case Request::FINISHED:
+								$for = 'finish';
+								if ($user instanceof Driver) {
+									$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
+								}
+								break;
+								
+							case Request::CANCELED:
+								$for = 'cancel';
+								break;
+						}
+						$button->getToggle()->getAction()->setMethodName($for);
+					} else {
+						$button->setDisabled(true);
+						$button->setIcon(new Icon('icon-stop'));
+						$button->setTooltip(new Tooltip($obj->getRequestType() . ' Encerrada'));
+					}
+				};
+			}
+			$list = new RequestList($filter, $newTrip, $newFreight, $cancel, $print, $optResultCenter, $do, $closure, $showAgencies);
+		
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
 			$query->from(Request::getClass(), 'u');
@@ -104,16 +127,16 @@ class RequestController extends AbstractController {
 				$query->setParameter('unit', $this->getAgencyActive()->getId());
 			}
 			
-			if ($this->getUserActive() instanceof Requester) {
+			if ($user instanceof Requester) {
 				$query->where('u.openedBy = :by OR u.requesterUnit = :unit');
 				$query->setParameter('by', $user->getId());
 				$query->setParameter('unit', $user->getLotation()->getId());
-			} elseif ($this->getUserActive() instanceof Driver) {
+			} elseif ($user instanceof Driver) {
 				$query->where('u.openedBy = :by OR u.driver = :by');
 				$query->setParameter('by', $user->getId());
 			}
 			
-			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) use ($user){
 				
 				if ( !empty($data['type']) ) {
 					$query->andWhere('u INSTANCE OF ' . ( $data['type'] == 'T' ? RequestTrip::getClass() : RequestFreight::getClass()));
@@ -124,7 +147,10 @@ class RequestController extends AbstractController {
 					$query->where('l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
 				}
-				
+				if (!empty($data['results-center'])) {
+					$query->andWhere('u.resultCenter IN (:rc)');
+					$query->setParameter('rc', $data['results-center']);
+				}
 				if ( !empty($data['from']) ) {
 					$query->andWhere('u.from.description LIKE :from');
 					$query->setParameter('from', '%' . $data['from'] . '%');
@@ -155,22 +181,35 @@ class RequestController extends AbstractController {
 	}
 	
 	public function newTripAction() {
-		$submit = new Action($this, 'newTrip');
-		$cancel = new Action($this);
-		$location = new Action($this, 'location');
-		$seekUnit = new Action($this, 'seekUnit');
-		$searchUnit = new Action($this, 'searchUnit');
-		$seekAgency = new Action($this, 'seekAgency');
-		$searchAgency = new Action($this, 'searchAgency');
-		$showAgency = $this->getAgencyActive()->isGovernment();
-		
-		$this->session->selected = $this->getUserActive()->getLotation()->getAgency()->getId();
-		
-		$options = $this->getApplication()->config['google']['maps'];
-		$form = new RequestTripForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $options, $showAgency);
 		try {
+			$entity = new RequestTrip($this->getUserActive(), $this->request->getQuery('round-trip'));
+			$submit = new Action($this, 'newTrip');
+			$cancel = new Action($this);
+			$location = new Action($this, 'location');
+			$seekUnit = new Action($this, 'seekUnit');
+			$searchUnit = new Action($this, 'searchUnit');
+			$seekAgency = new Action($this, 'seekAgency');
+			$searchAgency = new Action($this, 'searchAgency');
+			$optMaps = $this->getApplication()->config['google']['maps'];
+			$showLevelUnit = $this->getAgencyActive()->isGovernment() ? 2 : ($this->getUserActive() instanceof FleetManager || $this->getUserActive() instanceof Manager ? 1 : 0);
+			if ( $this->getUserActive() instanceof Manager ) {
+				if ($this->getAgencyActive()->isGovernment() || $this->getAgencyActive() == $this->getUserActive()->getLotation()->getAgency()) {
+					$this->setAgencySelected($this->getUserActive()->getLotation()->getAgency());
+					$entity->setRequesterUnit($this->getUserActive()->getLotation());
+					$optResultCenter = $this->getUserActive()->getResultCentersActived();
+				} else {
+					$optResultCenter = $this->getAgencyActive()->getResultCentersActived();
+				}
+			} else {
+				$optResultCenter = $this->getUserActive()->getResultCentersActived();
+			}
+			
+			$isResultCenterRequired = $this->getAgencySelected()->isResultCenterRequired();
+			
+			$form = new RequestTripForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $optMaps, $optResultCenter, $isResultCenterRequired, $showLevelUnit);
+		
 			$helper = $this->createHelperCrud();
-			if ( $helper->create($form, new RequestTrip($this->getUserActive(), $this->request->getQuery('round-trip'))) ){
+			if ( $helper->create($form, $entity) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Viagem <em>#' . $entity->code . ' </em> solicitada com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -184,24 +223,37 @@ class RequestController extends AbstractController {
 	}
 	
 	public function newFreightAction() {
-		$submit = new Action($this, 'newFreight');
-		$cancel = new Action($this);
-		$location = new Action($this, 'location');
-		$location = new Action($this, 'location');
-		$seekUnit = new Action($this, 'seekUnit');
-		$searchUnit = new Action($this, 'searchUnit');
-		$seekAgency = new Action($this, 'seekAgency');
-		$searchAgency = new Action($this, 'searchAgency');
-		$showAgency = $this->getAgencyActive()->isGovernment();
-		
-		$this->session->selected = $this->getUserActive()->getLotation()->getAgency()->getId();
-		
-		$options = $this->getApplication()->config['google']['maps'];
-		$form = new RequestFreightForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $options, $showAgency);
-	    try {
+		try {
+			$to = $this->getRequest()->getQuery('to') == 'send' ? RequestFreight::TO_SEND : RequestFreight::TO_RECEIVE;
+			$entity = new RequestFreight($this->getUserActive(), $to);
+			$submit = new Action($this, 'newFreight');
+			$cancel = new Action($this);
+			$location = new Action($this, 'location');
+			$seekUnit = new Action($this, 'seekUnit');
+			$searchUnit = new Action($this, 'searchUnit');
+			$seekAgency = new Action($this, 'seekAgency');
+			$searchAgency = new Action($this, 'searchAgency');
+			$optMaps = $this->getApplication()->config['google']['maps'];
+			$showLevelUnit = $this->getAgencyActive()->isGovernment() ? 2 : ($this->getUserActive() instanceof FleetManager || $this->getUserActive() instanceof Manager ? 1 : 0);
+			if ( $this->getUserActive() instanceof Manager ) {
+				if ($this->getAgencyActive()->isGovernment() || $this->getAgencyActive() == $this->getUserActive()->getLotation()->getAgency()) {
+					$this->setAgencySelected($this->getUserActive()->getLotation()->getAgency());
+					$entity->setRequesterUnit($this->getUserActive()->getLotation());
+					$optResultCenter = $this->getUserActive()->getResultCentersActived();
+				} else {
+					$optResultCenter = $this->getAgencyActive()->getResultCentersActived();
+				}
+			} else {
+				$optResultCenter = $this->getUserActive()->getResultCentersActived();
+			}
+			
+			$isResultCenterRequired = $this->getAgencySelected()->isResultCenterRequired();
+			
+			
+			$form = new RequestFreightForm($submit, $cancel, $location, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $optMaps, $optResultCenter, $isResultCenterRequired, $showLevelUnit);
+	    
 	        $helper = $this->createHelperCrud();
-	        $to = $this->getRequest()->getQuery('to') == 'send' ? RequestFreight::TO_SEND : RequestFreight::TO_RECEIVE;
-	        if ( $helper->create($form, new RequestFreight($this->getUserActive(), $to)) ){
+	        if ( $helper->create($form, $entity) ){
 	            $entity = $helper->getEntity();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Entrega <em>#' . $entity->code . '</em> solicitada com sucesso!', Alert::Success));
 	            $this->forward('/');
@@ -221,7 +273,8 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível confirmar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
+			$this->setResultCenterSelected($entity->getResultCenter());
+			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this, 'decline', ['key' => $id]), $this->createFildesetConfirm());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -247,7 +300,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível recusar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
+			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this,'decline', ['key' => $id]), new RequestFieldSetDecline());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -273,7 +326,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível iniciar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
+			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'initiate', ['key' => $id]), new Action($this), null, new RequestFieldsetInitiate());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -299,7 +352,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível finilizar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
+			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'finish', ['key' => $id]), new Action($this), null, new RequestFieldsetFinish());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -325,7 +378,7 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível cancelar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$this->session->selected = $entity->getRequesterUnit()->getAgency()->getId();
+			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'cancel', ['key' => $id]), new Action($this), null, new RequestFieldSetCancel());
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
@@ -370,9 +423,13 @@ class RequestController extends AbstractController {
 			$query->join('u.responsibleUnit', 'r');
 			$query->andWhere('u.active = true');
 			$query->andWhere('r.id = :unit');
-			$query->setParameter('unit', $this->session->selected);
+			$query->setParameter('unit', $this->getAgencySelected()->getId());
 			$query->andWhere('u.plate = :plate');
 			$query->setParameter('plate', $plate);
+			if ($this->getAgencySelected()->isResultCenterRequired()) {
+				$query->andWhere(':rs MEMBER OF u.resultCenters');
+				$query->setParameter('rs', $this->getResultCenterSelected()->getId());
+			}
 			
 			$entity = $query->getQuery()->getSingleResult();
 			
@@ -402,8 +459,12 @@ class RequestController extends AbstractController {
 			$query->andWhere('u.active = true');
 			$query->andWhere('u.id = :id');
 			$query->andWhere('u1.agency = :agency');
-			$query->setParameter('agency', $this->session->selected);
+			$query->setParameter('agency', $this->getAgencySelected()->getId());
 			$query->setParameter('id', (int) $id);
+			if ($this->getAgencySelected()->isResultCenterRequired()) {
+				$query->andWhere(':rs MEMBER OF u.resultCenters');
+				$query->setParameter('rs', $this->getResultCenterSelected()->getId());
+			}
 			
 			$entity = $query->getQuery()->getSingleResult();
 			if ( ! $entity instanceof Driver ) {
@@ -424,7 +485,13 @@ class RequestController extends AbstractController {
 			$query->andWhere('u.active = true');
 			$query->join('u.lotation', 'u1');
 			$query->andWhere('u1.agency = :agency');
-			$query->setParameter('agency', $this->session->selected);
+			$query->setParameter('agency', $this->getAgencySelected()->getId());
+			
+			if ($this->getAgencySelected()->isResultCenterRequired()) {
+				$query->andWhere(':rs MEMBER OF u.resultCenters');
+				$query->setParameter('rs', $this->getResultCenterSelected()->getId());
+			}
+			
 			$params = $this->request->getQuery();
 			
 			if ( $params['query'] ) {
@@ -450,7 +517,13 @@ class RequestController extends AbstractController {
 			$query->join('u.responsibleUnit', 'r');
 			$query->andWhere('u.active = true');
 			$query->andWhere('r.id = :unit');
-			$query->setParameter('unit', $this->session->selected);
+			$query->setParameter('unit', $this->getAgencySelected()->getId());
+			
+			if ($this->getAgencySelected()->isResultCenterRequired()) {
+				$query->andWhere(':rs MEMBER OF u.resultCenters');
+				$query->setParameter('rs', $this->getResultCenterSelected()->getId());
+			}
+			
 			$params = $this->request->getQuery();
 			
 			$params = $this->request->getQuery();
@@ -505,6 +578,43 @@ class RequestController extends AbstractController {
 	 */
 	private function createFildesetConfirm() {
 		return new RequestFieldsetConfirm(new Action($this, 'seekVehicle'), new Action($this, 'searchVehicle'), new Action($this,'seekDriver'), new Action($this, 'searchDriver'));
+	}
+	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
+	}
+	
+	/**
+	 * @param ResultCenter $unit
+	 */
+	protected function setResultCenterSelected(ResultCenter $unit = null) {
+		$this->session->result_center_selected = $unit ? $unit->getId() : null;
+	}
+	
+	/**
+	 * @return ResultCenter|NULL
+	 */
+	protected function getResultCenterSelected() {
+		if ($this->session->result_center_selected > 0) {
+			return $this->getEntityManager()->find(ResultCenter::getClass(), $this->session->result_center_selected);
+		}
+		return null;
 	}
 	
 }

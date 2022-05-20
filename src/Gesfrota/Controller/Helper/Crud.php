@@ -118,25 +118,14 @@ class Crud {
 	 * @param QueryBuilder $query
 	 * @param array $defaults
 	 */
-	public function read( AbstractList $list, QueryBuilder $query = null, array $defaults = array() ) {
+	public function read( AbstractList $list, QueryBuilder $query = null, array $defaults = [] ) {
 		$request = $this->controller->getRequest();
 		$response = $this->controller->getResponse();
 		if ( $query === null ) {
 			$query = $this->em->getRepository($this->entity)->createQueryBuilder('u');
 		}
-		$storage = $request->getCookie('storage');
-		if ( $storage !== null ) {
-			$storage = json_decode($storage, true);
-			if ( $storage['identify'] == md5($this->entity) ) {
-				$defaults = array_merge($defaults, isset($storage['data']) ? $storage['data'] : array());
-			} else {
-				$storage = array();
-				$storage['identify'] = md5($this->entity);
-			}
-		} else {
-			$storage = array();
-			$storage['identify'] = md5($this->entity);
-		}
+		$storage = $this->getStorage();
+		$defaults = array_merge($defaults, isset($storage['data']) ? $storage['data'] : []);
 		$get = $request->getQuery();
 		$datasource = new EntityDatasource($query, $defaults);
 		if ( isset($storage['data']['filter']) ) {
@@ -287,6 +276,21 @@ class Crud {
 	 */
 	public function getEntity() {
 		return $this->object;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getStorage() {
+		$request = $this->controller->getRequest();
+		$storage = $request->getCookie('storage');
+		if ( $storage !== null ) {
+			$storage = json_decode($storage, true);
+			if ( $storage['identify'] == md5($this->entity) ) {
+				return $storage;
+			}
+		} 
+		return ['identify' => md5($this->entity)];
 	}
 	
 	/**

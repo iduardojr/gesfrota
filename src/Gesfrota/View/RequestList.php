@@ -24,6 +24,7 @@ use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Action\TgWindows;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use Gesfrota\Model\Domain\AdministrativeUnit;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class RequestList extends AbstractList {
 	
@@ -33,11 +34,12 @@ class RequestList extends AbstractList {
 	 * @param Action $newFreight
 	 * @param Action $cancel
 	 * @param Action $print
+	 * @param array $optResultCenter
 	 * @param Action $do
 	 * @param \Closure $closure
 	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $newTrip, Action $newFreight, Action $cancel, Action $print, Action $do = null, $closure = null, array $showAgencies = null ) {
+	public function __construct( Action $filter, Action $newTrip, Action $newFreight, Action $cancel, Action $print, array $optResultCenter, Action $do = null, $closure = null, array $showAgencies = null ) {
 		$this->buildPanel('Minhas Viagens', 'Gerenciar Requisições');
 		
 		$reset = clone $filter;
@@ -65,9 +67,19 @@ class RequestList extends AbstractList {
 		
 		if ($showAgencies) {
 			$input = new ComboBox('agency');
-			$input->setSpan(3);
+			$input->setSpan(2);
 			$input->setOptions($showAgencies);
 			$form->buildField('Órgão', $input);
+		}
+		
+		if ( $showAgencies || $optResultCenter) {
+			$input = new ChosenBox('results-center', true);
+			$input->setOptions($optResultCenter);
+			$input->setSpan(5);
+			$input->setPlaceholder('Selecione uma ou mais opções');
+			$input->setTextNoResult('Nenhum resultado encontrado para ');
+			$input->setDisabled($optResultCenter ? false : true);
+			$form->buildField('Centro de Resultado', $input);
 		}
 		
 		$input = new TextBox('from');

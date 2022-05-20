@@ -84,10 +84,10 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
+            return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
         }
 
-        return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
+        return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
     }
 
     /**
@@ -291,6 +291,17 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setService', [$service]);
 
         return parent::setService($service);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setResultCenter(\Gesfrota\Model\Domain\ResultCenter $unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setResultCenter', [$unit]);
+
+        return parent::setResultCenter($unit);
     }
 
     /**
@@ -621,6 +632,17 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getWaypoints', []);
 
         return parent::getWaypoints();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getResultCenter()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getResultCenter', []);
+
+        return parent::getResultCenter();
     }
 
     /**

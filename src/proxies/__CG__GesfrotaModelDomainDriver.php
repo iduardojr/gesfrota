@@ -84,10 +84,10 @@ class Driver extends \Gesfrota\Model\Domain\Driver implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
+            return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'resultCenters', 'active', 'id'];
         }
 
-        return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'active', 'id'];
+        return ['__isInitialized__', 'license', 'vehicles', 'expires', 'name', 'nif', 'gender', 'birthday', 'email', 'cell', 'password', 'changePassword', 'lotation', 'resultCenters', 'active', 'id'];
     }
 
     /**
@@ -478,6 +478,61 @@ class Driver extends \Gesfrota\Model\Domain\Driver implements \Doctrine\ORM\Prox
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setLotation', [$unit]);
 
         return parent::setLotation($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addResultCenter(\Gesfrota\Model\Domain\ResultCenter $unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'addResultCenter', [$unit]);
+
+        return parent::addResultCenter($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeResultCenter($unit)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'removeResultCenter', [$unit]);
+
+        return parent::removeResultCenter($unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeAllResultCenters()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'removeAllResultCenters', []);
+
+        return parent::removeAllResultCenters();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAllResultCenters()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAllResultCenters', []);
+
+        return parent::getAllResultCenters();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getResultCentersActived()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getResultCentersActived', []);
+
+        return parent::getResultCentersActived();
     }
 
     /**

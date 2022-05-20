@@ -54,7 +54,7 @@ class AuditLog extends Component {
 		
 		$input1 = new Uneditable('agency');
 		$input1->setSpan(1);
-		$input1->setValue('#'.$log->getAgency()->getCode());
+		$input1->setValue(($log->getAgency()->isGovernment() ? '' : '#' ). $log->getAgency()->getCode());
 		
 		$input2 = new Uneditable('user');
 		$input2->setSpan(6);

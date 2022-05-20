@@ -35,6 +35,9 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use Gesfrota\Model\Domain\ResultCenter;
 
 class RequestFreightForm extends AbstractForm {
 	
@@ -42,16 +45,22 @@ class RequestFreightForm extends AbstractForm {
 	 * @param Action $submit
 	 * @param Action $cancel
 	 * @param Action $location
-	 * @param array $options
+	 * @param Action $seekUnit
+	 * @param Action $searchUnit
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
+	 * @param array $optMaps
+	 * @param array $optResultCenter
+	 * @param integer $showLevelUnit
 	 */
-	public function __construct( Action $submit, Action $cancel, Action $location, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, array $options, $showAgency = false ) {
+	public function __construct( Action $submit, Action $cancel, Action $location, Action $seekUnit, Action $searchUnit, Action $seekAgency, Action $searchAgency, array $optMaps, array $optResultCenter, $isResultCenterRequired, $showLevelUnit) {
 		$this->buildPanel('Minhas Viagens', 'Nova Entrega');
 		$form = $this->buildForm('request-freight-form');
 		
 		$itinerary = new Fieldset('Itinerário');
 		
 		$directions = new Direction('directions', '{A}');
-		$directions->setOptions($options);
+		$directions->setOptions($optMaps);
 		
 		$input = new PlaceInput('from', $location);
 		$input->setPlaceholder('Infome o local de partida');
@@ -101,40 +110,54 @@ class RequestFreightForm extends AbstractForm {
 		$input = new Button('Adicionar', new DynInputAdd($input), [Button::Mini]);
 		$form->buildField(null, $input, null, $package);
 		
-		$service = new Fieldset('Instruções de Envio');
+		$service = new Fieldset('Serviço a Executar');
+		
+		if ( !$showLevelUnit ) {
+			$required = new Hidden('result-center-required');
+			$required->setValue($isResultCenterRequired ? '1' : null);
+			
+			$input = new ComboBox('result-center-id');
+			$input->setOptions($optResultCenter);
+			$input->setSpan(7);
+			$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+			$form->buildField('Centro de Resultado', [$input, $required], null, $service)->setName('results-center-group');
+			$form->unregister($required);
+		}
 		
 		$input = new TextArea('service');
 		$input->setLength(new Max(250, 'Max. 250 caracteres', RulerLength::getInstance()));
 		$input->setPlaceholder('Descreva intruções de envio para o motorista (Max. 250 caracteres)');
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField(null, $input, null, $service);
+		$form->buildField('Instruções de Envio', $input, null, $service);
 		
 		$tab = new Tabbable('request-trip-tabs');
 		$tab->setPlacement(Tabbable::Left);
 		$tab->addItem(new NavLink('Itinerário'), null, new TabPane($itinerary));
 		$tab->addItem(new NavLink('Encomenda'), null, new TabPane($package));
-		$tab->addItem(new NavLink('Instruções'), null, new TabPane($service));
+		$tab->addItem(new NavLink('Serviço'), null, new TabPane($service));
 		
-		if ($showAgency) {
+		if ($showLevelUnit) {
 			$requester = new Fieldset('Unidade Requisitante');
 			
-			$modal = new Modal('agency-search', new Title('Órgãos', 3));
-			$modal->setWidth(600);
-			$modal->addButton(new Button('Cancelar', new TgModalClose()));
-			$form->append($modal);
-			
-			$input = [];
-			$input[0] = new TextBox('agency-id');
-			$input[0]->setSuggestion(new Seek($seekAgency));
-			$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-			$input[0]->setSpan(1);
-			
-			$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
-			$input[1]->setEnableQuery(false);
-			$input[1]->setSpan(6);
-			
-			$form->buildField('Órgão', $input, null, $requester);
+			if ($showLevelUnit == 2) {
+				$modal = new Modal('agency-search', new Title('Órgãos', 3));
+				$modal->setWidth(600);
+				$modal->addButton(new Button('Cancelar', new TgModalClose()));
+				$form->append($modal);
+				
+				$input = [];
+				$input[0] = new TextBox('agency-id');
+				$input[0]->setSuggestion(new Seek($seekAgency));
+				$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+				$input[0]->setSpan(1);
+				
+				$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+				$input[1]->setEnableQuery(false);
+				$input[1]->setSpan(6);
+				
+				$form->buildField('Órgão', $input, null, $requester);
+			}
 			
 			$modal = new Modal('administrative-unit-search', new Title('Unidades Administrativas', 3));
 			$modal->setWidth(900);
@@ -153,8 +176,19 @@ class RequestFreightForm extends AbstractForm {
 			
 			$form->buildField('Unidade Administrativa', $input, null, $requester);
 			
-			$tab->addItem(new NavLink('Requisitante'), null, new TabPane($requester));
+			$required = new Hidden('result-center-required');
+			$required->setValue($isResultCenterRequired ? '1' : null);
 			
+			$input = new ComboBox('result-center-id');
+			$input->setOptions($optResultCenter);
+			$input->setSpan(7);
+			$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+			$form->buildField('Centro de Resultado', [$input, $required], null, $requester)->setName('results-center-group');
+			$form->unregister($required);
+			
+			$form->buildField("<br>", [], null, $requester);
+			
+			$tab->addItem(new NavLink('Requisitante'), null, new TabPane($requester));
 		}
 		
 		$form->append($tab);
@@ -189,6 +223,9 @@ class RequestFreightForm extends AbstractForm {
 			$data['administrative-unit-id'] = $object->getRequesterUnit()->getCode();
 			$data['administrative-unit-name'] = $object->getRequesterUnit()->getName();
 		}
+		if ($object->getResultCenter()) {
+			$data['result-center-id'] = $object->getResultCenter()->getId();
+		}
 		$data['schedule-date'] = $data['schedule-time'] = $schedule;
 		$data['items'] = $object->getItems();
 		$data['service'] = $object->getService();
@@ -209,6 +246,9 @@ class RequestFreightForm extends AbstractForm {
 		if ($data['administrative-unit-id']) {
 			$unit = $em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']);
 			$object->setRequesterUnit($unit);
+		}
+		if ($data['result-center-id']) {
+			$object->setResultCenter($em->find(ResultCenter::getClass(), $data['result-center-id']));
 		}
 		$object->setWaypoints($waypoints);
 		$object->setSchedule(new \DateTime($data['schedule-date'] . ' ' . $data['schedule-time']));

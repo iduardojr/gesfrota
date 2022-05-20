@@ -6,21 +6,17 @@ use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Controller\Helper\SearchAgency;
-use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\User;
-use Gesfrota\View\AdministrativeUnitTable;
 use Gesfrota\View\DriverForm;
 use Gesfrota\View\DriverList;
 use Gesfrota\View\Layout;
-use Gesfrota\View\Widget\EntityDatasource;
-use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Modal\Modal;
-use Gesfrota\Model\Domain\Disposal;
+use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\ResultCenter;
 
 class DriverController extends AbstractController {
 	
@@ -28,7 +24,7 @@ class DriverController extends AbstractController {
 	
 	public function indexAction() {
 		try {
-			$this->session->selected = null;
+			$this->setAgencySelected(null);
 			$filter = new Action($this);
 			$new = new Action($this, 'new');
 			$edit = new Action($this, 'edit');
@@ -38,9 +34,20 @@ class DriverController extends AbstractController {
 			$reset = new Action($this, 'resetPassword');
 			$showAgencies = $this->getShowAgencies();
 			
-			$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
-		
 			$helper = $this->createHelperCrud();
+			
+			$storage = $helper->getStorage();
+			if ($this->request->getPost('agency')) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->request->getPost('agency'));
+			} elseif ( isset($storage['data']['filter']['agency']) && ! empty($storage['data']['filter']['agency']) ) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $storage['data']['filter']['agency']);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			$optResultCenter = $agency->getResultCentersActived();
+			
+			$list = new DriverList($filter, $new, $edit, $active, $search, $transfer, $reset, $optResultCenter, $showAgencies);
+		
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
 			$query->from(Driver::getClass(), 'u');
@@ -54,6 +61,10 @@ class DriverController extends AbstractController {
 					$query->join('u.lotation', 'l');
 					$query->where('l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
+				}
+				if (!empty($data['results-center'])) {
+					$query->andWhere(':rc MEMBER OF u.resultCenters');
+					$query->setParameter('rc', $data['results-center']);
 				}
 				if ( !empty($data['name']) ) {
 					$query->andWhere('u.name LIKE :name');
@@ -96,8 +107,7 @@ class DriverController extends AbstractController {
 			if ( $entity instanceof User) {
 				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
 			}
-			$this->session->selected = $this->getAgencyActive()->getId();
-			if ( $helper->create($form, new Driver($this->getAgencyActive())) ){
+			if ( $helper->create($form) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -113,12 +123,12 @@ class DriverController extends AbstractController {
 	public function editAction() {
 		try {
 			$id = $this->request->getQuery('key');
-			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
 			$entity = $this->getEntityManager()->find(Driver::getClass(), (int) $id);
 			if ( $entity instanceof Driver ) {
-				$this->session->selected = $entity->getLotation()->getAgency()->getId();
+				$this->setAgencySelected($entity->getLotation()->getAgency());
 			}
+			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.'));
 			if ( $helper->update($form, $id) ) {
 				$entity = $helper->getEntity();
@@ -155,11 +165,26 @@ class DriverController extends AbstractController {
 	public function transferAction() {
 		try {
 			$nif = $this->request->getPost('driver-nif');
+			$to = $this->request->getPost('agency-to');
 			$entity = $this->getEntityManager()->getRepository(Driver::getClass())->findOneBy(['nif' => $nif]);
-			if ( $entity === null ) {
+			$agency = $to ? $this->getEntityManager()->find(Agency::getClass(), $to) : $this->getAgencyActive();
+			if (! $entity instanceof Driver ) {
 				throw new \DomainException('Motorista <em>CPF ' . $nif . '</em> não encontrado.');
 			}
-			$entity->setLotation($this->getUserActive()->getLotation());
+			if ($agency) {
+				$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
+				$query->andWhere('u.agency = :agency');
+				$query->orderBy('u.lft');
+				$query->setMaxResults(1);
+				$query->setParameter('agency', $agency->getId());
+				$unitTo = $query->getQuery()->getOneOrNullResult();
+				if (! $unitTo instanceof AdministrativeUnit ) {
+					throw new \DomainException('Não foi possível Transferir Usuários: Órgão de Destino não possui uma unidade administrativa.');
+				}
+			} else {
+				$unitTo = $this->getUserActive()->getLotation();
+			}
+			$entity->setLotation($unitTo);
 			$this->getEntityManager()->flush();
 			$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name .  '</em> transferido com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ) {
@@ -241,10 +266,37 @@ class DriverController extends AbstractController {
 		$showAgency = null;
 		if (! $this->getAgencyActive()->isGovernment()) {
 			$showAgency = $this->getAgencyActive();
-			$this->session->selected = $showAgency->getId();
 		}
-		return new DriverForm($submit, $seek, $seekUnit, $searchUnit, $seekAgency, $seachAgency, $cancel, $showAgency);
+		
+		$optResultCenter = [];
+		$criteria = ['active' => true, 'agency' => $this->getAgencySelected()->getId()];
+		$rs = $this->getEntityManager()->getRepository(ResultCenter::getClass())->findBy($criteria);
+		foreach ($rs as $result) {
+			$optResultCenter[$result->id] = $result->description;
+		}
+		
+		return new DriverForm($submit, $seek, $seekUnit, $searchUnit, $seekAgency, $seachAgency, $cancel, $optResultCenter, $showAgency);
 	}
 	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
+	}
+
 }
 ?>

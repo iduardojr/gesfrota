@@ -147,13 +147,17 @@ class Layout extends View {
 		
 		$resource1 = 'Gesfrota\\Controller\\AgencyController';
 		$resource2 = 'Gesfrota\\Controller\\AdministrativeUnitController';
-		if ( $acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) ) {
+		$resource3 = 'Gesfrota\\Controller\\ResultCenterController';
+		if ( $acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) || $acl->isAllowed($role, $resource3)) {
 			$drop->addItem(new DropdownHeader('Estrutura Organizacional'));
 			if ($acl->isAllowed($role, $resource1)) {
 				$drop->addItem(new DropdownLink('Gerenciar Órgãos', new TgLink(new Action($resource1))));
 			}
 			if ($acl->isAllowed($role, $resource2)) {
 				$drop->addItem(new DropdownLink('Gerenciar Unidades Administrativas', new TgLink(new Action($resource2))));
+			}
+			if ($acl->isAllowed($role, $resource3)) {
+				$drop->addItem(new DropdownLink('Gerenciar Centro de Resultados', new TgLink(new Action($resource3))));
 			}
 			$isAdministrator = true;
 			$isDivider = true;

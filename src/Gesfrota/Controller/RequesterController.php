@@ -6,6 +6,7 @@ use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
@@ -23,6 +24,7 @@ use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
 use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\ResultCenter;
 
 class RequesterController extends AbstractController { 
 	
@@ -30,6 +32,7 @@ class RequesterController extends AbstractController {
 	
 	public function indexAction() {
 		try {
+			$this->setAgencySelected(null);
 			$filter = new Action($this);
 			$new = new Action($this, 'new');
 			$lotation = new Action($this, 'lotation');
@@ -40,9 +43,20 @@ class RequesterController extends AbstractController {
 			$reset = new Action($this, 'resetPassword');
 			$showAgencies = $this->getShowAgencies();
 			
-			$list = new RequesterList($filter, $lotation, $new, $edit, $active, $search, $transfer, $reset, $showAgencies);
-		
 			$helper = $this->createHelperCrud();
+			
+			$storage = $helper->getStorage();
+			if ($this->request->getPost('agency')) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $this->request->getPost('agency'));
+			} elseif ( isset($storage['data']['filter']['agency']) && ! empty($storage['data']['filter']['agency']) ) {
+				$agency = $this->getEntityManager()->find(Agency::getClass(), $storage['data']['filter']['agency']);
+			} else {
+				$agency = $this->getAgencyActive();
+			}
+			$optResultCenter = $agency->getResultCentersActived();
+			
+			$list = new RequesterList($filter, $lotation, $new, $edit, $active, $search, $transfer, $reset, $optResultCenter, $showAgencies);
+		
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
 			$query->from(Requester::getClass(), 'u');
@@ -56,6 +70,10 @@ class RequesterController extends AbstractController {
 					$query->join('u.lotation', 'l');
 					$query->where('l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
+				}
+				if (!empty($data['results-center'])) {
+					$query->andWhere(':rc MEMBER OF u.resultCenters');
+					$query->setParameter('rc', $data['results-center']);
 				}
 				if ( !empty($data['type']) ) {
 					foreach($data['type'] as $type) {
@@ -113,7 +131,6 @@ class RequesterController extends AbstractController {
 			if ( $entity instanceof User) {
 				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
 			}
-			$this->session->selected = $this->getAgencyActive()->getId();
 			if ( $helper->create($form) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Requisitante <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
@@ -130,14 +147,14 @@ class RequesterController extends AbstractController {
 	public function editAction() {
 		try {
 			$id = (int) $this->request->getQuery('key');
-			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
 			$entity = $this->getEntityManager()->find(Requester::getClass(), (int) $id);
-			if ( $entity instanceof Requester ) {
-				$this->session->selected = $entity->getLotation()->getAgency()->getId();
+			if ( ! $entity instanceof Requester ) {
+				throw new NotFoundEntityException('Não foi possível editar o Requisitante. Requisitante <em>#' . $id . '</em> não encontrado.');
 			}
-			$helper->setException(new NotFoundEntityException('Não foi possível editar o Requisitante. Requisitante <em>#' . $id . '</em> não encontrado.'));
-			if ( $helper->update($form, $id) ){
+			$this->setAgencySelected($entity->getLotation()->getAgency());
+			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
+			if ( $helper->update($form, $entity) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Requisitante <em>#' . $entity->code . ' ' . $entity->name .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
@@ -172,11 +189,26 @@ class RequesterController extends AbstractController {
 	public function transferAction() {
 		try {
 			$nif = $this->request->getPost('requester-nif');
+			$to = $this->request->getPost('agency-to');
 			$entity = $this->getEntityManager()->getRepository(Requester::getClass())->findOneBy(['nif' => $nif]);
-			if ( $entity === null ) {
+			$agency = $to ? $this->getEntityManager()->find(Agency::getClass(), $to) : $this->getAgencyActive();
+			if (! $entity instanceof Requester ) {
 				throw new \DomainException('Requisitante <em>CPF ' . $nif . '</em> não encontrado.');
 			}
-			$entity->setLotation($this->getUserActive()->getLotation());
+			if ($agency) {
+				$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
+				$query->andWhere('u.agency = :agency');
+				$query->orderBy('u.lft');
+				$query->setMaxResults(1);
+				$query->setParameter('agency', $agency->getId());
+				$unitTo = $query->getQuery()->getOneOrNullResult();
+				if (! $unitTo instanceof AdministrativeUnit ) {
+					throw new \DomainException('Não foi possível Transferir Usuários: Órgão de Destino não possui uma unidade administrativa.');
+				}
+			} else {
+				$unitTo = $this->getUserActive()->getLotation();
+			}
+			$entity->setLotation($unitTo);
 			$this->getEntityManager()->flush();
 			$this->setAlert(new Alert('<strong>Ok! </strong>Requisitante <em>#' . $entity->code . ' ' . $entity->name .  '</em> transferido com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ) {
@@ -285,9 +317,36 @@ class RequesterController extends AbstractController {
 		$showAgency = null;
 		if (! $this->getAgencyActive()->isGovernment()) {
 			$showAgency = $this->getAgencyActive();
-			$this->session->selected = $showAgency->getId();
 		}
-		return new RequesterForm($submit, $seek, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $cancel, $showAgency);
+		
+		$optResultCenter = [];
+		$criteria = ['active' => true, 'agency' => $this->getAgencySelected()->getId()];
+		$rs = $this->getEntityManager()->getRepository(ResultCenter::getClass())->findBy($criteria);
+		foreach ($rs as $result) {
+			$optResultCenter[$result->id] = $result->description;
+		}
+		
+		return new RequesterForm($submit, $seek, $seekUnit, $searchUnit, $seekAgency, $searchAgency, $cancel, $optResultCenter, $showAgency);
+	}
+	
+	/**
+	 * @return Agency
+	 */
+	protected function getAgencySelected() {
+		if ($this->session->agency_selected > 0) {
+			$selected = $this->getEntityManager()->find(Agency::getClass(), $this->session->agency_selected);
+			if ($selected) {
+				return $selected;
+			}
+		}
+		return $this->getAgencyActive();
+	}
+	
+	/**
+	 * @param Agency $agency
+	 */
+	protected function setAgencySelected(Agency $agency = null) {
+		$this->session->agency_selected = $agency ? $agency->getId() : null;
 	}
 	
 }

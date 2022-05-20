@@ -11,6 +11,7 @@ use Gesfrota\View\AgencyList;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use PHPBootstrap\Mvc\View\JsonView;
 
 
 class AgencyController extends AbstractController {
@@ -96,6 +97,23 @@ class AgencyController extends AbstractController {
 			$this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		$this->forward('/');
+	}
+	
+	public function resultCenterAction() {
+		try {
+			$data['flash-message'] = null;
+			$id = $this->request->getQuery('key');
+			$entity = $this->getEntityManager()->find(Agency::getClass(), $id);
+			if ( ! $entity instanceof Agency ) {
+				throw new NotFoundEntityException('Órgão <em>#' . $id . '</em> não encontrado.');
+			}
+			$data['results-center'] = $entity->getResultCentersActived();
+		} catch ( NotFoundEntityException $e ){
+			$data['flash-message'] = new Alert('<strong>Ops! </strong>' . $e->getMessage());
+		} catch ( \Exception $e ) {
+			$data['flash-message'] = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
+		}
+		return new JsonView($data, false);
 	}
 	
 	/**

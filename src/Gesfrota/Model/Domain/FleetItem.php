@@ -3,6 +3,7 @@ namespace Gesfrota\Model\Domain;
 
 use Gesfrota\Model\AbstractActivable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Item da Frota
@@ -41,6 +42,16 @@ abstract class FleetItem extends AbstractActivable {
     protected $responsibleUnit;
     
     /**
+     * @ManyToMany(targetEntity="ResultCenter", indexBy="id")
+     * @JoinTable(name="fleet_items_has_center_results",
+     *      joinColumns={@JoinColumn(name="fleet_item_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@JoinColumn(name="center_result_id", referencedColumnName="id")}
+     *      )
+     * @var ArrayCollection
+     */
+    protected $resultCenters;
+    
+    /**
      * @OneToMany(targetEntity="ServiceCard", mappedBy="fleetItem", indexBy="id")
      * @var ArrayCollection
      */
@@ -66,6 +77,7 @@ abstract class FleetItem extends AbstractActivable {
       	  	$this->setResponsibleUnit($unit);
     	}
         $this->cards = new ArrayCollection();
+        $this->resultCenters = new ArrayCollection();
         $this->createdAt = $this->updatedAt = new \DateTime();
         parent::__construct();
     }
@@ -77,6 +89,20 @@ abstract class FleetItem extends AbstractActivable {
     abstract public function getDescription();
     
     /**
+     * @return string
+     */
+    public function getFleetType() {
+    	return constant(get_class($this) . '::FLEET_TYPE');
+    }
+    
+	/**
+	 * @return string
+	 */
+	public function getAssetCode() {
+		return $this->assetCode;
+	}
+
+	/**
      * Obtem $engine
      * @return integer
      */
@@ -113,13 +139,6 @@ abstract class FleetItem extends AbstractActivable {
     }
     
     /**
-     * @return string
-     */
-    public function getAssetCode() {
-    	return $this->assetCode;
-    }
-    
-    /**
      * @param string $assetCode
      */
     public function setAssetCode($assetCode) {
@@ -130,16 +149,12 @@ abstract class FleetItem extends AbstractActivable {
      * @param Agency $responsibleUnit
      */
     public function setResponsibleUnit(Agency $unit) {
+    	if ($this->responsibleUnit !== $unit) {
+    		$this->removeAllResultCenters();
+    	}
         $this->responsibleUnit = $unit;
     }
     
-    /**
-     * @return string
-     */
-    public function getFleetType() {
-    	return constant(get_class($this) . '::FLEET_TYPE');
-    }
-
     /**
      * @param integer $fleet
      * @throws \DomainException
@@ -194,6 +209,51 @@ abstract class FleetItem extends AbstractActivable {
      */
     public function getAllCards() {
         return $this->cards->toArray();
+    }
+    
+    /**
+     * @param ResultCenter $unit
+     * @return bool
+     */
+    public function addResultCenter(ResultCenter $unit) {
+    	return $this->resultCenters->set($unit->getId(), $unit);
+    }
+    
+    /**
+     * @param integer|ResultCenter $unit
+     * @return false|ResultCenter
+     */
+    public function removeResultCenter($unit) {
+    	if ($unit instanceof ResultCenter) {
+    		return $this->resultCenters->removeElement($unit);
+    	} else {
+    		return $this->resultCenters->remove($unit);
+    	}
+    }
+    
+    public function removeAllResultCenters() {
+    	$this->resultCenters->clear();
+    }
+    
+    /**
+     * @return array
+     */
+    public function getAllResultCenters() {
+    	return $this->resultCenters->toArray();
+    }
+    
+    /**
+     * @return array
+     */
+    public function getResultCentersActived() {
+    	$options = [];
+    	$criteria = new Criteria();
+    	$criteria->where(Criteria::expr()->eq('active', true));
+    	$result = $this->resultCenters->matching($criteria);
+    	foreach($result as $item) {
+    		$options[$item->id] = $item->description;
+    	}
+    	return $options;
     }
     
     /**

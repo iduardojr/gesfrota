@@ -111,6 +111,13 @@ class RequestTrip extends Request {
 		}
 	}
 	
+	public function setResultCenter(ResultCenter $unit) {
+		parent::setResultCenter($unit);
+		if ($this->roundTrip) {
+			$this->roundTrip->setResultCenter($unit);
+		}
+	}
+	
 	/**
 	 * @param \DateTime $duration
 	 */

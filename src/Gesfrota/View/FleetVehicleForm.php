@@ -2,6 +2,8 @@
 namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
+use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Domain\Owner;
 use Gesfrota\Model\Domain\ServiceCard;
 use Gesfrota\Model\Domain\ServiceProvider;
@@ -12,6 +14,7 @@ use PHPBootstrap\Format\NumberFormat;
 use PHPBootstrap\Validate\Pattern\Number;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
+use PHPBootstrap\Widget\Action\TgStorage;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Button\ButtonGroup;
 use PHPBootstrap\Widget\Dropdown\Dropdown;
@@ -20,11 +23,15 @@ use PHPBootstrap\Widget\Dropdown\TgDropdown;
 use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\NumberBox;
 use PHPBootstrap\Widget\Form\Controls\Output;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalClose;
@@ -32,14 +39,10 @@ use PHPBootstrap\Widget\Modal\TgModalLoad;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Domain\Agency;
-use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
-use Gesfrota\Model\Domain\Fleet;
-use PHPBootstrap\Widget\Form\Controls\Hidden;
-use PHPBootstrap\Widget\Action\TgStorage;
-use PHPBootstrap\Widget\Form\Controls\Decorator\Embed;
-use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
+use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
+use Gesfrota\Model\Domain\ResultCenter;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -65,7 +68,7 @@ class FleetVehicleForm extends AbstractForm {
 	 * @param boolean $showAgencies
 	 * @param ServiceCardForm $subform
 	 */
-    public function __construct(Action $submit, Action $seekVehiclePlate, Action $seekVehicleModel, Action $searchVehicleModel, Action $seekAgency, Action $searchAgency, Action $seekOwner, Action $searchOwner, Action $newOwerPerson, Action $newOwerCompany, Action $cancel, $showAgencies = false, ServiceCardForm $subform = null ) {
+    public function __construct(Action $submit, Action $seekVehiclePlate, Action $seekVehicleModel, Action $searchVehicleModel, Action $seekAgency, Action $searchAgency, Action $seekOwner, Action $searchOwner,  Action $newOwerPerson, Action $newOwerCompany, Action $cancel, array $optResultCenter, $showAgencies = false, ServiceCardForm $subform = null ) {
 	    $this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		$form = $this->buildForm('fleet-vehicle-form');
 		
@@ -207,6 +210,7 @@ class FleetVehicleForm extends AbstractForm {
 		$form->buildField('Atualizado em', new Output('updated-at'), null, $general);
 		
 		$owner = new Fieldset('Proprietário');
+		$owner->setName('owner');
 		
 		if ($showAgencies) {
 			$modal = new Modal('agency-search', new Title('Órgãos', 3));
@@ -222,12 +226,10 @@ class FleetVehicleForm extends AbstractForm {
 			
 			$input[1] = new SearchBox('agency-name', $searchAgency, $modal);
 			$input[1]->setEnableQuery(false);
-			$input[1]->setSpan(6);
+			$input[1]->setSpan(5);
 			
 			$form->buildField('Órgão', $input, null, $owner);
 		}
-		
-		$owner->setName('owner');
 		
 		$modal = new Modal('owner-search', new Title('Proprietário', 3));
 		$modal->setWidth(800);
@@ -241,18 +243,15 @@ class FleetVehicleForm extends AbstractForm {
 		$input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input[0]->setSpan(1);
 		
+		$this->ownerDefault = new Button(new Icon('icon-star'));
+		$this->ownerDefault->setTooltip(new Tooltip('Proprietário Favorito'));
 		if (! $showAgencies) {
-			$this->ownerDefault = new Button(new Icon('icon-star'));
-			$this->ownerDefault->setTooltip(new Tooltip('Proprietário Favorito'));
 			$input[0] = new Embed([$input[0], $this->ownerDefault]);
 		}
 		
 		$input[1] = new SearchBox('owner-name', $searchOwner, $modal);
 		$input[1]->setEnableQuery(false);
-		$input[1]->setSpan(6);
-		
-		
-		$form->buildField('Proprietário', $input, null, $owner);
+		$input[1]->setSpan(5);
 		
 		$modal = new Modal('owner-new', new Title('Proprietário', 3));
 		$modal->setWidth(800);
@@ -262,8 +261,21 @@ class FleetVehicleForm extends AbstractForm {
 		$drop->addItem(new DropdownLink('Pessoa Física', new TgModalLoad($newOwerPerson, $modal)));
 		$drop->addItem(new DropdownLink('Pessoa Jurídica', new TgModalLoad($newOwerCompany, $modal)));
 		
-		$input = new ButtonGroup(new Button('Novo Proprietário', null, Button::Primary), new Button(null, new TgDropdown($drop), Button::Primary));
-		$control = $form->buildField(null, $input, null, $owner);
+		$input[2] = new ButtonGroup(new Button('Novo', null, Button::Primary), new Button(null, new TgDropdown($drop), Button::Primary));
+		
+		$form->buildField('Proprietário', $input, null, $owner);
+		
+		$required = new Hidden('result-center-required');
+		$required->setValue(count($optResultCenter) > 0 ? '1' : null);
+		
+		$input = new ChosenBox('results-center', true);
+		$input->setOptions($optResultCenter);
+		$input->setSpan(7);
+		$input->setPlaceholder('Selecione uma ou mais opções');
+		$input->setTextNoResult('Nenhum resultado encontrado para ');
+		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$form->buildField('Centro de Resultado', [$input, $required], null, $owner)->setName('results-center-group');
+		$form->unregister($required);
 		
 		$form->buildField("<br>", [], null, $owner);
 		
@@ -320,13 +332,13 @@ class FleetVehicleForm extends AbstractForm {
 	    	$data['agency-name'] = $object->getResponsibleUnit()->getName();
 	    	
 	    	$owner = $object->getResponsibleUnit()->getOwner();
-	    	//$this->ownerDefault->setLabel($object->getResponsibleUnit()->getAcronym());
 	    	$this->ownerDefault->setToggle(new TgStorage(['owner-id' => $owner->getCode(), 'owner-name' => $owner->getName()]));
 	    }
 	    if ($object->getOwner()) {
 	    	$data['owner-id'] = $object->getOwner()->getCode();
 	    	$data['owner-name'] = $object->getOwner()->getName();
 	    }
+	    $data['results-center'] = array_keys($object->getAllResultCenters());
 	    $data['year-manufacture'] = $object->getYearManufacture();
 	    $data['year-model'] = $object->getYearModel();
 	    $data['asset-code'] = $object->getAssetCode();
@@ -361,6 +373,12 @@ class FleetVehicleForm extends AbstractForm {
 			$object->setOwner($em->find(Owner::getClass(), $data['owner-id']));
 		} else {
 			$object->setOwner(null);
+		}
+		$object->removeAllResultCenters();
+		if (isset($data['results-center'])) {
+			foreach($data['results-center'] as $key) {
+				$object->addResultCenter($em->find(ResultCenter::getClass(), $key));
+			}
 		}
 		if (isset($data['cards'])) {
 			$oldcards = $object->getAllCards();

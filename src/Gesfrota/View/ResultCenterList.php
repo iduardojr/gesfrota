@@ -14,8 +14,9 @@ use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use Gesfrota\Model\Domain\ResultCenter;
 
-class AdministrativeUnitList extends AbstractList {
+class ResultCenterList extends AbstractList {
 	
 	/**
 	 * @param Action $filter
@@ -25,7 +26,7 @@ class AdministrativeUnitList extends AbstractList {
 	 * @param array $showAgencies
 	 */
 	public function __construct( Action $filter, Action $new, Action $edit, Action $active, array $showAgencies = null ) {
-		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Unidades Administrativas');
+		$this->buildPanel('Estrutura Organizacional', 'Gerenciar Centro de Resultados');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);
@@ -39,8 +40,8 @@ class AdministrativeUnitList extends AbstractList {
 			$form->buildField('Órgão', $input);
 		}
 		
-		$input = new TextBox('name');
-		$input->setSpan(4);
+		$input = new TextBox('description');
+		$input->setSpan(3);
 		$form->buildField('Descrição', $input);
 		
 		$input = new CheckBox('only-active', 'Apenas ativos');
@@ -54,31 +55,25 @@ class AdministrativeUnitList extends AbstractList {
 		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary), 
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
-		$table = $this->buildTable('administrative-unit-list');
+		$table = $this->buildTable('result-center-list');
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId();
-		$table->buildColumnText('partialDescription', 'Descrição', null, null, ColumnText::Left, function ($value, AdministrativeUnit $unit) use ($showAgencies) {
-			if ($showAgencies) {
-				return $unit->getAgency() . ' / '. $value;
-			}
-			return $value;
-		});
-		$table->buildColumnText('active', 'Status', null, 70, null, function ( $value ) {
+		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('active', 'Status', clone $filter, 70, null, function ( $value ) {
 			return $value ? new Label('Ativo', Label::Success) : new Label('Inativo', Label::Important);
 		});
+		if ($showAgencies) {
+			$table->buildColumnText('agency', 'Órgão', clone $filter, 75);
+		}
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
-		$table->buildColumnAction('active', new Icon('icon-remove'), $active, null, function( Button $button, AdministrativeUnit $unit ) {
+		$table->buildColumnAction('active', new Icon('icon-remove'), $active, null, function( Button $button, ResultCenter $unit ) {
 			if ( ! $unit->getActive() ) {
 				$button->setIcon(new Icon('icon-ok'));
 			} else {
 				$button->setIcon(new Icon('icon-remove'));
 			}
-			if ( $unit->getParent() ) {
-				$button->setDisabled(! $unit->getParent()->getActive());
-			}
 		});
-		$table->buildColumnAction('new', new Icon('icon-plus-sign'), clone $new, null);
 	}
 	
 }

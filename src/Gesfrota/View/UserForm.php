@@ -29,6 +29,9 @@ use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Driver;
 use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
+use Gesfrota\Model\Domain\ResultCenter;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 
 class UserForm extends AbstractForm {
 	
@@ -47,7 +50,7 @@ class UserForm extends AbstractForm {
 	 * @param Action $searchUnit
 	 * @param Action $cancel
 	 */
-	public function __construct( User $user, Action $submit, Action $seek, Action $seekAgency, Action $searchAgency, Action $seekUnit, Action $searchUnit, Action $cancel ) {
+	public function __construct( User $user, Action $submit, Action $seek, Action $seekAgency, Action $searchAgency, Action $seekUnit, Action $searchUnit, Action $cancel, array $optResultCenter) {
 		$this->buildPanel('Segurança', ($user->getId() > 0 ? 'Gerenciar ' : 'Novo '). $user->getUserType());
 		$form = $this->buildForm('user-form');
 		
@@ -128,6 +131,20 @@ class UserForm extends AbstractForm {
 		
 		$form->buildField('Unidade Administrativa', $input, null, $lotation);
 		
+		$required = new Hidden('result-center-required');
+		$required->setValue(count($optResultCenter) > 0 ? '1' : null);
+		
+		$input = new ChosenBox('results-center', true);
+		$input->setOptions($optResultCenter);
+		$input->setSpan(7);
+		$input->setPlaceholder('Selecione uma ou mais opções');
+		$input->setTextNoResult('Nenhum resultado encontrado para ');
+		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$form->buildField('Centro de Resultado', [$input, $required], null, $lotation)->setName('results-center-group');
+		$form->unregister($required);
+		
+		$form->buildField("<br>", [], null, $lotation);
+		
 		$tab = new Tabbable('user-tabs');
 		$tab->setPlacement(Tabbable::Left);
 		$tab->addItem(new NavLink('Dados Gerais'), null, new TabPane($general));
@@ -185,6 +202,9 @@ class UserForm extends AbstractForm {
 			$data['vehicles'] = $object->getVehicles();
 			$data['expires'] = $object->getExpires();
 		}
+		
+		$data['results-center'] = array_keys($object->getAllResultCenters());
+		
 		$this->component->setData($data);
 	}
 
@@ -212,6 +232,13 @@ class UserForm extends AbstractForm {
 			
 			$object->setVehicles($data['vehicles']);
 			$object->setExpires(new \DateTime($data['expires']));
+		}
+		
+		$object->removeAllResultCenters();
+		if (isset($data['results-center'])) {
+			foreach($data['results-center'] as $key) {
+				$object->addResultCenter($em->find(ResultCenter::getClass(), $key));
+			}
 		}
 	}
 	
