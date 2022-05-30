@@ -18,7 +18,7 @@ use PHPBootstrap\Widget\Action\Action;
 /**
  * Campo de Lugar
  */
-class PlaceInput extends AbstractComponent implements TextEditable, InputQuery, InputContext, DirectionInput {
+class PlaceInput extends AbstractComponent implements TextEditable, InputQuery, DirectionInput {
 	
 	// ID Renderizador
 	const RendererType = 'gesfrota.view.widget.input.place';
@@ -331,18 +331,6 @@ class PlaceInput extends AbstractComponent implements TextEditable, InputQuery, 
 		$this->component->remove($this->place);
 		$this->component->append($this->place);
 		$this->component->append($this->marker);
-	}
-	
-	/**
-	 *
-	 * @see InputContext::getContextIdentify()
-	 */
-	public function getContextIdentify() {
-		return $this->text->getContextIdentify();
-	}
-	
-	public function getContextValue() {
-		return $this->text->getContextValue();
 	}
 	
 	/**

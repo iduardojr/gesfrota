@@ -138,30 +138,6 @@ class FleetVehicleForm extends AbstractForm {
 		
 		$form->buildField('Ano Fab/Mod', $input, null, $general);
 		
-		$context = new class implements InputContext {
-			/**
-			 * @var ComboBox
-			 */
-			protected $input;
-			
-			public function __construct() {
-			}
-			
-			public function setInput(ComboBox $input) {
-				$this->input = $input;
-			}
-			
-			public function getContextIdentify() {
-				return $this->input->getContextIdentify(Fleet::OWN);
-			}
-			
-			public function getContextValue() {
-				if ($this->input->getValue() == Fleet::OWN) {
-					return Fleet::OWN;
-				}
-				return null;
-			}
-		};
 		
 		$input = new TextBox('vin');
 		$input->setSpan(2);
@@ -194,7 +170,7 @@ class FleetVehicleForm extends AbstractForm {
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Tipo da Frota', $input, null, $general);
 		
-		$context->setInput($input);
+		$context = new InputContext($input, Fleet::OWN);
 		
 		$input = new TextBox('asset-code');
 		$input->setSpan(2);
@@ -266,14 +242,14 @@ class FleetVehicleForm extends AbstractForm {
 		$form->buildField('Proprietário', $input, null, $owner);
 		
 		$required = new Hidden('result-center-required');
-		$required->setValue(count($optResultCenter) > 0 ? '1' : null);
+		$required->setValue(count($optResultCenter) > 0 ? 1 : 0);
 		
 		$input = new ChosenBox('results-center', true);
 		$input->setOptions($optResultCenter);
 		$input->setSpan(7);
 		$input->setPlaceholder('Selecione uma ou mais opções');
 		$input->setTextNoResult('Nenhum resultado encontrado para ');
-		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$input->setRequired(new Required(new InputContext($required, 1), 'Por favor, preencha esse campo'));
 		$form->buildField('Centro de Resultado', [$input, $required], null, $owner)->setName('results-center-group');
 		$form->unregister($required);
 		

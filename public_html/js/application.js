@@ -51,7 +51,7 @@ $(function() {
 		
 	$('body').on('ajaxComplete', function( e ) {
 		$('[data-validate*="required"]').each( function( i, item ) {
-			$('label[for="' + $(item).attr('name') + '"]').addClass('label-required');
+			$('label[for="' + $(item).attr('name').replace('[]', '') + '"]').addClass('label-required');
 		});
 		
 		$('form[name="service-card-form"]').form({ajax: true, format: 'json'});
@@ -611,7 +611,7 @@ $(function() {
 			$('#result-center-required').field('value', 1);
 			$('#results-center-group').show();
 		} else {
-			$('#result-center-required').field('value', '');
+			$('#result-center-required').field('value', 0);
 			$('#results-center-group').hide();
 		}
 		return false;

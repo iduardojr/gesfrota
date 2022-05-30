@@ -259,7 +259,7 @@ abstract class User extends AbstractActivable {
 	 * @param AdministrativeUnit $unit
 	 */
 	public function setLotation(AdministrativeUnit $unit) {
-		if ($unit->getAgency() !== $this->lotation->getAgency()) {
+		if ($this->lotation && $unit->getAgency() !== $this->lotation->getAgency()) {
 			$this->removeAllResultCenters();
 		}
 		$this->lotation = $unit;

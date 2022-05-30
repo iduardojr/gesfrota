@@ -33,6 +33,7 @@ use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use Gesfrota\Model\Domain\ResultCenter;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 
 class DriverForm extends AbstractForm {
 	
@@ -138,14 +139,14 @@ class DriverForm extends AbstractForm {
 		$form->buildField('Unidade Administrativa', $input, null, $lotation);
 		
 		$required = new Hidden('result-center-required');
-		$required->setValue(count($optResultCenter) > 0 ? '1' : null);
+		$required->setValue(count($optResultCenter) > 0 ? 1 : 0);
 		
 		$input = new ChosenBox('results-center', true);
 		$input->setOptions($optResultCenter);
 		$input->setSpan(7);
 		$input->setPlaceholder('Selecione uma ou mais opções');
 		$input->setTextNoResult('Nenhum resultado encontrado para ');
-		$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+		$input->setRequired(new Required(new InputContext($required, 1), 'Por favor, preencha esse campo'));
 		$form->buildField('Centro de Resultado', [$input, $required], null, $lotation)->setName('results-center-group');
 		$form->unregister($required);
 		

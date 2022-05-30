@@ -7,7 +7,7 @@
 		"symfony/yaml" : "2.*",
 		"symfony/cache" : "^5.3",
 		"phpmailer/phpmailer" : "^6.5",
-		"iduardojr/phpbootstrap" : ">=1.0.4"
+		"iduardojr/phpbootstrap" : ">=1.0.5"
 	},
 	"minimum-stability" : "stable",
 	"config" : {

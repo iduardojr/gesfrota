@@ -38,6 +38,7 @@ use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use Gesfrota\Model\Domain\ResultCenter;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 
 class RequestFreightForm extends AbstractForm {
 	
@@ -177,12 +178,12 @@ class RequestFreightForm extends AbstractForm {
 			$form->buildField('Unidade Administrativa', $input, null, $requester);
 			
 			$required = new Hidden('result-center-required');
-			$required->setValue($isResultCenterRequired ? '1' : null);
+			$required->setValue($isResultCenterRequired ? 1 : 0);
 			
 			$input = new ComboBox('result-center-id');
 			$input->setOptions($optResultCenter);
 			$input->setSpan(7);
-			$input->setRequired(new Required($required, 'Por favor, preencha esse campo'));
+			$input->setRequired(new Required(new InputContext($required, 1), 'Por favor, preencha esse campo'));
 			$form->buildField('Centro de Resultado', [$input, $required], null, $requester)->setName('results-center-group');
 			$form->unregister($required);
 			
