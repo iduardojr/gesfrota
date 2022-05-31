@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\Criteria;
  * @EntityListeners({"Gesfrota\Model\Listener\UserListener","Gesfrota\Model\Listener\LoggerListener"})
  * @InheritanceType("SINGLE_TABLE")
  * @DiscriminatorColumn(name="type", type="string")
- * @DiscriminatorMap({"M" = "Manager", "F" = "FleetManager", "D" = "Driver", "R" = "Requester"}) 
+ * @DiscriminatorMap({"M" = "Manager", "F" = "FleetManager", "T" = "TrafficController", "D" = "Driver", "R" = "Requester"}) 
  * @Table(name="users")
  */
 abstract class User extends AbstractActivable {

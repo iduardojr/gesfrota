@@ -11,6 +11,8 @@ use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\TrafficController;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\Services\Logger;
 use Gesfrota\View\Layout;
@@ -24,7 +26,6 @@ use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Model\Domain\ResultCenter;
 
 class UserController extends AbstractController { 
 	
@@ -34,16 +35,17 @@ class UserController extends AbstractController {
 		$this->setAgencySelected(null);
 		
 		$filter = new Action($this);
-		$newManager = new Action($this, 'newManager');
-		$newFleetManager = new Action($this, 'newFleetManager');
-		$newDriver = new Action($this, 'newDriver');
-		$newRequester = new Action($this, 'newRequester');
+		$new1 = new Action($this, 'newManager');
+		$new2 = new Action($this, 'newFleetManager');
+		$new3 = new Action($this, 'newTrafficController');
+		$new4 = new Action($this, 'newDriver');
+		$new5 = new Action($this, 'newRequester');
 		$edit = new Action($this, 'edit');
 		$active = new Action($this, 'active');
 		$reset = new Action($this, 'resetPassword');
 		
 		$profile = function(Button $btn, User $user) {
-			$profiles = [Requester::getClass(), Driver::getClass(), FleetManager::getClass(), Manager::getClass()];
+			$profiles = [Requester::getClass(), Driver::getClass(), TrafficController::getClass(), FleetManager::getClass(), Manager::getClass()];
 			$drop = new Dropdown();
 			foreach ($profiles as $type) {
 				$item = new DropdownLink(constant($type . '::USER_TYPE'));
@@ -59,7 +61,7 @@ class UserController extends AbstractController {
 		$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 		$agencies = $query->getQuery()->getResult();
 		
-		$list = new UserList($filter, $newManager, $newFleetManager, $newDriver, $newRequester, $edit, $active, $reset, $profile, $agencies);
+		$list = new UserList($filter, $new1, $new2, $new3, $new4, $new5, $edit, $active, $reset, $profile, $agencies);
 		
 		try {
 			$helper = $this->createHelperCrud();
@@ -73,6 +75,10 @@ class UserController extends AbstractController {
 								
 							case 'F':
 								$query->andWhere('u INSTANCE OF ' . FleetManager::getClass());
+								break;
+								
+							case 'T':
+								$query->andWhere('u INSTANCE OF ' . TrafficController::getClass());
 								break;
 								
 							case 'D':
@@ -138,6 +144,24 @@ class UserController extends AbstractController {
 			if ( $helper->create($form, $user) ){
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Gestor de Frota <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
+				$this->forward('/');
+			}
+		} catch ( InvalidRequestDataException $e ){
+			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage(), Alert::Danger));
+		} catch ( \Exception $e ) {
+			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		}
+		return new Layout($form);
+	}
+	
+	public function newTrafficControllerAction() {
+		$user = new TrafficController();
+		$form = $this->createForm($user, new Action($this, 'newTrafficController'));
+		try {
+			$helper = $this->createHelperCrud();
+			if ( $helper->create($form, $user) ){
+				$entity = $helper->getEntity();
+				$this->setAlert(new Alert('<strong>Ok! </strong>Controlador de Tráfego <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
 		} catch ( InvalidRequestDataException $e ){
@@ -245,11 +269,6 @@ class UserController extends AbstractController {
 		$this->forward('/');
 	}
 	
-	public function changeRequesterAction() {
-		$this->changeProfile($this->request->getQuery('key'), Requester::getClass());
-		$this->forward('/');
-	}
-	
 	public function changeManagerAction() {
 		$this->changeProfile($this->request->getQuery('key'), Manager::getClass());
 		$this->forward('/');
@@ -260,8 +279,18 @@ class UserController extends AbstractController {
 		$this->forward('/');
 	}
 	
+	public function changeTrafficControllerAction() {
+		$this->changeProfile($this->request->getQuery('key'), TrafficController::getClass());
+		$this->forward('/');
+	}
+	
 	public function changeDriverAction() {
 		$this->changeProfile($this->request->getQuery('key'), Driver::getClass());
+		$this->forward('/');
+	}
+	
+	public function changeRequesterAction() {
+		$this->changeProfile($this->request->getQuery('key'), Requester::getClass());
 		$this->forward('/');
 	}
 	

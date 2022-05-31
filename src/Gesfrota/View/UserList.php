@@ -5,6 +5,7 @@ use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\TrafficController;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
@@ -24,7 +25,6 @@ use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use Gesfrota\Model\Domain\Agency;
 
 class UserList extends AbstractList {
 	
@@ -32,6 +32,7 @@ class UserList extends AbstractList {
 	 * @param Action $filter
 	 * @param Action $newManager
 	 * @param Action $newFleetManager
+	 * @param Action $newTrafficController
 	 * @param Action $newDriver
 	 * @param Action $newRequester
 	 * @param Action $edit
@@ -40,7 +41,7 @@ class UserList extends AbstractList {
 	 * @param \Closure $profile
 	 * @param array $agencies
 	 */
-	public function __construct( Action $filter, Action $newManager, Action $newFleetManager, Action $newDriver, Action $newRequester, Action $edit, Action $active, Action $password, \Closure $profile, array $agencies ) {
+	public function __construct( Action $filter, Action $newManager, Action $newFleetManager, Action $newTrafficController, Action $newDriver, Action $newRequester, Action $edit, Action $active, Action $password, \Closure $profile, array $agencies ) {
 		$this->buildPanel('Segurança', 'Gerenciar Usuários');
 		
 		$reset = clone $filter;
@@ -66,9 +67,9 @@ class UserList extends AbstractList {
 		}
 		$form->buildField('Lotação', $input);
 		
-		$input = new CheckBoxList('type', true);
-		$input->setOptions(['M' => Manager::USER_TYPE, 'F' => FleetManager::USER_TYPE, 'D' => Driver::USER_TYPE, 'R' => Requester::USER_TYPE]);
-		$form->buildField(null, $input);
+		$input = new CheckBoxList('type', false);
+		$input->setOptions(['M' => Manager::USER_TYPE, 'F' => FleetManager::USER_TYPE, 'T' => TrafficController::USER_TYPE, 'D' => Driver::USER_TYPE, 'R' => Requester::USER_TYPE]);
+		$form->buildField('Perfil de Usuário', $input);
 		
 		$input = new CheckBox('only-active', 'Apenas ativos');
 		$form->buildField(null, $input);
@@ -79,10 +80,11 @@ class UserList extends AbstractList {
 		$btnFilter->setName('remove-filter');
 		
 		$drop = new Dropdown();
-		$drop->addItem(new DropdownLink('Administrador', new TgLink($newManager)));
-		$drop->addItem(new DropdownLink('Gestor de Frota', new TgLink($newFleetManager)));
-		$drop->addItem(new DropdownLink('Motorista', new TgLink($newDriver)));
-		$drop->addItem(new DropdownLink('Requisitante', new TgLink($newRequester)));
+		$drop->addItem(new DropdownLink(Manager::USER_TYPE, new TgLink($newManager)));
+		$drop->addItem(new DropdownLink(FleetManager::USER_TYPE, new TgLink($newFleetManager)));
+		$drop->addItem(new DropdownLink(TrafficController::USER_TYPE, new TgLink($newTrafficController)));
+		$drop->addItem(new DropdownLink(Driver::USER_TYPE, new TgLink($newDriver)));
+		$drop->addItem(new DropdownLink(Requester::USER_TYPE, new TgLink($newRequester)));
 		
 		$this->buildToolbar(array(new Button('Novo', null, Button::Primary), new Button('', new TgDropdown($drop), Button::Primary)),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
@@ -101,6 +103,10 @@ class UserList extends AbstractList {
 					
 				case FleetManager::getClass():
 					$label->setStyle(Badge::Important);
+					break;
+					
+				case TrafficController::getClass():
+					$label->setStyle(Badge::Success);
 					break;
 					
 				case Driver::getClass():

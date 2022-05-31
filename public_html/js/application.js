@@ -617,7 +617,7 @@ $(function() {
 		return false;
 	});
 	
-	$('#result-center-required').trigger('update', $('#result-center-required').field('value'));
+	$('#result-center-required').trigger('update', $('#result-center-required').field('value') > 0 ? true : false);
 	
 	$('body').on('change', '#form-filter #agency', function (e) {
 		$('#results_center_chosen .chosen-choices').addClass('loading');

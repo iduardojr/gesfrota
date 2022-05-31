@@ -39,6 +39,7 @@ use PHPBootstrap\Widget\Tooltip\Tooltip;
 use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\FleetManager;
+use Gesfrota\Model\Domain\TrafficController;
 
 class RequestController extends AbstractController {
 	
@@ -71,7 +72,7 @@ class RequestController extends AbstractController {
 			if ($user instanceof Manager || $user instanceof FleetManager) {
 				$optResultCenter = $agency->getResultCentersActived();
 			} else {
-				$optResultCenter = [];
+				$optResultCenter = $user->getResultCentersActived();
 			}
 			
 			
@@ -134,6 +135,10 @@ class RequestController extends AbstractController {
 			} elseif ($user instanceof Driver) {
 				$query->where('u.openedBy = :by OR u.driver = :by');
 				$query->setParameter('by', $user->getId());
+			} elseif ($user instanceof TrafficController && $agency->isResultCenterRequired() ) {
+				$query->where('u.openedBy = :by OR u.resultCenter IN (:rc_user)');
+				$query->setParameter('by', $user->getId());
+				$query->setParameter('rc_user', $user->getAllResultCenters());
 			}
 			
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) use ($user){

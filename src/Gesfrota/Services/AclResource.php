@@ -15,6 +15,7 @@ use PHPBootstrap\Mvc\Http\HttpResponse;
 use PHPBootstrap\Mvc\Routing\Dispatcher;
 use Gesfrota\Controller\AuthController;
 use Gesfrota\Controller\IndexController;
+use Gesfrota\Model\Domain\TrafficController;
 
 class AclResource implements Plugin {
 	
@@ -61,7 +62,7 @@ class AclResource implements Plugin {
 			self::Dashboard,
 			self::Fleet, 
 			self::Disposal, 
-			self::Request, 
+			//self::Request, 
 			self::Driver, 
 			//self::Requester, 
 			self::Account,
@@ -74,9 +75,9 @@ class AclResource implements Plugin {
 			self::Request,
 			self::Account
 		];
-		$this->acl->allow([Driver::getClass(), Requester::getClass()], $resource);
+		$this->acl->allow([TrafficController::getClass(), Driver::getClass(), Requester::getClass()], $resource);
 		
-		$this->acl->deny([FleetManager::getClass(), Driver::getClass(), Requester::getClass()], self::Account, ['access']);
+		$this->acl->deny([FleetManager::getClass(), TrafficController::getClass(), Driver::getClass(), Requester::getClass()], self::Account, ['access']);
 		$this->acl->deny(Requester::getClass(), self::Request, ['confirm', 'decline', 'initiate', 'finish']);
 		$this->acl->deny(Driver::getClass(), self::Request, ['confirm', 'decline']);
 	}
