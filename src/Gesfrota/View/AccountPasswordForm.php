@@ -6,6 +6,7 @@ use Gesfrota\View\Widget\AbstractForm;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Form\Controls\PasswordBox;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 
 class AccountPasswordForm extends AbstractForm {
 	
@@ -24,7 +25,7 @@ class AccountPasswordForm extends AbstractForm {
 		
 		$input1 = new PasswordBox('repeat-password');
 		$input1->setSpan(3);
-		$input1->setRequired(new Required($input, 'Por favor, preencha esse campo'));
+		$input1->setRequired(new Required(new InputContext($input), 'Por favor, preencha esse campo'));
 		$form->buildField('Repita senha', $input1);
 		
 		$form->buildButton('submit', 'Alterar senha', $submit);

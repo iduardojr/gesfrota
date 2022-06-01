@@ -11,7 +11,7 @@ class UserListener {
 	/**
 	 * @param User $user
 	 * @postUpdate
-	 * @postPersist
+	 * @prePersist
 	 */
 	public function resetPassword(User $user) { 
 		if ( $user->isChangePassword() && getenv('APPLICATION_ENV') != 'development' ) {

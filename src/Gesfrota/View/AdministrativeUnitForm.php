@@ -3,6 +3,7 @@ namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\View\Widget\AbstractForm;
 use PHPBootstrap\Validate\Pattern\Email;
 use PHPBootstrap\Validate\Pattern\Pattern;
@@ -21,7 +22,6 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Domain\Agency;
 
 
 class AdministrativeUnitForm extends AbstractForm {

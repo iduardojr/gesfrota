@@ -141,14 +141,14 @@ class FleetVehicleForm extends AbstractForm {
 		
 		$input = new TextBox('vin');
 		$input->setSpan(2);
-	    $input->setMask('*****************');
+	    $input->setMask('?*****************');
 	    $input->addFilter('strtoupper');
 	    $input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Chassi', $input, null, $general);
 		
 		$input = new TextBox('renavam');
 		$input->setSpan(2);
-		$input->setMask('99999999999?');
+		$input->setMask('?99999999999');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Renavam', $input, null, $general);
 		
