@@ -554,6 +554,10 @@ $(function() {
 		$('#agency-id').seek('lookup');
 	});
 	
+	$('body').on('click', '#administrative-unit-search #administrative-unit-table [data-storage]', function(e) {
+		$('#administrative-unit-id').seek('lookup');
+	});
+	
 	$('body').on('click', '#transfer-from-modal [data-storage]', function(e) {
 		$.each( $(this).data('storage'), function( key, value ) {
 			$('#from-' + key ).trigger($.Event('update'), value);
