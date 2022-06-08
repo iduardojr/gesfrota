@@ -37,6 +37,7 @@ class AclResource implements Plugin {
 	const VehicleModel = 'VehicleModelController';
 	const User = 'UserController';
 	const Audit = 'AuditController';
+	const ResultCenter = 'ResultCenterController';
 	
 	const Account = 'AccountController';
 	const Auth = 'AuthController';
@@ -62,11 +63,12 @@ class AclResource implements Plugin {
 			self::Dashboard,
 			self::Fleet, 
 			self::Disposal, 
-			//self::Request, 
 			self::Driver, 
-			//self::Requester, 
+			//self::Requester,
+			//self::Request, 
+			//self::AdministrativeUnit,
+			self::ResultCenter,
 			self::Account,
-			//self::AdministrativeUnit
 		];
 		$this->acl->allow(FleetManager::getClass(), $resource);
 		$this->acl->deny(FleetManager::getClass(), self::Disposal, ['confirm', 'devolve']);
