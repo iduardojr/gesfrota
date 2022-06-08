@@ -15,6 +15,7 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Layout\Box;
+use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 
 class DisposalAppraisalForm extends AbstractForm {
 	
@@ -57,7 +58,7 @@ class DisposalAppraisalForm extends AbstractForm {
 		});
 		$input[2]->setValue($disposal->getTotalAssetsValued());
 		$input[2]->setLength(new Min(1, 'Sem ativo(s) para serem encaminhados.'));
-		$input[2]->setRequired(new EqualTo($input[1], 'Todos os ativos devem ser avaliados'));
+		$input[2]->setRequired(new EqualTo(new InputContext($input[1]), 'Todos os ativos devem ser avaliados'));
 		
 		$form->buildField('Ativos Avaliados', $input, false, $foot);
 		$general->append($foot);
