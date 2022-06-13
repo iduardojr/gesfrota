@@ -164,6 +164,11 @@ class RequesterForm extends AbstractForm {
 	 * @see AbstractForm::extract()
 	 */
 	public function extract( User $object ) {
+		if ( $object->getId() > 0 ) {
+			$this->getBuilderForm()->getControl('nif')->setSuggestion(null);
+			$this->getBuilderForm()->getControl('nif')->setDisabled(true);
+			$this->getBuilderForm()->getControl('email')->setDisabled(true);
+		}
 		$data['nif'] = $object->getNif();
 		$data['name'] = $object->getName();
 		$data['email'] = $object->getEmail();
@@ -190,9 +195,14 @@ class RequesterForm extends AbstractForm {
 	 */
 	public function hydrate( User $object, EntityManager $em ) {
 		$data = $this->component->getData();
-		$object->setNif($data['nif']);
+		
 		$object->setName($data['name']);
-		$object->setEmail($data['email']);
+		
+		if ( $object->getId() < 0 ) {
+			$object->setNif($data['nif']);
+			$object->setEmail($data['email']);
+		}
+		
 		$object->setCell($data['cell']);
 		$object->setGender($data['gender']);
 		$object->setBirthday($data['birthday']);

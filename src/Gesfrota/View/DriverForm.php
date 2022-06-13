@@ -227,10 +227,12 @@ class DriverForm extends AbstractForm {
 		$data = $this->component->getData();
 		
 		$object->setName($data['name']);
+		
 		if ($object->getId() <= 0) {
 			$object->setNif($data['nif']);
 			$object->setEmail($data['email']);
 		}
+		
 		$object->setCell($data['cell']);
 		$object->setGender($data['gender']);
 		$object->setBirthday($data['birthday']);
