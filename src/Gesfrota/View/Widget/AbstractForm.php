@@ -121,5 +121,6 @@ abstract class AbstractForm extends Component {
 	public function getBuilderForm() {
 		return $this->component;
 	}
+	
 }
 ?>

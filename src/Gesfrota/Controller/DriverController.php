@@ -17,6 +17,10 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\DriverLicense;
+use Doctrine\ORM\Query\Expr\Join;
+use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Format\DateTimeParser;
 
 class DriverController extends AbstractController {
 	
@@ -50,16 +54,16 @@ class DriverController extends AbstractController {
 		
 			$query = $this->getEntityManager()->createQueryBuilder();
 			$query->select('u');
-			$query->from(Driver::getClass(), 'u');
+			$query->from(User::getClass(), 'u');
+			$query->join('u.driverLicense', 'd');
+			$query->where('u.driverLicense IS NOT NULL');
 			if (! $showAgencies) {
-				$query->join('u.lotation', 'l');
-				$query->where('l.agency = :agency');
+				$query->join('u.lotation', 'l', Join::WITH, 'l.agency = :agency');
 				$query->setParameter('agency', $this->getAgencyActive()->getId());
 			}
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
-					$query->join('u.lotation', 'l');
-					$query->where('l.agency = :agency');
+					$query->join('u.lotation', 'l', Join::WITH, 'l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
 				}
 				if (!empty($data['results-center'])) {
@@ -76,13 +80,13 @@ class DriverController extends AbstractController {
 					$query->setParameter('nif', $data['nif']);
 				}
 				
-				if ( !empty($data['vehicles']) ) {
-					$subquery = $this->getEntityManager()->createQueryBuilder('u2');
-					$subquery->from(Driver::getClass(), 'u2');
-					$subquery->select('u2');
-					foreach($data['vehicles'] as $key => $val) {
-						$subquery->orWhere('u.vehicles LIKE :vehicles' . $key);
-						$query->setParameter('vehicles' . $key, '%' . $val . '%');
+				if ( !empty($data['categories']) ) {
+					$subquery = $this->getEntityManager()->createQueryBuilder('d2');
+					$subquery->from(DriverLicense::getClass(), 'd2');
+					$subquery->select('d2');
+					foreach($data['categories'] as $key => $val) {
+						$subquery->orWhere('d2.category LIKE :cat' . $key);
+						$query->setParameter('cat' . $key, '%' . $val . '%');
 					}
 					$query->andWhere('EXISTS ( ' . $subquery->getDQL() . ' )');
 				}
@@ -104,11 +108,17 @@ class DriverController extends AbstractController {
 			$helper = $this->createHelperCrud();
 			$nif = $this->getRequest()->getPost('nif');
 			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
-			if ( $entity instanceof User) {
-				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
+			if ( $entity instanceof User ) {
+				$isGovernment = $this->getAgencyActive()->isGovernment();
+				$isUserAssignedToAgencyActive = $entity->getLotation()->getAgency() == $this->getAgencyActive();
+				$isDriver = $entity->getDriverLicense() !== null;
+				if (! ( $isGovernment || $isUserAssignedToAgencyActive ) || $isDriver ) {
+					throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
+				}
+			} else {
+				$entity = new Driver();
 			}
-			if ( $helper->create($form) ){
-				$entity = $helper->getEntity();
+			if ( $helper->create($form, $entity) ){
 				$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> criado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
@@ -124,14 +134,13 @@ class DriverController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$helper = $this->createHelperCrud();
-			$entity = $this->getEntityManager()->find(Driver::getClass(), (int) $id);
-			if ( $entity instanceof Driver ) {
-				$this->setAgencySelected($entity->getLotation()->getAgency());
+			$entity = $this->getEntityManager()->find(User::getClass(), (int) $id);
+			if ( ! $entity instanceof User || $entity->getDriverLicense() === null ) {
+				throw new NotFoundEntityException('Não foi possível editar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.');
 			}
+			$this->setAgencySelected($entity->getLotation()->getAgency());
 			$form = $this->createForm(new Action($this, 'edit', array('key' => $id)));
-			$helper->setException(new NotFoundEntityException('Não foi possível editar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.'));
-			if ( $helper->update($form, $id) ) {
-				$entity = $helper->getEntity();
+			if ( $helper->update($form, $entity) ) {
 				$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name .  '</em> alterado com sucesso!', Alert::Success));
 				$this->forward('/');
 			}
@@ -149,11 +158,13 @@ class DriverController extends AbstractController {
 	public function activeAction() {
 		try {
 			$id = $this->request->getQuery('key');
+			$entity = $this->getEntityManager()->find(User::getClass(), (int) $id);
+			if ( ! $entity instanceof User || $entity->getDriverLicense() === null ) {
+				throw new NotFoundEntityException('Não foi possível ativar/desativar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.');
+			}
 			$helper = $this->createHelperCrud();
-			$helper->setException(new NotFoundEntityException('Não foi possível ativar/desativar o Motorista. Motorista <em>#' . $id . '</em> não encontrado.'));
-			$helper->active($id);
-			$entity = $helper->getEntity();
-			$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> ' . ( $entity->active ? 'ativado' : 'desativado' ) . ' com sucesso!', Alert::Success));
+			$helper->active($entity->getDriverLicense());
+			$this->setAlert(new Alert('<strong>Ok! </strong>Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> ' . ( $entity->driverLicense->active ? 'ativado' : 'desativado' ) . ' com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ) {
 			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
@@ -166,10 +177,13 @@ class DriverController extends AbstractController {
 		try {
 			$nif = $this->request->getPost('driver-nif');
 			$to = $this->request->getPost('agency-to');
-			$entity = $this->getEntityManager()->getRepository(Driver::getClass())->findOneBy(['nif' => $nif]);
+			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
 			$agency = $to ? $this->getEntityManager()->find(Agency::getClass(), $to) : $this->getAgencyActive();
-			if (! $entity instanceof Driver ) {
+			if ( $entity === null ) {
 				throw new \DomainException('Motorista <em>CPF ' . $nif . '</em> não encontrado.');
+			}
+			if (! $entity instanceof Driver) {
+				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF ' . $entity->getNif() . ')</em> não pode ser transferido.');
 			}
 			if ($agency) {
 				$query = $this->getEntityManager()->getRepository(AdministrativeUnit::getClass())->createQueryBuilder('u');
@@ -196,11 +210,11 @@ class DriverController extends AbstractController {
 	public function resetPasswordAction() {
 		try {
 			$id = $this->request->getQuery('key');
-			$entity = $this->getEntityManager()->find(Driver::getClass(), $id);
-			if (! $entity instanceof Driver) {
+			$entity = $this->getEntityManager()->find(User::getClass(), $id);
+			if (! $entity instanceof User || $entity->getDriverLicense() === null ) {
 				throw new NotFoundEntityException('Não foi possível redefinir a senha do Motorista. Motorista <em>#' . $id . '</em> não encontrado.');
 			}
-			$entity->setPassword(null);
+			$entity->getUser()->setPassword(null);
 			$this->getEntityManager()->flush();
 			$this->setAlert(new Alert('<strong>Ok! </strong>Senha do Motorista <em>#' . $entity->code . ' ' . $entity->name . '</em> redefinida com sucesso!', Alert::Success));
 		} catch ( NotFoundEntityException $e ){
@@ -216,8 +230,63 @@ class DriverController extends AbstractController {
 			$nif = $this->request->getQuery('query');
 			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
 			$data['flash-message'] = null;
-			if ( $entity instanceof User) {
-				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
+			$data['user'] = 'Motorista';
+			$data['user-id'] = null;
+			$data['name'] = null;
+			$data['email'] = null;
+			$data['cell'] = null;
+			$data['gender'] = null;
+			$data['birthday'] = null;
+			$data['active'] = null;
+			$data['agency-id'] = null;
+			$data['agency-name'] = null;
+			if (! $this->getAgencyActive()->isGovernment()) {
+				$data['agency-id'] = $this->getAgencyActive()->getCode();
+				$data['agency-name'] = $this->getAgencyActive()->getName();
+			}
+			$data['administrative-unit-id'] = null;
+			$data['administrative-unit-name'] = null;
+			$data['results-center'] = [];
+			$data['driver-license-number'] = null;
+			$data['driver-license-categories'] = null;
+			$data['driver-license-expires'] = null;
+			if ( $entity instanceof User ) {
+				$isEdit = stripos($this->getRequest()->getHeader('referer'), '/driver/edit/') !== false;
+				$isGovernment = $this->getAgencyActive()->isGovernment();
+				$isUserAssignedToAgencyActive = $entity->getLotation()->getAgency() == $this->getAgencyActive();
+				$isDriver = $entity->getDriverLicense() !== null;
+				if ( ! $isEdit && ( $isGovernment || $isUserAssignedToAgencyActive ) && ! $isDriver ) {
+					$data['flash-message'] = new Alert('<strong>Ops! </strong>' . $entity->getUserType() .' <em>' . $entity->getName() . ' (CPF ' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym(), Alert::Success);
+					
+					$data['user'] = $entity->getUserType() . ' #' . $entity->getCode();
+					$data['user-id'] = $entity->getId();
+					$data['name'] = $entity->getName();
+					$data['email'] = $entity->getEmail();
+					$data['cell'] = $entity->getCell();
+					$data['gender'] = $entity->getGender();
+					
+					$parser = new DateFormat('dd/mm/yyyy', DateTimeParser::getInstance());
+					$data['birthday'] = $parser->format($entity->getBirthday());
+					$data['active'] = $entity->getActive();
+					
+					$data['agency-id'] = $entity->getLotation()->getAgency()->getCode();
+					$data['agency-name'] = $entity->getLotation()->getAgency()->getName();
+					
+					$data['administrative-unit-id'] = $entity->getLotation()->getCode();
+					$data['administrative-unit-name'] = $entity->getLotation()->getName();
+						
+					$data['results-center'] = array_keys($entity->getAllResultCenters());
+					
+					if ($entity->getDriverLicense()) {
+						$data['driver-license-number'] = $entity->getDriverLicense()->getNumber();
+						$data['driver-license-categories'] = $entity->getDriverLicense()->getCategories();
+						$data['driver-license-expires'] = $parser->format($entity->getDriverLicense()->getExpires());
+					}
+					
+					$this->setAgencySelected($entity->getLotation()->getAgency());
+				} else {
+					throw new \DomainException('Motorista <em>' . $entity->getName() . ' (CPF ' . $entity->getNif() . ')</em> já está registrado em '. $entity->getLotation()->getAgency()->getAcronym());
+				}
 			}
 		} catch ( \DomainException $e ){
 			$data['flash-message'] = new Alert('<strong>Ops! </strong>' . $e->getMessage());
@@ -230,9 +299,14 @@ class DriverController extends AbstractController {
 	public function searchAction() {
 		try {
 			$nif = $this->request->getQuery('query');
-			$entity = $this->getEntityManager()->getRepository(Driver::getClass())->findOneBy(['nif' => $nif]);
-			if (! $entity instanceof Driver) {
+			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
+			$data['driver-name'] = null;
+			$data['lotation-description'] = null;
+			if ( $entity === null ) {
 				throw new \DomainException('Motorista <em>CPF ' . $nif . '</em> não encontrado.');
+			}
+			if (! $entity instanceof Driver) {
+				throw new \DomainException($entity->getUserType() .' <em>' . $entity->getName() . ' (CPF ' . $entity->getNif() . ')</em> não pode ser transferido.');
 			}
 			$data['driver-name'] = $entity->getName();
 			$data['lotation-description'] = $entity->getLotation()->getAgency()->getName();
@@ -249,7 +323,7 @@ class DriverController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), Driver::getClass(), $this);
+		return new Crud($this->getEntityManager(), DriverLicense::getClass(), $this);
 	}
 	
 	/**

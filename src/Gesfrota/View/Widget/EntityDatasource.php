@@ -115,7 +115,7 @@ class EntityDatasource extends Paginator implements DataSource {
 	 */
 	public function setOrderBy( $sort, $order ) {
 		$this->loaded = false;
-		$this->defaults['sort'] = $sort;
+		$this->defaults['sort'] = $this->formatAttribute($sort);
 		$this->defaults['order'] = $order == self::Desc ? self::Desc : self::Asc;
 	}
 	
@@ -212,7 +212,7 @@ class EntityDatasource extends Paginator implements DataSource {
 			if ( isset($this->defaults['processQuery']) ) {
 				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}
-			$query->select('COUNT( DISTINCT ' .$query->getRootAlias() . '.' . $this->defaults['identify'] . ')');
+			$query->select('COUNT( DISTINCT ' . $this->formatAttribute($this->defaults['identify']) . ')');
 			$this->total = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->total;
@@ -228,7 +228,8 @@ class EntityDatasource extends Paginator implements DataSource {
 			$query = clone $this->query;
 			$query->setFirstResult(null)
 				  ->setMaxResults(null);
-			$query->select('COUNT( DISTINCT ' .$query->getRootAlias() . '.' . $this->defaults['identify'] . ')');
+			
+			$query->select('COUNT( DISTINCT ' . $this->formatAttribute($this->defaults['identify']) . ')');
 			$this->count = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->count;
@@ -255,6 +256,10 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @return mixed
 	 */
 	public function __get( $name ) {
+		$start = stripos($name, '.');
+		if ( $start !== false) {
+			$name = substr($name, $start+1);
+		}
 		$current = $this->fetch();
 		if ( is_array($current) ) {
 			return isset($current[$name]) ? $current[$name] : null;
@@ -299,13 +304,20 @@ class EntityDatasource extends Paginator implements DataSource {
 			}
 				   
 			if ($this->getSort()) {
-				$query->addOrderBy($query->getRootAlias() . '.' . $this->getSort(), $this->getOrder());
+				$query->addOrderBy($this->formatAttribute($this->getSort()), $this->getOrder());
 			}
 			
 			$this->data = $query->getQuery()->getResult();
 			$this->loaded = true;
 		}
 		$this->reset = true; 
+	}
+	
+	private function formatAttribute($attr) {
+		if ( strpos($attr, '.') === false ) {
+			return $this->query->getRootAlias() . '.' . $attr;
+		}
+		return $attr;
 	}
 	
 }

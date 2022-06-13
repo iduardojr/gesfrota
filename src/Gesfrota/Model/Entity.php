@@ -3,8 +3,6 @@ namespace Gesfrota\Model;
 
 use Gesfrota\Util\Format;
 
-
-
 /**
  * Entidade
  * @MappedSuperclass

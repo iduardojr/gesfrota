@@ -83,6 +83,13 @@ abstract class User extends AbstractActivable {
 	 * @var AdministrativeUnit
 	 */
 	protected $lotation;
+
+	/**
+	 * @OneToOne(targetEntity="DriverLicense", cascade={"all"})
+	 * @JoinColumn(name="driver_license_id", referencedColumnName="id")
+	 * @var DriverLicense
+	 */
+	protected $driverLicense;
 	
 	/**
 	 * @ManyToMany(targetEntity="ResultCenter", indexBy="id")
@@ -93,6 +100,7 @@ abstract class User extends AbstractActivable {
 	 * @var ArrayCollection
 	 */
 	protected $resultCenters;
+	
 	
 	public function __construct() {
 		$this->setPassword(null);
@@ -175,6 +183,13 @@ abstract class User extends AbstractActivable {
 	 */
 	public function getLotation() {
 		return $this->lotation;
+	}
+	
+	/**
+	 * @return DriverLicense
+	 */
+	public function getDriverLicense() {
+		return $this->driverLicense;
 	}
 	
 	/**
@@ -263,6 +278,20 @@ abstract class User extends AbstractActivable {
 			$this->removeAllResultCenters();
 		}
 		$this->lotation = $unit;
+	}
+	
+	/**
+	 * @param DriverLicense $license
+	 */
+	public function setDriverLicense(DriverLicense $license) {
+		if ( ! $this->driverLicense || ! $this->driverLicense->isEqualTo($license)) {
+			$license->setUser($this);
+			$this->driverLicense = $license;
+		} else {
+			$this->driverLicense->setCategories($license->getCategories());
+			$this->driverLicense->setActive($license->getActive());
+		}
+		
 	}
 	
 	/**

@@ -34,6 +34,8 @@ use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use Gesfrota\Model\Domain\ResultCenter;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
+use Gesfrota\Model\Domain\DriverLicense;
+use PHPBootstrap\Widget\Form\Controls\Uneditable;
 
 class DriverForm extends AbstractForm {
 	
@@ -53,6 +55,10 @@ class DriverForm extends AbstractForm {
 		$form = $this->buildForm('driver-form');
 		
 		$general = new Fieldset('Dados Pessoais');
+		
+		$input = new Uneditable('user');
+		$input->setSpan(2);
+		$form->buildField('Usuário', $input, null, $general);
 		
 		$input = new TextBox('nif');
 		$input->setSuggestion(new Seek($seek));
@@ -87,9 +93,6 @@ class DriverForm extends AbstractForm {
 		$input->setSpan(2);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Data de Nascimento', $input, null, $general);
-		
-		$input = new CheckBox('active', 'Ativo');
-		$form->buildField(null, $input, null, $general);
 		
 		$lotation = new Fieldset('Lotação');
 		
@@ -154,20 +157,23 @@ class DriverForm extends AbstractForm {
 		
 		$cnh = new Fieldset('Dados da CNH');
 		
-		$input = new TextBox('license');
+		$input = new TextBox('driver-license-number');
 		$input->setSpan(2);
 		$input->setMask('?99999999999');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Nº CNH', $input, null, $cnh);
 		
-		$input = new CheckBoxList('vehicles', true);
-		$input->setOptions(Driver::getLicenseAllowed());
+		$input = new CheckBoxList('driver-license-categories', true);
+		$input->setOptions(DriverLicense::getCategoriesAllowed());
 		$form->buildField('Categoria', $input, null, $cnh);
 		
-		$input = new DateBox('expires', new Date(new DateFormat('dd/mm/yyyy')));
+		$input = new DateBox('driver-license-expires', new Date(new DateFormat('dd/mm/yyyy')));
 		$input->setSpan(2);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Validade', $input, null, $cnh);
+		
+		$input = new CheckBox('driver-license-active', 'Ativo');
+		$form->buildField(null, $input, null, $cnh);
 		
 		$tab = new Tabbable('driver-tabs');
 		$tab->setPlacement(Tabbable::Left);
@@ -184,14 +190,19 @@ class DriverForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::extract()
 	 */
-	public function extract( Driver $object ) {
+	public function extract( User $object ) {
+		if ( $object->getId() > 0 ) {
+			$this->getBuilderForm()->getControl('nif')->setSuggestion(null);
+			$this->getBuilderForm()->getControl('nif')->setDisabled(true);
+			$this->getBuilderForm()->getControl('email')->setDisabled(true);
+		}
+		$data['user'] = $object->getUserType() . ($object->getId() > 0  ? ' #' . $object->getCode() : '');
 		$data['name'] = $object->getName();
 		$data['nif'] = $object->getNif();
 		$data['email'] = $object->getEmail();
 		$data['cell'] = $object->getCell();
 		$data['gender'] = $object->getGender();
 		$data['birthday'] = $object->getBirthday();
-		$data['active'] = $object->getActive();
 		
 		if ($object->getLotation()) {
 			$data['agency-id'] = $object->getLotation()->getAgency()->getCode();
@@ -201,24 +212,28 @@ class DriverForm extends AbstractForm {
 			$data['administrative-unit-name'] = $object->getLotation()->getName();
 		}
 		$data['results-center'] = array_keys($object->getAllResultCenters());
-		$data['license'] = $object->getLicense();
-		$data['vehicles'] = $object->getVehicles();
-		$data['expires'] = $object->getExpires();
+			
+		$data['driver-license-number'] = $object->getDriverLicense()->getNumber();
+		$data['driver-license-categories'] = $object->getDriverLicense()->getCategories();
+		$data['driver-license-expires'] = $object->getDriverLicense()->getExpires();
+		$data['driver-license-active'] = $object->getDriverLicense()->getActive();
 		$this->component->setData($data);
 	}
 
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( Driver $object, EntityManager $em ) {
+	public function hydrate( User $object, EntityManager $em ) {
 		$data = $this->component->getData();
+		
 		$object->setName($data['name']);
-		$object->setNif($data['nif']);
-		$object->setEmail($data['email']);
+		if ($object->getId() <= 0) {
+			$object->setNif($data['nif']);
+			$object->setEmail($data['email']);
+		}
 		$object->setCell($data['cell']);
 		$object->setGender($data['gender']);
 		$object->setBirthday($data['birthday']);
-		$object->setActive($data['active']);
 		
 		if ($data['administrative-unit-id']) {
 			$unit = $em->find(AdministrativeUnit::getClass(), $data['administrative-unit-id']);
@@ -230,10 +245,13 @@ class DriverForm extends AbstractForm {
 				$object->addResultCenter($em->find(ResultCenter::getClass(), $key));
 			}
 		}
-		$object->setLicense((int) $data['license']);
 		
-		$object->setVehicles($data['vehicles']);
-		$object->setExpires(new \DateTime($data['expires']));
+		$new = new DriverLicense($object);
+		$new->setNumber((int) $data['driver-license-number']);
+		$new->setCategories($data['driver-license-categories']);
+		$new->setExpires(new \DateTime($data['driver-license-expires']));
+		$new->setActive($data['driver-license-active']);
+		$object->setDriverLicense($new);
 		
 	}
 

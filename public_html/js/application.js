@@ -621,6 +621,10 @@ $(function() {
 		return false;
 	});
 	
+	$('body').on('update', '#driver-form #email', function (e, value) { 
+		$(this).field('disabled', !!value);
+	});
+	
 	$('#result-center-required').trigger('update', $('#result-center-required').field('value') > 0 ? true : false);
 	
 	$('body').on('change', '#form-filter #agency', function (e) {
