@@ -84,10 +84,10 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
+            return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driverLicense', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
         }
 
-        return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driver', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
+        return ['__isInitialized__', 'passengers', 'duration', 'roundTrip', 'from', 'to', 'waypoints', 'service', 'justify', 'schedule', 'requesterUnit', 'resultCenter', 'vehicle', 'driverLicense', 'status', 'openedBy', 'confirmedBy', 'initiatedBy', 'finishedBy', 'canceledBy', 'openedAt', 'confirmedAt', 'initiatedAt', 'finishedAt', 'canceledAt', 'odometerInitial', 'odometerFinal', 'id'];
     }
 
     /**
@@ -351,7 +351,7 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
-    public function toConfirm(\Gesfrota\Model\Domain\User $user, \Gesfrota\Model\Domain\Vehicle $vehicle, \Gesfrota\Model\Domain\Driver $driver, $roundTrip = false)
+    public function toConfirm(\Gesfrota\Model\Domain\User $user, \Gesfrota\Model\Domain\Vehicle $vehicle, \Gesfrota\Model\Domain\User $driver, $roundTrip = false)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'toConfirm', [$user, $vehicle, $driver, $roundTrip]);
@@ -406,12 +406,12 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
-    public function getDriver()
+    public function getDriverLicense()
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getDriver', []);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getDriverLicense', []);
 
-        return parent::getDriver();
+        return parent::getDriverLicense();
     }
 
     /**

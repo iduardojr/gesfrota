@@ -1,6 +1,6 @@
 {
 	"name" : "sead/gesfrota",
-	"version" : "0.4.4",
+	"version" : "0.5.0",
 	"require" : {
 		"php" : ">=7.0",
 		"doctrine/orm" : "2.10.3",

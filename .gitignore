@@ -6,5 +6,4 @@
 /composer.lock
 /vendor
 /logs
-/src/proxies
 /public_html/fipe.php
