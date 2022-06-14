@@ -320,10 +320,16 @@ class IndexController extends AbstractController {
 		$builder1->where('u4.active = true AND u4.responsibleUnit = a.id AND u4.fleet = ' . Fleet::ASSIGNED);
 		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as score' . Fleet::ASSIGNED);
 		
+		$builder1 = $this->getEntityManager()->createQueryBuilder();
+		$builder1->select('COUNT(u5.id)');
+		$builder1->from(FleetItem::getClass(), 'u5');
+		$builder1->where('u5.active = true AND u5.responsibleUnit = a.id');
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS HIDDEN total');
+		
 		$builder->from(FleetItem::getClass(), 'u');
 		$builder->join('u.responsibleUnit', 'a');
 		$builder->groupBy('a.id');
-		$builder->addOrderBy('a.id', 'desc');
+		$builder->addOrderBy('total', 'desc');
 		
 		$result = $builder->getQuery()->getResult();
 		$data = [];

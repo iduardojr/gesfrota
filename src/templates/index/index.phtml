@@ -240,7 +240,7 @@ use Gesfrota\Model\Domain\Requester;
 	<div class="span6">
 		<h3><span class="header">Distribuição da Frota por Órgão<small>Distribuição quantitivo da frota por órgão <span class="label">Real Time</span></small></span></h3>
 		<div id="fleet-per-agency"></div>
-		<script>
+		<script type="text/javascript">
 			var options = {
           		series: [
           		<?php foreach ($this->fleet_per_agency as $serie => $data) { ?>
@@ -260,7 +260,25 @@ use Gesfrota\Model\Domain\Requester;
             			horizontal: true,
           			}
 				},
-				tooltip: { enabled: false },
+				tooltip: {
+					enabled: true,
+					shared: true,
+        			intersect: false,
+					y: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				      		return (value > 0 ) ? value : null;
+				    	}
+  					},
+  					x: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				    		var total = 0;
+				    		series.forEach(function(data, index) {
+				    			total+= data[dataPointIndex];
+				    		});
+				      		return value + ': <strong>' + total + '</strong>';
+				    	}
+  					},
+		        },
 				dataLabels : {
 				 	style: {
 				      	fontSize: '16px',
