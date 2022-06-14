@@ -108,11 +108,11 @@ abstract class Request extends Entity {
 	protected $vehicle;
 	
 	/**
-     * @ManyToOne(targetEntity="Driver")
-     * @JoinColumn(name="driver_id", referencedColumnName="id")
+     * @ManyToOne(targetEntity="DriverLicense")
+     * @JoinColumn(name="driver_license_id", referencedColumnName="id")
      * @var Driver
      */
-	protected $driver;
+	protected $driverLicense;
 	
 	/**
 	 * @Column(type="integer")
@@ -239,10 +239,10 @@ abstract class Request extends Entity {
 	}
 
 	/**
-	 * @return Driver
+	 * @return DriverLicense
 	 */
-	public function getDriver() {
-		return $this->driver;
+	public function getDriverLicense() {
+		return $this->driverLicense;
 	}
 
 	/**
@@ -538,12 +538,15 @@ abstract class Request extends Entity {
 	/**
 	 * @param User $user
 	 * @param Vehicle $vehicle
-	 * @param Driver $driver
+	 * @param User $driver
 	 * @throws \DomainException
 	 */
-	public function toConfirm(User $user, Vehicle $vehicle, Driver $driver) {
+	public function toConfirm(User $user, Vehicle $vehicle, User $driver) {
 		if ($this->status != self::OPENED) {
 			throw new \DomainException('request cannot be confirmed: request is not opened.');
+		}
+		if ( $driver->getDriverLicense() == null ) {
+			throw new \DomainException('request cannot be confirmed: driver is not licensed.');
 		}
 		if ($this->requesterUnit->getAgency()->isResultCenterRequired()) {
 			$allowed = $vehicle->getResultCentersActived();
@@ -557,7 +560,7 @@ abstract class Request extends Entity {
 			}
 		}
 		$this->vehicle = $vehicle;
-		$this->driver = $driver;
+		$this->driverLicense = $driver->getDriverLicense();
 		$this->status = self::CONFIRMED;
 		$this->confirmedBy = $user;
 		$this->confirmedAt = new \DateTime('now');

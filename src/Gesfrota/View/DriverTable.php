@@ -10,6 +10,8 @@ use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Label;
+use Gesfrota\Model\Domain\DriverLicense;
+use Gesfrota\Model\Domain\User;
 
 class DriverTable extends BuilderTable {
 	
@@ -24,14 +26,14 @@ class DriverTable extends BuilderTable {
 				
 		$this->buildColumnTextId();
 		$this->buildColumnText('name', 'Motorista', null, null, ColumnText::Left);
-		$this->buildColumnText('vehicles', 'CNH', null, null, null, function ($value) {
-			return implode('', $value);
+		$this->buildColumnText('driverLicense', 'CNH', null, null, null, function (DriverLicense $value) {
+			return implode('', $value->getCategories());
 		});
-		$this->buildColumnText('expires', '', null, null, null, function ($value) {
+		$this->buildColumnText('driverLicense', '', null, null, null, function (DriverLicense $value) {
 			$now = new \DateTime();
-			return new Label($value->format('d/m/Y'), $value > $now ? Label::Success : Label::Important);
+			return new Label($value->getExpires()->format('d/m/Y'), $value->getExpires() > $now ? Label::Success : Label::Important);
 		});
-		$this->buildColumnAction('select', new Icon('icon-ok'), null, null, function( Button $button, Driver $obj ) {
+		$this->buildColumnAction('select', new Icon('icon-ok'), null, null, function( Button $button, User $obj ) {
 			$data['driver-id'] = $obj->getCode();
 			$data['driver-name'] = $obj->getName();
 			$data['driver-nif'] = $obj->getNif();

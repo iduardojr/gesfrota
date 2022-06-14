@@ -95,7 +95,7 @@ class RequestFieldsetConfirm extends RequestFieldSetStep {
 	
 	public function toDo(User $user, Request $obj, array $data, EntityManager $em) {
 		$vehicle = $em->find(Vehicle::getClass(), $data['vehicle-id']);
-		$driver = $em->find(Driver::getClass(), $data['driver-id']);
+		$driver = $em->find(User::getClass(), $data['driver-id']);
 		$obj->toConfirm($user, $vehicle, $driver, isset($data['round-trip']) ? $data['round-trip'] : false);
 	}
 
@@ -106,9 +106,9 @@ class RequestFieldsetConfirm extends RequestFieldSetStep {
 			$data['vehicle-plate'] = $obj->getVehicle()->getPlate();
 			$data['vehicle-description'] = $obj->getVehicle()->getDescription();
 		}
-		if ($obj->getDriver()) {
-			$data['driver-id'] = $obj->getDriver()->getId();
-			$data['driver-name'] = $obj->getDriver()->getName();
+		if ($obj->getDriverLicense()) {
+			$data['driver-id'] = $obj->getDriverLicense()->getUser()->getId();
+			$data['driver-name'] = $obj->getDriverLicense()->getUser()->getName();
 		}
 		if ($obj instanceof RequestTrip && $obj->getRoundTrip()) {
 			$data['round-trip'] = true;

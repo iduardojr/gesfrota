@@ -229,10 +229,10 @@ class RequestForm extends AbstractForm {
 			$value = null;
 			
 			$input = new Output('driver');
-			$value[] = '<span class="name">' . $request->getDriver()->getName() . '</span>';
-			$value[] = '<span class="license">CNH ' . implode('', $request->getDriver()->getVehicles()) . '</span>';
+			$value[] = '<span class="name">' . $request->getDriverLicense()->getUser()->getName() . '</span>';
+			$value[] = '<span class="license">CNH ' . implode('', $request->getDriverLicense()->getCategories()) . '</span>';
 			
-			$expires = $request->getDriver()->getExpires();
+			$expires = $request->getDriverLicense()->getExpires();
 			$now = $request->getConfirmedAt();
 			$value[]  = '<span class="expires label ' . ($expires > $now ? 'label-success' : 'label-important' ). '">' . $expires->format('d/m/Y') . '</span>';
 			

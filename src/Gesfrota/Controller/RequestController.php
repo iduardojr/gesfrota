@@ -40,6 +40,7 @@ use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\TrafficController;
+use Gesfrota\Model\Domain\User;
 
 class RequestController extends AbstractController {
 	
@@ -485,9 +486,10 @@ class RequestController extends AbstractController {
 	
 	public function searchDriverAction() {
 		try {
-			$query = $this->getEntityManager()->getRepository(Driver::getClass())->createQueryBuilder('u');
+			$query = $this->getEntityManager()->getRepository(User::getClass())->createQueryBuilder('u');
 			$query->distinct(true);
-			$query->andWhere('u.active = true');
+			$query->join('u.driverLicense', 'd');
+			$query->andWhere('d.active = true AND u.driverLicense IS NOT NULL');
 			$query->join('u.lotation', 'u1');
 			$query->andWhere('u1.agency = :agency');
 			$query->setParameter('agency', $this->getAgencySelected()->getId());

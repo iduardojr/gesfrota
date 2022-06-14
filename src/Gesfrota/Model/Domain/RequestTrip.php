@@ -157,7 +157,7 @@ class RequestTrip extends Request {
 		}
 	}
 	
-	public function toConfirm(User $user, Vehicle $vehicle, Driver $driver, $roundTrip = false) {
+	public function toConfirm(User $user, Vehicle $vehicle, User $driver, $roundTrip = false) {
 		parent::toConfirm($user, $vehicle, $driver);
 		if ($this->roundTrip && $roundTrip ) {
 			$this->roundTrip->toConfirm($user, $vehicle, $driver);

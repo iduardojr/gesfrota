@@ -33,6 +33,7 @@ use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use Gesfrota\Model\Domain\ResultCenter;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
+use Gesfrota\Model\Domain\DriverLicense;
 
 class UserForm extends AbstractForm {
 	
@@ -151,23 +152,28 @@ class UserForm extends AbstractForm {
 		$tab->addItem(new NavLink('Dados Gerais'), null, new TabPane($general));
 		$tab->addItem(new NavLink('Lotação'), null, new TabPane($lotation));
 		
-		if ($user instanceof Driver) {
+		if ( $user->getDriverLicense() || $user instanceof Driver ) {
 			$cnh = new Fieldset('Dados da CNH');
 			
-			$input = new TextBox('license');
+			$input = new TextBox('driver-license-number');
 			$input->setSpan(2);
 			$input->setMask('?99999999999');
 			$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 			$form->buildField('Nº CNH', $input, null, $cnh);
 			
-			$input = new CheckBoxList('vehicles', true);
-			$input->setOptions(Driver::getLicenseAllowed());
+			$input = new CheckBoxList('driver-license-categories', true);
+			$input->setOptions(DriverLicense::getCategoriesAllowed());
 			$form->buildField('Categoria', $input, null, $cnh);
 			
-			$input = new DateBox('expires', new Date(new DateFormat('dd/mm/yyyy')));
+			$input = new DateBox('driver-license-expires', new Date(new DateFormat('dd/mm/yyyy')));
 			$input->setSpan(2);
 			$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 			$form->buildField('Validade', $input, null, $cnh);
+			
+			if (! $user instanceof Driver) {
+				$input = new CheckBox('driver-license-active', 'Ativo');
+				$form->buildField(null, $input, null, $cnh);
+			}
 			
 			$tab->addItem(new NavLink('Carteira de Habilitação'), null, new TabPane($cnh));
 		}
@@ -198,10 +204,11 @@ class UserForm extends AbstractForm {
 			$data['administrative-unit-name'] = $object->getLotation()->getName();
 		}
 		
-		if ($object instanceof Driver) {
-			$data['license'] = $object->getLicense();
-			$data['vehicles'] = $object->getVehicles();
-			$data['expires'] = $object->getExpires();
+		if ( $object->getDriverLicense() ) {
+			$data['driver-license-number'] = $object->getDriverLicense()->getNumber();
+			$data['driver-license-categories'] = $object->getDriverLicense()->getCategories();
+			$data['driver-license-expires'] = $object->getDriverLicense()->getExpires();
+			$data['driver-license-active'] = $object->getDriverLicense()->getActive();
 		}
 		
 		$data['results-center'] = array_keys($object->getAllResultCenters());
@@ -228,11 +235,13 @@ class UserForm extends AbstractForm {
 		
 		$object->setActive($data['active']);
 		
-		if ($object instanceof Driver) {
-			$object->setLicense((int) $data['license']);
-			
-			$object->setVehicles($data['vehicles']);
-			$object->setExpires(new \DateTime($data['expires']));
+		if ( $object->getDriverLicense() ) {
+			$new = new DriverLicense();
+			$new->setNumber((int) $data['driver-license-number']);
+			$new->setCategories($data['driver-license-categories']);
+			$new->setExpires(new \DateTime($data['driver-license-expires']));
+			$new->setActive($data['driver-license-active']);
+			$object->setDriverLicense($new);
 		}
 		
 		$object->removeAllResultCenters();
