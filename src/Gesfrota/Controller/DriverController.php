@@ -231,7 +231,7 @@ class DriverController extends AbstractController {
 			$entity = $this->getEntityManager()->getRepository(User::getClass())->findOneBy(['nif' => $nif]);
 			$data['flash-message'] = null;
 			$data['user'] = 'Motorista';
-			$data['user-id'] = null;
+			$data['user-id'] = 0;
 			$data['name'] = null;
 			$data['email'] = null;
 			$data['cell'] = null;

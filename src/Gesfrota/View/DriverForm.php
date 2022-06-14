@@ -58,7 +58,7 @@ class DriverForm extends AbstractForm {
 		
 		$input = new Uneditable('user');
 		$input->setSpan(2);
-		$form->buildField('Usuário', $input, null, $general);
+		$form->buildField('Usuário', [$input, new Hidden('user-id')], null, $general);
 		
 		$input = new TextBox('nif');
 		$input->setSuggestion(new Seek($seek));
@@ -75,7 +75,7 @@ class DriverForm extends AbstractForm {
 		
 		$input = new TextBox('email');
 		$input->setSpan(6);
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$input->setRequired(new Required(new InputContext($form->getControl('user-id'), '0'), 'Por favor, preencha esse campo'));
 		$form->buildField('E-mail', $input, null, $general);
 		
 		$input = new TextBox('cell');
@@ -197,6 +197,7 @@ class DriverForm extends AbstractForm {
 			$this->getBuilderForm()->getControl('email')->setDisabled(true);
 		}
 		$data['user'] = $object->getUserType() . ($object->getId() > 0  ? ' #' . $object->getCode() : '');
+		$data['user-id'] = $object->getId();
 		$data['name'] = $object->getName();
 		$data['nif'] = $object->getNif();
 		$data['email'] = $object->getEmail();
@@ -212,11 +213,13 @@ class DriverForm extends AbstractForm {
 			$data['administrative-unit-name'] = $object->getLotation()->getName();
 		}
 		$data['results-center'] = array_keys($object->getAllResultCenters());
-			
-		$data['driver-license-number'] = $object->getDriverLicense()->getNumber();
-		$data['driver-license-categories'] = $object->getDriverLicense()->getCategories();
-		$data['driver-license-expires'] = $object->getDriverLicense()->getExpires();
-		$data['driver-license-active'] = $object->getDriverLicense()->getActive();
+		
+		if ($object->getDriverLicense() ) {
+			$data['driver-license-number'] = $object->getDriverLicense()->getNumber();
+			$data['driver-license-categories'] = $object->getDriverLicense()->getCategories();
+			$data['driver-license-expires'] = $object->getDriverLicense()->getExpires();
+			$data['driver-license-active'] = $object->getDriverLicense()->getActive();
+		}
 		$this->component->setData($data);
 	}
 

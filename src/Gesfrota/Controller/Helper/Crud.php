@@ -95,6 +95,7 @@ class Crud {
 		} else {
 		    $this->object = new $this->entity;
 		}
+		$form->extract($this->object);
 		if ( $request->isPost() ) {
 			$form->bind($request->getPost());
 			if ( ! $form->valid() ) {
@@ -105,8 +106,6 @@ class Crud {
 			$this->em->persist($this->object);
 			$this->em->flush();
 			return true;
-		} else {
-			$form->extract($this->object);
 		}
 		return false;
 	}
@@ -200,6 +199,7 @@ class Crud {
 		if ( $button ) {
 			$button->setLabel('Salvar');
 		}
+		$form->extract($this->object);
 		if ( $request->isPost() ) {
 			$form->bind($request->getPost());
 			if ( ! $form->valid() ) {
@@ -211,7 +211,6 @@ class Crud {
 			$this->em->flush();
 			return true;
 		} 
-		$form->extract($this->object);
 		return false;
 	}
 	
