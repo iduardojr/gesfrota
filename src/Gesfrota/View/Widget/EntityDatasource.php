@@ -213,6 +213,7 @@ class EntityDatasource extends Paginator implements DataSource {
 				call_user_func($this->defaults['processQuery'], $query, $this->getFilter());
 			}
 			$query->select('COUNT( DISTINCT ' . $this->formatAttribute($this->defaults['identify']) . ')');
+			
 			$this->total = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->total;
@@ -230,6 +231,7 @@ class EntityDatasource extends Paginator implements DataSource {
 				  ->setMaxResults(null);
 			
 			$query->select('COUNT( DISTINCT ' . $this->formatAttribute($this->defaults['identify']) . ')');
+			
 			$this->count = (int) $query->getQuery()->getSingleScalarResult();
 		}
 		return $this->count;

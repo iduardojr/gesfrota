@@ -232,12 +232,13 @@ class IndexController extends AbstractController {
 		$builder = $this->getEntityManager()->createQueryBuilder();
 		$builder->select('d.name AS driver, COUNT(u.id) AS request', 'SUM(u.odometerFinal-u.odometerInitial) AS distance');
 		$builder->from(Request::getClass(), 'u');
-		$builder->join('u.driver', 'd');
+		$builder->join('u.driverLicense', 'l');
+		$builder->join('l.user', 'd');
 		$builder->where('u.openedAt BETWEEN :initial AND :final AND u.status = :status');
 		$builder->setParameter('initial', $initial);
 		$builder->setParameter('final', $final);
 		$builder->setParameter('status', Request::FINISHED);
-		$builder->groupBy('u.driver');
+		$builder->groupBy('l.user');
 		$builder->setMaxResults(3);
 		$builder->orderBy('request', 'desc');
 		$builder->addOrderBy('distance', 'desc');

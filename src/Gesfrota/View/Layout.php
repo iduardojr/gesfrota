@@ -27,6 +27,7 @@ use PHPBootstrap\Widget\Nav\NavHeader;
 use PHPBootstrap\Widget\Nav\NavItem;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\Navbar;
+use Gesfrota\Model\Domain\TrafficController;
 
 
 /**
@@ -128,7 +129,7 @@ class Layout extends View {
 		
 		$resource1 = 'Gesfrota\\Controller\\RequestController';
 		if ($acl->isAllowed($role, $resource1)) {
-			if ($role instanceof Requester || $role instanceof Driver) {
+			if ($role instanceof Requester || $role instanceof Driver || $role instanceof TrafficController) {
 				$brand->setClassName($resource1);
 			} else {
 				$nav->addItem(new NavLink('Viagens', new TgLink(new Action($resource1))));

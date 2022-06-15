@@ -276,6 +276,7 @@ abstract class User extends AbstractActivable {
 	public function setLotation(AdministrativeUnit $unit) {
 		if ($this->lotation && $unit->getAgency() !== $this->lotation->getAgency()) {
 			$this->removeAllResultCenters();
+			$this->driverLicense = null;
 		}
 		$this->lotation = $unit;
 	}

@@ -417,6 +417,17 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
+    public function getDriver()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getDriver', []);
+
+        return parent::getDriver();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getStatus()
     {
 

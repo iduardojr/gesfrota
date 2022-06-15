@@ -110,7 +110,7 @@ abstract class Request extends Entity {
 	/**
      * @ManyToOne(targetEntity="DriverLicense")
      * @JoinColumn(name="driver_license_id", referencedColumnName="id")
-     * @var Driver
+     * @var DriverLicense
      */
 	protected $driverLicense;
 	
@@ -243,6 +243,18 @@ abstract class Request extends Entity {
 	 */
 	public function getDriverLicense() {
 		return $this->driverLicense;
+	}
+	
+	
+	/**
+	 * 
+	 * @return User|NULL
+	 */
+	public function getDriver() {
+	    if ($this->driverLicense) {
+	       return $this->driverLicense->getUser();
+	    }
+	    return null;
 	}
 
 	/**

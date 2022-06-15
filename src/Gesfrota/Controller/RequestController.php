@@ -76,11 +76,13 @@ class RequestController extends AbstractController {
 				$optResultCenter = $user->getResultCentersActived();
 			}
 			
-			
+			$isUserAllowed = $user instanceof Manager || $user instanceof FleetManager || $user instanceof TrafficController;
+			$isDriver = $user->getDriverLicense() && $user->getDriverLicense()->getActive();
 			$isConfirm = AclResource::getInstance()->isAllowed($user, 'RequestController', 'confirm');
-			if ( ! $user instanceof Requester ) {
+			if ( $isUserAllowed || $isDriver ) {
 				$do = new Action($this);
-				$closure = function( Button $button, Request $obj ) use ($user, $isConfirm) {
+				$closure = function( Button $button, Request $obj ) use ($user, $isConfirm, $isUserAllowed) {
+				    $isInitiateRun = $obj->getDriver() == $user || $isUserAllowed;
 					$allowed = $obj->getStateAllowed();
 					$allow = array_keys($allowed);
 					$allow = array_shift($allow);
@@ -95,16 +97,12 @@ class RequestController extends AbstractController {
 								
 							case Request::INITIATED:
 								$for = 'initiate';
-								if ($user instanceof Driver) {
-									$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
-								}
+								$button->setDisabled(!$isInitiateRun);
 								break;
 								
 							case Request::FINISHED:
 								$for = 'finish';
-								if ($user instanceof Driver) {
-									$button->setDisabled(($user == $obj->getOpenedBy() && $user != $obj->getDriver()));
-								}
+								$button->setDisabled(!$isInitiateRun);
 								break;
 								
 							case Request::CANCELED:
@@ -125,19 +123,24 @@ class RequestController extends AbstractController {
 			$query->select('u');
 			$query->from(Request::getClass(), 'u');
 			if (! $showAgencies) {
-				$query->join('u.requesterUnit', 'l', 'WITH', 'l.agency = :unit');
+			    $query->addSelect('l');
+				$query->join('u.requesterUnit', 'l');
+				$query->where('l.agency = :unit');
 				$query->setParameter('unit', $this->getAgencyActive()->getId());
 			}
 			
+			$query->addSelect('d');
+			$query->join('u.driverLicense', 'd');
+			$where = 'u.openedBy = :by OR d.user = :by';
 			if ($user instanceof Requester) {
-				$query->where('u.openedBy = :by OR u.requesterUnit = :unit');
+				$query->andWhere($where . ' OR u.requesterUnit = :r_unit');
 				$query->setParameter('by', $user->getId());
-				$query->setParameter('unit', $user->getLotation()->getId());
+				$query->setParameter('r_unit', $user->getLotation()->getId());
 			} elseif ($user instanceof Driver) {
-				$query->where('u.openedBy = :by OR u.driver = :by');
+			    $query->andWhere($where);
 				$query->setParameter('by', $user->getId());
 			} elseif ($user instanceof TrafficController && $agency->isResultCenterRequired() ) {
-				$query->where('u.openedBy = :by OR u.resultCenter IN (:rc_user)');
+			    $query->andWhere($where . ' OR u.resultCenter IN (:rc_user)');
 				$query->setParameter('by', $user->getId());
 				$query->setParameter('rc_user', $user->getAllResultCenters());
 			}
@@ -150,7 +153,7 @@ class RequestController extends AbstractController {
 				
 				if (!empty($data['agency'])) {
 					$query->join('u.requesterUnit', 'l');
-					$query->where('l.agency = :agency');
+					$query->andWhere('l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
 				}
 				if (!empty($data['results-center'])) {
@@ -332,6 +335,11 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível iniciar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
+			$isUserAllowed = $this->getUserActive() instanceof Manager || $this->getUserActive() instanceof FleetManager || $this->getUserActive() instanceof TrafficController;
+			$isDriver = $entity->getDriver() == $this->getUserActive();
+			if (! ( $isUserAllowed || $isDriver ) ) {
+			    throw new NotFoundEntityException('Não foi possível iniciar a requisição. Usuário não tem permissão para realizar operação.');
+			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'initiate', ['key' => $id]), new Action($this), null, new RequestFieldsetInitiate());
 			$form->initialize($this->getUserActive());
@@ -357,6 +365,11 @@ class RequestController extends AbstractController {
 			$entity = $this->getEntityManager()->find(Request::getClass(), $id);
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível finilizar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
+			}
+			$isUserAllowed = $this->getUserActive() instanceof Manager || $this->getUserActive() instanceof FleetManager || $this->getUserActive() instanceof TrafficController;
+			$isDriver = $entity->getDriver() == $this->getUserActive();
+			if (! ( $isUserAllowed || $isDriver ) ) {
+			    throw new NotFoundEntityException('Não foi possível finalizar a requisição. Usuário não tem permissão para realizar operação.');
 			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
 			$form = new RequestForm($entity, new Action($this,'finish', ['key' => $id]), new Action($this), null, new RequestFieldsetFinish());
