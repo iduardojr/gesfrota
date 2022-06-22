@@ -109,15 +109,21 @@ class AclResource implements Plugin {
 		}
 		$resource = str_replace('Gesfrota\\Controller\\', '', $resource);
 		$privilege = str_replace('Action', '', $privilege);
+		
 		return $this->acl->isAllowed($role, $resource, $privilege);
 	}
 	
 	public function preDispatch(HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null) {
 		$controller = $dispatcher ? $dispatcher->getController() : null;
 		if ( $controller ) {
+		    $agenciesLicensed = ['SEDI'];
 			$user = $controller->getUserActive();
-			if ( ! $this->isAllowed($user, $controller, $dispatcher->getAction())) {
-				if ($controller instanceof IndexController && ($user instanceof Requester || $user instanceof Driver) ) {
+			$isNotLicenced = array_search($controller->getAgencyActive()->getAcronym(), $agenciesLicensed) === false;
+			if ( $isNotLicenced ) {
+			    $this->acl->deny([FleetManager::getClass(), TrafficController::getClass(), Driver::getClass(), Requester::getClass()], [self::Request, self::Requester]);
+			}
+			if ( ! $this->isAllowed($user, $controller, $dispatcher->getAction()) ) {
+				if ($controller instanceof IndexController && ($user instanceof Requester || $user instanceof Driver || $user instanceof TrafficController) ) {
 					$response->redirect('/request');
 				} else {
 					$response->setStatus(HttpResponse::Forbidden);
