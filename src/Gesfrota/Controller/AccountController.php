@@ -11,6 +11,14 @@ use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\Services\Auth;
+use Gesfrota\View\AccountNoticesTable;
+use Gesfrota\Model\Notice;
+use Gesfrota\Controller\Helper\Crud;
+use PHPBootstrap\Mvc\Http\Cookie;
+use Gesfrota\Controller\Helper\NotFoundEntityException;
+use PHPBootstrap\Widget\Layout\Box;
+use PHPBootstrap\Widget\Layout\Panel;
+use PHPBootstrap\Widget\Misc\Title;
 
 class AccountController extends AbstractController { 
 	
@@ -59,6 +67,82 @@ class AccountController extends AbstractController {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($form);
+	}
+	
+	public function noticesAction() {
+	    try {
+	        $id = $this->request->getQuery('key');
+	        $display = new Box();
+	        $display->append(new Panel('<hr style="margin-top: 7px">'));
+	        if ($id > 0) {
+    	        $notice = $this->getEntityManager()->find(Notice::getClass(), $id);
+    	        if ( $notice instanceof Notice) {
+    	            $title = new Title($notice->getTitle(), 4);
+    	            $title->setSubtext('Última atualização em ' . $notice->getUpdatedAt()->format('d/m/Y H:i:s'));
+    	            $display->append($title);
+    	            $display->append(new Panel('<hr>'));
+    	            $display->append(new Panel(str_replace('{notice-read-current}', '/notice/read/' . $notice->getId(), $notice->getBody())));
+    	        } else {
+    	            $display->append(new Alert('<strong>Ops! </strong> Notificação não encontrada.'));
+    	        }
+	        } else {
+	            $display->append(new Panel('<blockquote class="pull-right">
+                                                <p>Selecione uma Notificação para lê-la<p>
+                                                <small>Nenhuma notificação aberta</small>
+                                            </blockquote>'));
+	        }
+	        
+	        $filter = new Action($this);
+    	    $view = new Action($this, 'notices');
+    	    $read = new Action(NoticeController::getClass(), 'read');
+    	    $list = new AccountNoticesTable($filter, $view, $read, $this->getUserActive(), $display);
+    	    
+    	        
+    	    $display->setName('notice-display');
+    	    $query = $this->getEntityManager()->getRepository(Notice::getClass())->createQueryBuilder('u');
+    	    $query->where('u.active = true AND u.id != :about');
+    	    $query->setParameter('about', Notice::ABOUT);
+    	    
+    	    $request = $this->getRequest();
+    	    $response = $this->getResponse();
+    	    
+    	    $storage = ['identify' => md5('account::notices')];
+    	    $storage['data']['limit'] = 1;
+    	    $cookie = $request->getCookie('storage');
+    	    
+    	    if ( $cookie !== null ) {
+    	        $storage = json_decode($cookie, true);
+    	        if ( isset($storage['identify']) && isset($cookie['identify']) && $storage['identify'] == $cookie['identify'] ) {
+    	            $storage = $cookie;
+    	        }
+    	    }
+    	    
+    	    
+    	    $defaults = $storage['data'];
+    	    $get = $request->getQuery();
+    	    $datasource = new EntityDatasource($query, $defaults);
+    	    
+    	    if ( isset($get['sort']) ) {
+    	        $datasource->toggleOrder(trim($get['sort']));
+    	        $storage['data']['sort'] = $datasource->getSort();
+    	        $storage['data']['order'] = $datasource->getOrder();
+    	    }
+    	    if ( isset($get['page']) ) {
+    	        $datasource->setPage($get['page']);
+    	        $storage['data']['page'] = $datasource->getPage();
+    	    }
+    	    if ( isset($get['limit']) ) {
+    	        $datasource->setLimit((int) $get['limit']);
+    	        $storage['data']['limit'] = $datasource->getLimit();
+    	    }
+    	    $list->setDatasource($datasource);
+    	    $response->setCookie(new Cookie('storage', json_encode($storage)));
+    	    
+    	    $list->setAlert($this->getAlert());
+    	} catch ( \Exception $e ) {
+    	    $list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+    	}
+	   return new Layout($list);
 	}
 	
 	

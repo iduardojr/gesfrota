@@ -1,11 +1,17 @@
 <?php
+use Gesfrota\Services\Log;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\RequestTrip;
-use Gesfrota\Services\Log;
 use Gesfrota\Model\Domain\Request;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Notice;
 ?>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<?php if ($this->notice instanceof Notice ) {?>
+<div id="notice">
+  <?php echo str_replace('{notice-read-current}', '/notice/read/' . $this->notice->id, $this->notice->getBody()); ?>
+</div>
+<?php } ?>
 <h1 class="page-header">
 	Dashboard
 	<small>Indicadores de Desempenho 
@@ -17,7 +23,7 @@ use Gesfrota\Model\Domain\Requester;
 		</form>
 	</small>
 </h1>
-<div id="dasboard">
+<div id="dashboard">
 <div class="row-fluid">
 	<div class="span3">
 		<div class="card">

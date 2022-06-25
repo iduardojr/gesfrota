@@ -1,3 +1,7 @@
+@import	"/vendor/bootstrap/bootstrap-2.3.2.css";
+@import	"/vendor/bootstrap/bootstrap-responsive-2.3.2.css";
+@import	"/vendor/phpbootstrap/phpbootstrap.css";
+@import	"/css/application.css";
 /*
  * FCKeditor - The text editor for Internet - http://www.fckeditor.net
  * Copyright (C) 2003-2010 Frederico Caldeira Knabben

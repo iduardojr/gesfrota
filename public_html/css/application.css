@@ -397,6 +397,15 @@ fieldset > legend {
 #fleet-vehicle-form select.span2 {
 	width: 214px !important;
 }
+#dashboard + #notice {
+	margin-top: 50px;
+}
+#notice-aside-form h5 {
+	margin: 5px 0 15px 0;
+	padding-bottom: 7px;
+	color: #999;
+	border-bottom: 1px solid #eee;
+}
 .controls-row .help-inline {
 	margin-left: 0 !important;
 	margin-top: 5px !important;
@@ -565,6 +574,10 @@ fieldset > legend {
 	height: auto;
 	margin-bottom: 25px;
 	padding: 7px 9px;
+}
+#notice-list.table .cell {
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 #about img {
 	float: right;

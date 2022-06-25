@@ -1978,7 +1978,7 @@
 							.removeAttr('id'));
 			
 			$.each( this.elements('textarea'), function( i, item ){
-				$('textarea[name=' + $(item).attr('id') + ']', form).val($(item).val());
+				$('textarea[name=' + $(item).attr('id') + ']', form).val($(item).field('value'));
 			});
 			
 			if ( this.isAjax() ) {

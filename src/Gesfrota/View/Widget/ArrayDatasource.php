@@ -143,6 +143,10 @@ class ArrayDatasource implements DataSource {
 		if ( is_callable(array(&$current, '__get')) ) {
 			return $current->$name;
 		}
+		$method = 'get' . ucfirst($name);
+		if ( method_exists( $current, $method ) ) {
+		    return call_user_func(array(&$current, $method));
+		}
 		return null;
 	}
 	

@@ -16,6 +16,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Fleet;
+use Gesfrota\Model\Notice;
+use Gesfrota\Model\NoticeRead;
 
 class IndexController extends AbstractController {
 	
@@ -59,7 +61,30 @@ class IndexController extends AbstractController {
 		$layout->fleet_per_family = $this->getFleetPerFamily($agency);
 		$layout->vehicle_x_equipament = $this->getVehicleXEquipament($agency);
 		
+		$layout->notice = $this->getLastNotification();
+		
 		return $layout;
+	}
+	
+	/**
+	 * @return Notice
+	 */
+	private function getLastNotification() {
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('u');
+	    $builder->from(Notice::getClass(), 'u');
+	    $builder->where('u.active = true AND u.id != :about');
+	    $builder->setParameter('about', Notice::ABOUT);
+	    $builder->addOrderBy('u.id', 'desc');
+	    $builder->setMaxResults(1);
+	    $result = $builder->getQuery()->getResult();
+	    
+	    $notice = array_shift($result);
+	    if ($notice instanceof Notice && ! $notice->isReadBy($this->getUserActive())) {
+	       return $notice;
+	    }
+	    return null;
 	}
 	
 	private function getActivitiesRecent(Agency $agency) {

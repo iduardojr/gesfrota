@@ -17,6 +17,8 @@ use Gesfrota\Controller\AuthController;
 use Gesfrota\Controller\IndexController;
 use Gesfrota\Model\Domain\TrafficController;
 use Gesfrota\Model\Domain\Request;
+use Gesfrota\Model\Notice;
+use Doctrine\ORM\QueryBuilder;
 
 class AclResource implements Plugin {
 	
@@ -146,7 +148,22 @@ class AclResource implements Plugin {
 		$controller = $dispatcher ? $dispatcher->getController() : null;
 		$view = $response->getBody();
 		if ( $controller  && ! $controller instanceof AuthController && $response->isSuccessful() && $view instanceof Layout ) {
-			$view->BuiderNavbar($this, $controller->getUserActive(), $controller->getAgencyActive()->getAcronym());
+		    $about = $controller->em->find(Notice::getClass(), Notice::ABOUT);
+		    
+		    $query = $controller->em->getRepository(Notice::getClass())->createQueryBuilder('u');
+    	    $query->where('u.active = true AND u.id != :about');
+    	    $query->setParameter('about', Notice::ABOUT);
+    	    $result = $query->getQuery()->getResult();
+    	    
+    	    $noticesNotRead = 0;
+    	    foreach($result as $notice) {
+    	        if (! $notice->isReadBy($controller->getUserActive())) {
+    	            $noticesNotRead++;
+    	        }
+    	    }
+		    
+		    
+		    $view->BuiderNavbar($about, $noticesNotRead, $this, $controller->getUserActive(), $controller->getAgencyActive()->getAcronym());
 		}
 	}
 

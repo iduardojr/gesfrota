@@ -4,6 +4,10 @@ namespace Gesfrota\Util;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\Lexer;
 
+/**
+ * MATCH({StateFieldPathExpression ","}*) AGAINST(:searchterm InParameter[boolean|expand])>0'
+ * MATCH(u.field1, u.field2, u.field3) AGAINST(:searchterm boolean)>0'
+ */
 class MatchAgainst extends FunctionNode {
 	
 	/** 

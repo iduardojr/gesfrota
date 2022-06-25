@@ -1,5 +1,4 @@
 $(function() {
-	
 	$('body').on('errorform', 'form', function( e, ui ){
 		$('.control-group', ui.form).removeClass('error');
 		$('.control-group', ui.form).find('.validate').remove(); 
