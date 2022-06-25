@@ -19,6 +19,9 @@ use Gesfrota\Controller\Helper\NotFoundEntityException;
 use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Layout\Panel;
 use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Misc\Paragraph;
+use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Action\TgLink;
 
 class AccountController extends AbstractController { 
 	
@@ -73,13 +76,20 @@ class AccountController extends AbstractController {
 	    try {
 	        $id = $this->request->getQuery('key');
 	        $display = new Box();
-	        $display->append(new Panel('<hr style="margin-top: 7px">'));
+	        $display->append(new Panel('<hr>'));
 	        if ($id > 0) {
     	        $notice = $this->getEntityManager()->find(Notice::getClass(), $id);
     	        if ( $notice instanceof Notice) {
     	            $title = new Title($notice->getTitle(), 4);
-    	            $title->setSubtext('Última atualização em ' . $notice->getUpdatedAt()->format('d/m/Y H:i:s'));
     	            $display->append($title);
+    	            $button = new Button('Marcar como lido', new TgLink(new Action(NoticeController::getClass(), 'read', ['key' => $notice->getId()])), Button::Mini);
+    	            $button->setDisabled($notice->isReadBy($this->getUserActive()));
+    	            $button->setName('mark-read');
+    	            $display->append($button);
+    	            $date = $notice->getCreatedAt()->format('d/m/Y H:i:s');
+    	            $date.= $notice->getUpdatedAt() > $notice->getCreatedAt() ? ' • Atualizado em ' . $notice->getUpdatedAt()->format('d/m/Y H:i:s') : '';
+    	            $display->append(new Paragraph('<small>' . $date . '</small>'));
+    	           
     	            $display->append(new Panel('<hr>'));
     	            $display->append(new Panel(str_replace('{notice-read-current}', '/notice/read/' . $notice->getId(), $notice->getBody())));
     	        } else {
@@ -91,14 +101,15 @@ class AccountController extends AbstractController {
                                                 <small>Nenhuma notificação aberta</small>
                                             </blockquote>'));
 	        }
+	        $display->setName('notice-display');
 	        
-	        $filter = new Action($this);
+	        $filter = new Action($this, 'notices');
     	    $view = new Action($this, 'notices');
     	    $read = new Action(NoticeController::getClass(), 'read');
     	    $list = new AccountNoticesTable($filter, $view, $read, $this->getUserActive(), $display);
     	    
     	        
-    	    $display->setName('notice-display');
+    	    
     	    $query = $this->getEntityManager()->getRepository(Notice::getClass())->createQueryBuilder('u');
     	    $query->where('u.active = true AND u.id != :about');
     	    $query->setParameter('about', Notice::ABOUT);
@@ -106,19 +117,20 @@ class AccountController extends AbstractController {
     	    $request = $this->getRequest();
     	    $response = $this->getResponse();
     	    
-    	    $storage = ['identify' => md5('account::notices')];
-    	    $storage['data']['limit'] = 1;
-    	    $cookie = $request->getCookie('storage');
     	    
+    	    $defaults = ['limit' => 12, 'sort' => 'updatedAt', 'order' => 'desc'];
+    	    
+    	    $storage = ['identify' => md5('account_notices')];
+    	    $cookie = $request->getCookie('storage');
     	    if ( $cookie !== null ) {
-    	        $storage = json_decode($cookie, true);
-    	        if ( isset($storage['identify']) && isset($cookie['identify']) && $storage['identify'] == $cookie['identify'] ) {
+    	        $cookie = json_decode($cookie, true);
+    	        if (isset($cookie['identify']) && $storage['identify'] == $cookie['identify'] ) {
     	            $storage = $cookie;
     	        }
     	    }
     	    
+    	    $defaults = array_merge($defaults, isset($storage['data']) ? $storage['data'] : []);
     	    
-    	    $defaults = $storage['data'];
     	    $get = $request->getQuery();
     	    $datasource = new EntityDatasource($query, $defaults);
     	    
@@ -136,7 +148,9 @@ class AccountController extends AbstractController {
     	        $storage['data']['limit'] = $datasource->getLimit();
     	    }
     	    $list->setDatasource($datasource);
-    	    $response->setCookie(new Cookie('storage', json_encode($storage)));
+    	    $cookie = new Cookie('storage', json_encode($storage));
+    	    $cookie->setPath('/account/notices');
+    	    $response->setCookie($cookie);
     	    
     	    $list->setAlert($this->getAlert());
     	} catch ( \Exception $e ) {

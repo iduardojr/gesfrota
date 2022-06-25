@@ -400,6 +400,12 @@ fieldset > legend {
 #dashboard + #notice {
 	margin-top: 50px;
 }
+#notice-display {
+	padding-top: 7px;
+}
+#notice-display #mark-read {
+	float: right;
+}
 #notice-aside-form h5 {
 	margin: 5px 0 15px 0;
 	padding-bottom: 7px;

@@ -33,6 +33,7 @@ class AclResource implements Plugin {
 	const Reports = 'Reports';
 	
 	const AdministrativeUnit = 'AdministrativeUnitController';
+	const ResultCenter = 'ResultCenterController';
 	const Owner = 'OwnerController';
 	const ServiceProvider = 'ServiceProviderController';
 	const VehicleFamily = 'VehicleFamilyController';
@@ -40,7 +41,8 @@ class AclResource implements Plugin {
 	const VehicleModel = 'VehicleModelController';
 	const User = 'UserController';
 	const Audit = 'AuditController';
-	const ResultCenter = 'ResultCenterController';
+	const Notice = 'NoticeController';
+	
 	
 	const Account = 'AccountController';
 	const Auth = 'AuthController';

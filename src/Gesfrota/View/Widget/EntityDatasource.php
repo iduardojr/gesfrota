@@ -65,6 +65,7 @@ class EntityDatasource extends Paginator implements DataSource {
 											'order' => self::Asc, 
 											'limit' => 10 ), $defaults);
 		unset($this->defaults['page']);
+		$this->defaults['sort'] = $this->formatAttribute($this->defaults['sort']);
 		$this->setLimit($this->defaults['limit']);
 		$this->setPage(( int ) isset($defaults['page']) && $defaults['page'] > 0 ? $defaults['page'] : 1);
 	}
@@ -125,7 +126,8 @@ class EntityDatasource extends Paginator implements DataSource {
 	 * @param string $sort
 	 */
 	public function toggleOrder( $sort ) {
-		$order = $this->getSort() == $sort && $this->getOrder() == self::Asc ? self::Desc : self::Asc;
+	    $sort = $this->formatAttribute($sort);
+	    $order = $this->getSort() == $sort && $this->getOrder() == self::Asc ? self::Desc : self::Asc;
 		$this->setOrderBy($sort, $order);
 	}
 

@@ -307,7 +307,7 @@ class DriverLicense extends \Gesfrota\Model\Domain\DriverLicense implements \Doc
     /**
      * {@inheritDoc}
      */
-    public function setNumber(int $number)
+    public function setNumber($number)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setNumber', [$number]);

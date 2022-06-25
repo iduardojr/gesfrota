@@ -48,7 +48,7 @@ class DriverLicense extends AbstractActivable {
 	protected $user;
 	
 	/**
-	 * @Column(type="integer")
+	 * @Column(type="bigint")
 	 * @var integer
 	 */
 	protected $number;
@@ -141,7 +141,7 @@ class DriverLicense extends AbstractActivable {
 	/**
 	 * @param integer $number
 	 */
-	public function setNumber(int $number) {
+	public function setNumber($number) {
 		$this->number = $number;
 	}
 	

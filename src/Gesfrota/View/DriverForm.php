@@ -252,7 +252,7 @@ class DriverForm extends AbstractForm {
 		}
 		
 		$new = new DriverLicense();
-		$new->setNumber((int) $data['driver-license-number']);
+		$new->setNumber($data['driver-license-number']);
 		$new->setCategories($data['driver-license-categories']);
 		$new->setExpires(new \DateTime($data['driver-license-expires']));
 		$new->setActive($data['driver-license-active']);

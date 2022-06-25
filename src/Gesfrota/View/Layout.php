@@ -74,10 +74,10 @@ class Layout extends View {
 		
 		$nav = new Nav();
 		
-		$resource1 = 'Gesfrota\\Controller\\IndexController';
-		if ($acl->isAllowed($role, $resource1)) {
-			$nav->addItem(new NavLink('Dashboard', new TgLink(new Action($resource1))));
-		}
+// 		$resource1 = 'Gesfrota\\Controller\\IndexController';
+// 		if ($acl->isAllowed($role, $resource1)) {
+// 			$nav->addItem(new NavLink('Dashboard', new TgLink(new Action($resource1))));
+// 		}
 		
 		$resource1 = 'Gesfrota\\Controller\\FleetController';
 		$resource2 = 'Gesfrota\\Controller\\DisposalController';
@@ -113,11 +113,9 @@ class Layout extends View {
 			}
 		}
 		
-		/*
-		if ($acl->isAllowed($role, AclResource::Reports)) {
-			$nav->addItem(new NavLink('Relatórios'));
-		}
-		*/
+// 		if ($acl->isAllowed($role, AclResource::Reports)) {
+// 			$nav->addItem(new NavLink('Relatórios'));
+// 		}
 		
 		$drop = new Dropdown();
 		$isAdministrator = false;
@@ -223,11 +221,11 @@ class Layout extends View {
     	
 		$resource1 = 'Gesfrota\\Controller\\AccountController';
 		if ($acl->isAllowed($role, $resource1) ) {
+		    $badge = $noticesAmount > 0 ? ' <span class="badge badge-warning">' . $noticesAmount . '</span>' : '';
 		    $link = new NavLink(new Icon('icon-bell', true), new TgLink(new Action($resource1, 'notices')));
-		    if ($noticesAmount > 0) {
-		        $link->setLabel('<span class="badge badge-warning">' . $noticesAmount . '</span>');
-		    }
+		    $link->setLabel($badge);
 		    $nav->addItem($link);
+		    $nav->addItem(new NavDivider());
 		    
 			$drop = new Dropdown();
 			$drop->addItem(new DropdownHeader('Minha Conta'));
@@ -243,7 +241,7 @@ class Layout extends View {
 			$link->setLabel($role->getFirstName());
 			$nav->addItem($link);
 		}
-		$nav->addItem(new NavDivider());
+		
 		$nav->addItem(new NavHeader($agency));
 		
 		$navbar->addItem($nav, NavItem::Right);
