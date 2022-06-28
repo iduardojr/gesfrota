@@ -8,7 +8,7 @@ use Gesfrota\View\ImportList;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-
+use Gesfrota\View\ImportUploadForm;
 
 class ImportController extends AbstractController {
 	
@@ -43,6 +43,12 @@ class ImportController extends AbstractController {
 		    $list->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
 		return new Layout($list);
+	}
+	
+	public function newAction() {
+	    $form = new ImportUploadForm(new Action($this, 'new'), new Action($this));
+	    
+	    return new Layout($form);
 	}
 	
 	/**
