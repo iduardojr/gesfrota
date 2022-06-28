@@ -1,23 +1,21 @@
 <?php
 namespace Gesfrota\Controller;
 
-use Gesfrota\View\Layout;
-use Gesfrota\Model\Domain\Request;
-use Gesfrota\Services\Log;
-use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\Equipment;
-use Gesfrota\Model\Domain\Requester;
-use Gesfrota\Model\Domain\Driver;
-use Gesfrota\Model\Domain\RequestTrip;
-use Gesfrota\Model\Domain\RequestFreight;
 use Doctrine\ORM\Query\ResultSetMapping;
-use Gesfrota\Model\Domain\Agency;
 use Doctrine\ORM\Query\Expr\Join;
-use Gesfrota\Model\Domain\FleetManager;
-use Gesfrota\Model\Domain\FleetItem;
-use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Notice;
-use Gesfrota\Model\NoticeRead;
+use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\Equipment;
+use Gesfrota\Model\Domain\Fleet;
+use Gesfrota\Model\Domain\FleetItem;
+use Gesfrota\Model\Domain\Request;
+use Gesfrota\Model\Domain\RequestFreight;
+use Gesfrota\Model\Domain\RequestTrip;
+use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Services\Log;
+use Gesfrota\View\Layout;
 
 class IndexController extends AbstractController {
 	

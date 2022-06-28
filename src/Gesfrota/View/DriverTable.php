@@ -1,17 +1,16 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\DriverLicense;
+use Gesfrota\Model\Domain\User;
 use Gesfrota\View\Widget\BuilderTable;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgAjax;
 use PHPBootstrap\Widget\Action\TgStorage;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Misc\Label;
-use Gesfrota\Model\Domain\DriverLicense;
-use Gesfrota\Model\Domain\User;
+use PHPBootstrap\Widget\Table\ColumnText;
 
 class DriverTable extends BuilderTable {
 	

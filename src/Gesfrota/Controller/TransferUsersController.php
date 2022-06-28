@@ -63,10 +63,10 @@ class TransferUsersController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				if (! $agencyFrom instanceof Agency) {
-					throw new \DomainException('Não foi possivel Transferir Usuários: Órgão de Origem <em>#' . $key . '</em> não encontrado.');
+				    throw new \DomainException('Não foi possivel Transferir Usuários: Órgão de Origem <em>#' . $post['from-agency-id'] . '</em> não encontrado.');
 				}
 				if (! $agencyTo instanceof Agency) {
-					throw new \DomainException('Não foi possível Transferir Usuários: Órgão de Destino <em>#' . $key . '</em> não encontrado.');
+				    throw new \DomainException('Não foi possível Transferir Usuários: Órgão de Destino <em>#' . $post['to-agency-id'] . '</em> não encontrado.');
 				}
 				if ( ! isset($post['from-users']) ) {
 					throw new InvalidRequestDataException('Por favor, selecione pelo menos um usuário para ser transferido.');
@@ -117,7 +117,7 @@ class TransferUsersController extends AbstractController {
 			if ($params['type'] == 'A') {
 				$entity = $this->getEntityManager()->find(Agency::getClass(), (int) $params['query']);
 				if ( ! $entity instanceof Agency || $entity->isGovernment() ) {
-					throw new NotFoundEntityException('Órgão <em>#' . $id . '</em> não encontrado.');
+				    throw new NotFoundEntityException('Órgão <em>#' . $params['query'] . '</em> não encontrado.');
 				}
 				$this->session->from = $entity->getId();
 				$data['from-agency-id'] = $entity->getCode();
@@ -125,7 +125,7 @@ class TransferUsersController extends AbstractController {
 			} else {
 				$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), (int) $params['query']);
 				if ( ! $entity instanceof AdministrativeUnit ) {
-					throw new NotFoundEntityException('Unidade Adminstrativa <em>#' . $id . '</em> não encontrada.');
+				    throw new NotFoundEntityException('Unidade Adminstrativa <em>#' . $params['query'] . '</em> não encontrada.');
 				}
 				$this->session->from = $entity->getAgency()->getId();
 				$data['from-agency-id'] = $entity->getAgency()->getCode();
@@ -163,7 +163,7 @@ class TransferUsersController extends AbstractController {
 			if ($params['type'] == 'A') {
 				$entity = $this->getEntityManager()->find(Agency::getClass(), (int) $params['query']);
 				if ( ! $entity instanceof Agency || $entity->isGovernment() ) {
-					throw new NotFoundEntityException('Órgão <em>#' . $id . '</em> não encontrado.');
+				    throw new NotFoundEntityException('Órgão <em>#' . $params['query'] . '</em> não encontrado.');
 				}
 				$this->session->from = $entity->getId();
 				$data['to-agency-id'] = $entity->getCode();
@@ -171,7 +171,7 @@ class TransferUsersController extends AbstractController {
 			} else {
 				$entity = $this->getEntityManager()->find(AdministrativeUnit::getClass(), (int) $params['query']);
 				if ( ! $entity instanceof AdministrativeUnit ) {
-					throw new NotFoundEntityException('Unidade Adminstrativa <em>#' . $id . '</em> não encontrada.');
+				    throw new NotFoundEntityException('Unidade Adminstrativa <em>#' . $params['query'] . '</em> não encontrada.');
 				}
 				$this->session->from = $entity->getAgency()->getId();
 				$data['to-agency-id'] = $entity->getAgency()->getCode();

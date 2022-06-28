@@ -1,20 +1,19 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\AdministrativeUnit;
+use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\Controls\CheckBox;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Form\Controls\ComboBox;
-use Gesfrota\Model\Domain\ResultCenter;
 
 class ResultCenterList extends AbstractList {
 	

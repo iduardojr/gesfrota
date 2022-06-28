@@ -4,28 +4,19 @@ namespace Gesfrota\View;
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\View\Widget\AbstractForm;
-use PHPBootstrap\Validate\Pattern\Email;
-use PHPBootstrap\Validate\Pattern\Pattern;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
+use PHPBootstrap\Widget\Action\TgAjax;
 use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
-use PHPBootstrap\Widget\Form\Controls\Decorator\Mask;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Layout\Box;
+use PHPBootstrap\Widget\Layout\Row;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalClose;
-use PHPBootstrap\Widget\Nav\NavLink;
-use PHPBootstrap\Widget\Nav\TabPane;
-use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Domain\Agency;
-use PHPBootstrap\Widget\Layout\Row;
-use PHPBootstrap\Widget\Layout\Box;
-use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Action\TgAjax;
 
 class TransferFleetForm extends AbstractForm {
 	

@@ -8,7 +8,6 @@ use PHPBootstrap\Format\DateFormat;
 use PHPBootstrap\Format\TimeFormat;
 use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Validate\Pattern\Time;
-use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
@@ -20,7 +19,6 @@ use PHPBootstrap\Widget\Misc\Badge;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use Gesfrota\Services\Log;
 
 class AuditLogTable extends AbstractList {
 	

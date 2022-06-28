@@ -4,7 +4,6 @@ namespace Gesfrota\View\Widget;
 use Doctrine\ORM\QueryBuilder;
 use PHPBootstrap\Widget\Pagination\Paginator;
 use PHPBootstrap\Widget\Table\DataSource;
-use Doctrine\ORM\Query\Expr\Select;
 
 
 /**

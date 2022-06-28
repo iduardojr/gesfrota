@@ -8,7 +8,6 @@ use PHPBootstrap\Widget\Action\TgAjax;
 use PHPBootstrap\Widget\Action\TgStorage;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Pagination\Pagination;
 use PHPBootstrap\Widget\Table\ColumnText;
 
 class AdministrativeUnitTable extends BuilderTable  {

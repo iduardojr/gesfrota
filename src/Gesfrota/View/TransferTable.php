@@ -2,11 +2,10 @@
 namespace Gesfrota\View;
 
 use Gesfrota\View\Widget\BuilderTable;
-use PHPBootstrap\Widget\Table\ColumnSelect;
-use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Common\ArrayIterator;
 use PHPBootstrap\Widget\Form\Form;
 use PHPBootstrap\Widget\Form\Inputable;
-use PHPBootstrap\Common\ArrayIterator;
+use PHPBootstrap\Widget\Table\ColumnSelect;
 use PHPBootstrap\Widget\Table\DataSource;
 
 abstract class TransferTable extends BuilderTable implements Inputable {

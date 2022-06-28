@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Domain\Owner;
+use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\ServiceCard;
 use Gesfrota\Model\Domain\ServiceProvider;
 use Gesfrota\Model\Domain\Vehicle;
@@ -21,6 +22,7 @@ use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
 use PHPBootstrap\Widget\Form\Controls\CheckBox;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
@@ -40,9 +42,6 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
-use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
-use Gesfrota\Model\Domain\ResultCenter;
-use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 
 class FleetVehicleForm extends AbstractForm {
     

@@ -251,14 +251,14 @@ class DisposalItemForm extends AbstractForm {
 		$this->buildSubsectionTitle($subsection, 'Parte Dianteira');
 		$this->buildSubsectionSubtitle($subsection, ['survey-front-left' => 'Esquerda', 'survey-front-right' => 'Direita']);
 		
-		$this->buildFieldOutput($subsection, 'Farol', ['survey-lantern-fl' => false, 'survey-lantern-fr' => false]);
-		$this->buildFieldOutput($subsection, 'Seta', ['survey-lantern-arrow-fl' => false, 'survey-lantern-arrow-fr' => false]);
+		$this->buildFieldOutput($subsection, 'Farol', ['survey-lantern-fl', 'survey-lantern-fr']);
+		$this->buildFieldOutput($subsection, 'Seta', ['survey-lantern-arrow-fl', 'survey-lantern-arrow-fr']);
 		
-		$this->buildFieldOutput($subsection, 'Para-choque', ['survey-bumper-f' => true]);
-		$this->buildFieldOutput($subsection, 'Capô do Motor', ['survey-cover-f' => true]);
+		$this->buildFieldOutput($subsection, 'Para-choque', ['survey-bumper-f']);
+		$this->buildFieldOutput($subsection, 'Capô do Motor', ['survey-cover-f']);
 		
-		$this->buildFieldOutput($subsection, 'Parabrisa', ['survey-windshield-f' => false]);
-		$this->buildFieldOutput($subsection, 'Teto', ['survey-roof' => true]);
+		$this->buildFieldOutput($subsection, 'Parabrisa', ['survey-windshield-f']);
+		$this->buildFieldOutput($subsection, 'Teto', ['survey-roof']);
 		
 		return $subsection;
 	}
@@ -272,14 +272,14 @@ class DisposalItemForm extends AbstractForm {
 		$this->buildSubsectionTitle($subsection, 'Parte Traseira');
 		$this->buildSubsectionSubtitle($subsection, ['survey-back-left' => 'Esquerda', 'survey-back-right' => 'Direita']);
 		
-		$this->buildFieldOutput($subsection, 'Luz de Freio/Ré', ['survey-lantern-bl' => false, 'survey-lantern-br' => false]);
-		$this->buildFieldOutput($subsection, 'Seta', ['survey-lantern-arrow-bl' => false, 'survey-lantern-arrow-br' => false]);
+		$this->buildFieldOutput($subsection, 'Luz de Freio/Ré', ['survey-lantern-bl', 'survey-lantern-br']);
+		$this->buildFieldOutput($subsection, 'Seta', ['survey-lantern-arrow-bl', 'survey-lantern-arrow-br']);
 		
-		$this->buildFieldOutput($subsection, 'Para-choque', ['survey-bumper-b' => true]);
-		$this->buildFieldOutput($subsection, 'Tampa Traseira', ['survey-cover-b' => true]);
+		$this->buildFieldOutput($subsection, 'Para-choque', ['survey-bumper-b']);
+		$this->buildFieldOutput($subsection, 'Tampa Traseira', ['survey-cover-b']);
 		
-		$this->buildFieldOutput($subsection, 'Parabrisa', ['survey-windshield-b' => false]);
-		$this->buildFieldOutput($subsection, 'Escapamento', ['survey-exhaust' => false]);
+		$this->buildFieldOutput($subsection, 'Parabrisa', ['survey-windshield-b']);
+		$this->buildFieldOutput($subsection, 'Escapamento', ['survey-exhaust']);
 		
 		return $subsection;
 	}
@@ -293,12 +293,12 @@ class DisposalItemForm extends AbstractForm {
 		$this->buildSubsectionTitle($subsection, 'Lateral Esquerda');
 		$this->buildSubsectionSubtitle($subsection, ['survey_sideleft_front' => 'Dianteira', 'survey_sideleft_back' => 'Traseira']);
 		
-		$this->buildFieldOutput($subsection, 'Vidros', ['survey-window-fl' => false, 'survey-window-bl' => false]);
-		$this->buildFieldOutput($subsection, 'Porta', ['survey-door-fl' => true, 'survey-door-bl' => true]);
-		$this->buildFieldOutput($subsection, 'Colunas', ['survey-column-fl' => true, 'survey-column-bl' => true]);
-		$this->buildFieldOutput($subsection, 'Estribos', ['survey-stirrup-fl' => true, 'survey-stirrup-bl' => true]);
-		$this->buildFieldOutput($subsection, 'Paralamas', ['survey-fender-fl' => true, 'survey-fender-bl' => true]);
-		$this->buildFieldOutput($subsection, 'Pneus', ['survey-tire-fl' => false, 'survey-tire-bl' => false]);
+		$this->buildFieldOutput($subsection, 'Vidros', ['survey-window-fl', 'survey-window-bl']);
+		$this->buildFieldOutput($subsection, 'Porta', ['survey-door-fl', 'survey-door-bl']);
+		$this->buildFieldOutput($subsection, 'Colunas', ['survey-column-fl', 'survey-column-bl']);
+		$this->buildFieldOutput($subsection, 'Estribos', ['survey-stirrup-fl', 'survey-stirrup-bl']);
+		$this->buildFieldOutput($subsection, 'Paralamas', ['survey-fender-fl', 'survey-fender-bl']);
+		$this->buildFieldOutput($subsection, 'Pneus', ['survey-tire-fl', 'survey-tire-bl']);
 		
 		return $subsection;
 	}
@@ -312,12 +312,12 @@ class DisposalItemForm extends AbstractForm {
 		$this->buildSubsectionTitle($subsection, 'Lateral Direita');
 		$this->buildSubsectionSubtitle($subsection, ['survey_sideright_front' => 'Dianteira', 'survey_sideright_back' => 'Traseira']);
 		
-		$this->buildFieldOutput($subsection, 'Vidros', ['survey-window-fr' => false, 'survey-window-br' => false]);
-		$this->buildFieldOutput($subsection, 'Porta', ['survey-door-fr' => true, 'survey-door-br' => true]);
-		$this->buildFieldOutput($subsection, 'Colunas', ['survey-column-fr' => true, 'survey-column-br' => true]);
-		$this->buildFieldOutput($subsection, 'Estribos', ['survey-stirrup-fr' => true, 'survey-stirrup-br' => true]);
-		$this->buildFieldOutput($subsection, 'Paralamas', ['survey-fender-fr' => true, 'survey-fender-br' => true]);
-		$this->buildFieldOutput($subsection, 'Pneus', ['survey-tire-fr' => false, 'survey-tire-br' => false]);
+		$this->buildFieldOutput($subsection, 'Vidros', ['survey-window-fr', 'survey-window-br']);
+		$this->buildFieldOutput($subsection, 'Porta', ['survey-door-fr', 'survey-door-br']);
+		$this->buildFieldOutput($subsection, 'Colunas', ['survey-column-fr', 'survey-column-br']);
+		$this->buildFieldOutput($subsection, 'Estribos', ['survey-stirrup-fr', 'survey-stirrup-br']);
+		$this->buildFieldOutput($subsection, 'Paralamas', ['survey-fender-fr', 'survey-fender-br']);
+		$this->buildFieldOutput($subsection, 'Pneus', ['survey-tire-fr', 'survey-tire-br']);
 		
 		return $subsection;
 	}
@@ -330,16 +330,16 @@ class DisposalItemForm extends AbstractForm {
 		$subsection = new Box();
 		$this->buildSubsectionTitle($subsection, 'Parte Interna');
 		
-		$this->buildFieldOutput($subsection, 'Banco do Motorista', ['survey-seat-driver' => false]);
-		$this->buildFieldOutput($subsection, 'Banco do Passageiro', ['survey-seat-passenger' => false]);
-		$this->buildFieldOutput($subsection, 'Banco Traseiro', ['survey-seat-rear' => false]);
-		$this->buildFieldOutput($subsection, 'Painel de Instrumentos', ['survey-dashboard' => false]);
-		$this->buildFieldOutput($subsection, 'Volante', ['survey-steering-wheel' => false]);
-		$this->buildFieldOutput($subsection, 'Buzina', ['survey-horn' => false]);
-		$this->buildFieldOutput($subsection, 'Console Central', ['survey-central-console' => false]);
-		$this->buildFieldOutput($subsection, 'Tapeçaria do Teto', ['survey-roof-tapestry' => false]);
-		$this->buildFieldOutput($subsection, 'Tampão do Porta-malas', ['survey-trunk-cap' => false]);
-		$this->buildFieldOutput($subsection, 'Forro das Portas', ['survey-door-lining' => false]);
+		$this->buildFieldOutput($subsection, 'Banco do Motorista', ['survey-seat-driver']);
+		$this->buildFieldOutput($subsection, 'Banco do Passageiro', ['survey-seat-passenger']);
+		$this->buildFieldOutput($subsection, 'Banco Traseiro', ['survey-seat-rear']);
+		$this->buildFieldOutput($subsection, 'Painel de Instrumentos', ['survey-dashboard']);
+		$this->buildFieldOutput($subsection, 'Volante', ['survey-steering-wheel']);
+		$this->buildFieldOutput($subsection, 'Buzina', ['survey-horn']);
+		$this->buildFieldOutput($subsection, 'Console Central', ['survey-central-console']);
+		$this->buildFieldOutput($subsection, 'Tapeçaria do Teto', ['survey-roof-tapestry']);
+		$this->buildFieldOutput($subsection, 'Tampão do Porta-malas', ['survey-trunk-cap']);
+		$this->buildFieldOutput($subsection, 'Forro das Portas', ['survey-door-lining']);
 		
 		return $subsection;
 	}
@@ -352,16 +352,16 @@ class DisposalItemForm extends AbstractForm {
 		$subsection = new Box();
 		$this->buildSubsectionTitle($subsection, 'Acessórios');
 		
-		$this->buildFieldOutput($subsection, 'Ar Condicionado', ['survey-air-conditioning' => false]);
-		$this->buildFieldOutput($subsection, 'Alarme', ['survey-alarm' => false]);
-		$this->buildFieldOutput($subsection, 'Direção Hidraúlica', ['survey-steering-hydraulic' => false]);
-		$this->buildFieldOutput($subsection, 'Aparelho de Som', ['survey-device-sound' => false]);
-		$this->buildFieldOutput($subsection, 'Vidro Elétrico', ['survey-electric-glass' => false]);
-		$this->buildFieldOutput($subsection, 'Trava Elétrica', ['survey-electric-lock' => false]);
-		$this->buildFieldOutput($subsection, 'Tapetes', ['survey-carpet' => false]);
-		$this->buildFieldOutput($subsection, 'Roda de Ferro', ['survey-wheel-iron' => false]);
-		$this->buildFieldOutput($subsection, 'Roda de Liga Leve', ['survey-wheel-alloy' => false]);
-		$this->buildFieldOutput($subsection, 'Faróis de Neblina', ['survey-lantern-fog' => false]);
+		$this->buildFieldOutput($subsection, 'Ar Condicionado', ['survey-air-conditioning']);
+		$this->buildFieldOutput($subsection, 'Alarme', ['survey-alarm']);
+		$this->buildFieldOutput($subsection, 'Direção Hidraúlica', ['survey-steering-hydraulic']);
+		$this->buildFieldOutput($subsection, 'Aparelho de Som', ['survey-device-sound']);
+		$this->buildFieldOutput($subsection, 'Vidro Elétrico', ['survey-electric-glass']);
+		$this->buildFieldOutput($subsection, 'Trava Elétrica', ['survey-electric-lock']);
+		$this->buildFieldOutput($subsection, 'Tapetes', ['survey-carpet']);
+		$this->buildFieldOutput($subsection, 'Roda de Ferro', ['survey-wheel-iron']);
+		$this->buildFieldOutput($subsection, 'Roda de Liga Leve', ['survey-wheel-alloy']);
+		$this->buildFieldOutput($subsection, 'Faróis de Neblina', ['survey-lantern-fog']);
 		
 		return $subsection;
 	}
@@ -374,14 +374,14 @@ class DisposalItemForm extends AbstractForm {
 		$subsection = new Box();
 		$this->buildSubsectionTitle($subsection, 'Mecânica');
 		
-		$this->buildFieldOutput($subsection, 'Carburador', ['survey-carburetor' => false]);
-		$this->buildFieldOutput($subsection, 'Bomba Injetora', ['survey-injection-pump' => false]);
-		$this->buildFieldOutput($subsection, 'Câmbio', ['survey-exchange' => false]);
-		$this->buildFieldOutput($subsection, 'Diferencial', ['survey-differential' => false]);
-		$this->buildFieldOutput($subsection, 'Motor', ['survey-engine' => false]);
-		$this->buildFieldOutput($subsection, 'Radiador', ['survey-radiator' => false]);
-		$this->buildFieldOutput($subsection, 'Turbina', ['survey-turbine' => false]);
-		$this->buildFieldOutput($subsection, 'Suspensão', ['survey-suspension' => false]);
+		$this->buildFieldOutput($subsection, 'Carburador', ['survey-carburetor']);
+		$this->buildFieldOutput($subsection, 'Bomba Injetora', ['survey-injection-pump']);
+		$this->buildFieldOutput($subsection, 'Câmbio', ['survey-exchange']);
+		$this->buildFieldOutput($subsection, 'Diferencial', ['survey-differential']);
+		$this->buildFieldOutput($subsection, 'Motor', ['survey-engine']);
+		$this->buildFieldOutput($subsection, 'Radiador', ['survey-radiator']);
+		$this->buildFieldOutput($subsection, 'Turbina', ['survey-turbine']);
+		$this->buildFieldOutput($subsection, 'Suspensão', ['survey-suspension']);
 		
 		return $subsection;
 	}
@@ -394,14 +394,14 @@ class DisposalItemForm extends AbstractForm {
 		$subsection = new Box();
 		$this->buildSubsectionTitle($subsection, 'Elétrica');
 		
-		$this->buildFieldOutput($subsection, 'Bomba de Gasolina', ['survey-gasoline-pump' => false]);
-		$this->buildFieldOutput($subsection, 'Motor de Arranque', ['survey-engine-starter' => false]);
-		$this->buildFieldOutput($subsection, 'Módulo de Ignição', ['survey-ignition-module' => false]);
-		$this->buildFieldOutput($subsection, 'Alternador', ['survey-alternator' => false]);
-		$this->buildFieldOutput($subsection, 'Distribuidor', ['survey-distributor' => false]);
-		$this->buildFieldOutput($subsection, 'Bateria', ['survey-battery' => false]);
-		$this->buildFieldOutput($subsection, 'Bico de Injeção', ['survey-injection-nozzle' => false]);
-		$this->buildFieldOutput($subsection, 'Injeção Eletrônica', ['survey-injection-electronic' => false]);
+		$this->buildFieldOutput($subsection, 'Bomba de Gasolina', ['survey-gasoline-pump']);
+		$this->buildFieldOutput($subsection, 'Motor de Arranque', ['survey-engine-starter']);
+		$this->buildFieldOutput($subsection, 'Módulo de Ignição', ['survey-ignition-module']);
+		$this->buildFieldOutput($subsection, 'Alternador', ['survey-alternator']);
+		$this->buildFieldOutput($subsection, 'Distribuidor', ['survey-distributor']);
+		$this->buildFieldOutput($subsection, 'Bateria', ['survey-battery']);
+		$this->buildFieldOutput($subsection, 'Bico de Injeção', ['survey-injection-nozzle']);
+		$this->buildFieldOutput($subsection, 'Injeção Eletrônica', ['survey-injection-electronic']);
 		
 		return $subsection;
 	}
@@ -415,17 +415,17 @@ class DisposalItemForm extends AbstractForm {
 		$this->buildSubsectionTitle($subsection, 'Segurança');
 		
 		$box1 = new Box(6);
-		$this->buildFieldOutput($box1, 'Cintos de Segurança', ['survey-safety-belts' => false]);
-		$this->buildFieldOutput($box1, 'Air Bag', ['survey-airbag' => false]);
-		$this->buildFieldOutput($box1, 'Retrovisor Interno', ['survey-rearview-i' => false]);
-		$this->buildFieldOutput($box1, 'Retrovisor Esquerdo', ['survey-rearview-l' => false]);
-		$this->buildFieldOutput($box1, 'Retrovisor Direito', ['survey-rearview-r' => false]);
+		$this->buildFieldOutput($box1, 'Cintos de Segurança', ['survey-safety-belts']);
+		$this->buildFieldOutput($box1, 'Air Bag', ['survey-airbag']);
+		$this->buildFieldOutput($box1, 'Retrovisor Interno', ['survey-rearview-i']);
+		$this->buildFieldOutput($box1, 'Retrovisor Esquerdo', ['survey-rearview-l']);
+		$this->buildFieldOutput($box1, 'Retrovisor Direito', ['survey-rearview-r']);
 		
 		$box2 = new Box(6);
-		$this->buildFieldOutput($box2, 'Triângulo de Segurança', ['survey-safety-triangle' => false]);
-		$this->buildFieldOutput($box2, 'Macaco', ['survey-monkey' => false]);
-		$this->buildFieldOutput($box2, 'Chave de Roda', ['survey-wheel-wrench' => false]);
-		$this->buildFieldOutput($box2, 'Estepe', ['survey-wheel-spare' => false]);
+		$this->buildFieldOutput($box2, 'Triângulo de Segurança', ['survey-safety-triangle']);
+		$this->buildFieldOutput($box2, 'Macaco', ['survey-monkey']);
+		$this->buildFieldOutput($box2, 'Chave de Roda', ['survey-wheel-wrench']);
+		$this->buildFieldOutput($box2, 'Estepe', ['survey-wheel-spare']);
 		
 		$subsection->append(new Row(false, [$box1, $box2]));
 		
@@ -476,7 +476,7 @@ class DisposalItemForm extends AbstractForm {
 		
 		$inputs = [];
 		
-		foreach ($fieldset as $field => $isBodyPart) {
+		foreach ($fieldset as $field) {
 			$input = new Uneditable($field);
 			$input->setSpan(1);
 			$inputs[] = $input;

@@ -12,17 +12,15 @@ use Gesfrota\Model\Notice;
   <?php echo str_replace('{notice-read-current}', '/notice/read/' . $this->notice->id, $this->notice->getBody()); ?>
 </div>
 <?php } ?>
-<h1 class="page-header">
-	Dashboard
-	<small>Indicadores de Desempenho 
-		<form action="/" method="post" class="form-inline pull-right" style="display: inline-block; margin: 7px;">
-			<label>Período</label>
-			<input type="text" class="input-small" placeholder="Data Inicial" value="<?php echo $this->initial->format('m/Y'); ?>" name="initial" data-mask="99/9999">
-	  		<input type="text" class="input-small" placeholder="Data Final" value="<?php echo $this->final->format('m/Y'); ?>" name="final" data-mask="99/9999">
-	  		<button type="submit" class="btn">Filtrar</button>
-		</form>
-	</small>
-</h1>
+<div class="page-header">
+	<form action="/" method="post" class="form-inline pull-right" style="display: inline-block; margin: 7px;">
+		<label>Período</label>
+		<input type="text" class="input-small" placeholder="Data Inicial" value="<?php echo $this->initial->format('m/Y'); ?>" name="initial" data-mask="99/9999">
+  		<input type="text" class="input-small" placeholder="Data Final" value="<?php echo $this->final->format('m/Y'); ?>" name="final" data-mask="99/9999">
+  		<button type="submit" class="btn">Filtrar</button>
+	</form>
+	<h1>Dashboard <small>Indicadores de Desempenho</small></h1>
+</div>
 <div id="dashboard">
 <div class="row-fluid">
 	<div class="span3">

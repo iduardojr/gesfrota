@@ -55,10 +55,10 @@ class TransferFleetController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				if (! $entityFrom instanceof Agency) {
-					throw new \DomainException('Não foi possivel Transferir a Frota: Órgão de Origem <em>#' . $key . '</em> não encontrado.');
+				    throw new \DomainException('Não foi possivel Transferir a Frota: Órgão de Origem <em>#' . $post['from-agency-id'] . '</em> não encontrado.');
 				}
 				if (! $entityTo instanceof Agency) {
-					throw new \DomainException('Não foi possível Transferir a Frota: Órgão de Destino <em>#' . $key . '</em> não encontrado.');
+				    throw new \DomainException('Não foi possível Transferir a Frota: Órgão de Destino <em>#' . $post['to-agency-id'] . '</em> não encontrado.');
 				}
 				if ( ! isset($post['from-fleet']) ) {
 					throw new InvalidRequestDataException('Por favor, selecione pelo menos um item da frota para ser transferido.');
