@@ -179,13 +179,17 @@ class Layout extends View {
 		}
 		
 		$resource1 = 'Gesfrota\\Controller\\NoticeController';
-		if ($acl->isAllowed($role, $resource1) ) {
+		$resource2 = 'Gesfrota\\Controller\\ImportController';
+		if ($acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) ) {
 		    if ($isDivider) {
 		        $drop->addItem(new DropdownDivider());
 		    }
-		    $drop->addItem(new DropdownHeader('Comunicação'));
+		    $drop->addItem(new DropdownHeader('Sistema'));
 		    if ($acl->isAllowed($role, $resource1)) {
 		        $drop->addItem(new DropdownLink('Gerenciar Notificação', new TgLink(new Action($resource1))));
+		    }
+		    if ($acl->isAllowed($role, $resource2)) {
+		        $drop->addItem(new DropdownLink('Gerenciar Importações', new TgLink(new Action($resource2))));
 		    }
 		    $isAdministrator = true;
 		}
