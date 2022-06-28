@@ -60,11 +60,8 @@ class UserList extends AbstractList {
 		$form->buildField('Nome', $input);
 		
 		$input = new ComboBox('lotation');
-		$input->setSpan(5);
-		$input->addOption(null, '');
-		foreach($agencies as $agency) {
-			$input->addOption($agency->getId(), $agency->getAcronym() . ' - ' . $agency->getName() . ' (' . $agency->getCode() . ')');
-		}
+		$input->setSpan(2);
+		$input->setOptions($agencies);
 		$form->buildField('Lotação', $input);
 		
 		$input = new CheckBoxList('type', false);
