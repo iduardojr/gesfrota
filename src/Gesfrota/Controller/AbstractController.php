@@ -53,10 +53,11 @@ abstract class AbstractController extends Controller {
 		if ($this->getAgencyActive()->isGovernment()) {
 			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 			$query->where('u.id > 0');
+			$query->addOrderBy('u.acronym');
 			$result = $query->getQuery()->getResult();
 			$options = ['' => 'Todos'];
 			foreach($result as $item) {
-				$options[$item->id] = (string) $item;
+			    $options[$item->id] = $item . ' (' . $item->id . ')';
 			}
 			return $options;
 		} 
