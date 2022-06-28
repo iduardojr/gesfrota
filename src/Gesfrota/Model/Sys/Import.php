@@ -91,6 +91,14 @@ class Import extends Entity {
     }
     
     /**
+     * @param string $file
+     */
+    public function setFile($file) {
+        $this->fileName = $file;
+        $this->fileSize = filesize($file);
+    }
+    
+    /**
      * @return integer
      */
     public function getAmountItems() {
