@@ -59,7 +59,13 @@ class UserController extends AbstractController {
 		};
 		
 		$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
-		$agencies = $query->getQuery()->getResult();
+		$query->where('u.id > 0');
+		$query->addOrderBy('u.acronym');
+		$result = $query->getQuery()->getResult();
+		$agencies = ['' => 'Todos'];
+		foreach($result as $item) {
+		    $agencies[$item->id] = $item . ' (' . $item->id . ')';
+		}
 		
 		$list = new UserList($filter, $new1, $new2, $new3, $new4, $new5, $edit, $active, $reset, $profile, $agencies);
 		
