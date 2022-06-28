@@ -5,17 +5,13 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
-use Gesfrota\Model\Notice;
+use Gesfrota\Model\Sys\Notice;
 use Gesfrota\View\Layout;
 use Gesfrota\View\NoticeForm;
 use Gesfrota\View\NoticeList;
 use Gesfrota\View\NoticeReadTable;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use PHPBootstrap\Mvc\View\JsonView;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Layout\Box;
-use PHPBootstrap\Widget\Layout\Panel;
 
 
 class NoticeController extends AbstractController {

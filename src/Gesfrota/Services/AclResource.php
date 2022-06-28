@@ -4,7 +4,7 @@ namespace Gesfrota\Services;
 use Gesfrota\Controller\AbstractController;
 use Gesfrota\Controller\AuthController;
 use Gesfrota\Controller\IndexController;
-use Gesfrota\Model\Notice;
+use Gesfrota\Model\Sys\Notice;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
