@@ -42,8 +42,14 @@ class ImportUploadForm extends AbstractForm {
 		$tab = new Tabbable('import-tabs');
 		$tab->setPlacement(Tabbable::Left);
 		$tab->addItem(new NavLink('Upload'), null, new TabPane($fieldset));
-		$tab->addItem(new NavLink('Pré-processamento'));
-		$tab->addItem(new NavLink('Transformação'));
+		
+		$link = new NavLink('Pré-processamento');
+		$link->setDisabled(true);
+		$tab->addItem($link);
+		
+		$link = new NavLink('Transformação');
+		$link->setDisabled(true);
+		$tab->addItem($link);
 		
 		$form->append($tab);
 
