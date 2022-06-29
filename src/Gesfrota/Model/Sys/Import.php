@@ -14,6 +14,11 @@ use Doctrine\Common\Collections\Criteria;
 class Import extends Entity {
     
     /**
+     * @var string
+     */
+    const DIR = '/import/';
+    
+    /**
      * @Column(type="string")
      * @var string
      */
@@ -38,6 +43,12 @@ class Import extends Entity {
     protected $fileSize;
     
     /**
+     * @Column(type="array")
+     * @var array
+     */
+    protected $header;
+    
+    /**
      * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"all"})
      * @var ArrayCollection
      */
@@ -48,6 +59,7 @@ class Import extends Entity {
         parent::__construct();
         $this->createdAt = new \DateTime();
     }
+    
     /**
      * @return string
      */
@@ -75,6 +87,13 @@ class Import extends Entity {
     public function getFileSize() {
         return $this->fileSize;
     }
+    
+    /**
+     * @return array
+     */
+    public function getHeader() {
+        return $this->header;
+    }
 
     /**
      * @return array
@@ -93,9 +112,19 @@ class Import extends Entity {
     /**
      * @param string $file
      */
-    public function setFile($file) {
-        $this->fileName = $file;
-        $this->fileSize = filesize($file);
+    public function setFileName($fileName) {
+        $this->fileName = $fileName;
+        $this->fileSize = filesize(self::DIR . $fileName);
+        
+        $file = fopen(self::DIR . $fileName, 'r', true);
+        
+        $line = fgetcsv($file, 0, ";");
+        if ( $line ) {
+            $this->header = $line;
+        }
+        while ($data = fgetcsv($file, 0, ";")) {
+            $this->items->add(new ImportItem($this, $data));
+        }
     }
     
     /**

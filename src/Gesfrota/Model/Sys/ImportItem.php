@@ -39,10 +39,12 @@ class ImportItem extends Entity {
     protected $reference;
     
     /**
+     * @param Import $import
      * @param array $data
      */
-    public function __construct(array $data) {
+    public function __construct(Import $import, array $data) {
         parent::__construct();
+        $this->import = $import;
         $this->data = $data;
     }
     
@@ -73,13 +75,6 @@ class ImportItem extends Entity {
      */
     public function getReference() {
         return $this->reference;
-    }
-
-    /**
-     * @param Import $import
-     */
-    public function setImport(Import $import) {
-        $this->import = $import;
     }
 
     /**
