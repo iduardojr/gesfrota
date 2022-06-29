@@ -18,6 +18,12 @@ class ImportItem extends Entity {
     protected $data;
     
     /**
+     * @Column(name="group_by", type="string")
+     * @var string
+     */
+    protected $groupBy;
+    
+    /**
      * @ManyToOne(targetEntity="Import", inversedBy="items")
      * @JoinColumn(name="import_id", referencedColumnName="id")
      * @var Import
@@ -45,14 +51,21 @@ class ImportItem extends Entity {
     public function __construct(Import $import, array $data) {
         parent::__construct();
         $this->import = $import;
+        $this->groupBy = $data[0];
         $this->data = $data;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getGroupBy() {
+        return $this->groupBy;
     }
     
     /**
      * @return array
      */
-    public function getData()
-    {
+    public function getData() {
         return $this->data;
     }
 
