@@ -35,7 +35,6 @@ class ImportUploadForm extends AbstractForm {
 		
 		$input = new XFileBox('file');
 		$input->setPlaceholder('Escolha um arquivo .csv');
-		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$input->setPattern(new Upload(['text/csv' => 'csv'], 'Informe um arquivo .csv'));
 		$input->setSpan(3);
 		$form->buildField(null, $input, null, $fieldset);
@@ -66,8 +65,8 @@ class ImportUploadForm extends AbstractForm {
 	public function hydrate( Import $object ) {
 		$data = $this->component->getData();
 		$object->setDescription($data['desc']);
-		$fileName = Import::DIR . basename($data['file']['name']);
-		if ( ! move_uploaded_file($data['file']['tmp_name'], $fileName) ) {
+		$fileName = basename($data['file']['name']);
+		if ( ! move_uploaded_file($data['file']['tmp_name'], Import::getDirRoot() . $fileName) ) {
 		    throw new \ErrorException('unable to move upload file to target Directory');
 		}
 		$object->setFileName($fileName);
