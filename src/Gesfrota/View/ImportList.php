@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Sys\Import;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Format\DateFormat;
@@ -9,20 +9,16 @@ use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalConfirm;
-use PHPBootstrap\Widget\Modal\TgModalLoad;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use Gesfrota\Model\Sys\Import;
 
 class ImportList extends AbstractList {
 	
