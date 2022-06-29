@@ -52,7 +52,7 @@ class Import extends Entity {
     protected $fileSize;
     
     /**
-     * @Column(type="array")
+     * @Column(type="json_array")
      * @var array
      */
     protected $header;
@@ -128,16 +128,24 @@ class Import extends Entity {
         
         $file = fopen(self::$DIR_ROOT . $fileName, 'r', true);
         
-        $line = fgetcsv($file, 0, ";");
-        if ( $line ) {
-            $this->header = $line;
+        $header = fgetcsv($file, 0, ";");
+        if ( $header ) {
+            $this->header = $this->tranform($header);
         }
         while ($data = fgetcsv($file, 0, ";")) {
-            foreach($data as $i => $val) {
-                $data[$i] = utf8_encode($val);
-            }
-            $this->items->add(new ImportItem($this, $data));
+            $this->items->add(new ImportItem($this, $this->tranform($data)));
         }
+    }
+    
+    /**
+     * @param array $data
+     * @return array
+     */
+    private function tranform(array $data) {
+        foreach($data as $i => $val) {
+            $data[$i] = utf8_encode($val);
+        }
+        return $data;
     }
     
     /**
