@@ -26,10 +26,10 @@ class ImportList extends AbstractList {
 	 * @param Action $filter
 	 * @param Action $new
 	 * @param Action $edit
+	 * @param Action $down
 	 * @param Action $remove
-	 * @param Action $views
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $remove) {
+	public function __construct( Action $filter, Action $new, Action $edit, Action $down, Action $remove) {
 		$this->buildPanel('Sistema', 'Gerenciar Importações');
 		
 		$reset = clone $filter;
@@ -91,7 +91,7 @@ class ImportList extends AbstractList {
 		$confirm->addButton(new Button('Cancelar', new TgModalClose()));
 		$this->panel->append($confirm);
 		
-		$table->buildColumnAction('download', new Icon('icon-download-alt'), $remove);
+		$table->buildColumnAction('download', new Icon('icon-download-alt'), $down);
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
 		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $confirm);
 		
