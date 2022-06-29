@@ -9,6 +9,7 @@ use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\View\ImportUploadForm;
+use Gesfrota\Controller\Helper\InvalidRequestDataException;
 
 class ImportController extends AbstractController {
 	
@@ -46,8 +47,21 @@ class ImportController extends AbstractController {
 	}
 	
 	public function newAction() {
-	    $form = new ImportUploadForm(new Action($this, 'new'), new Action($this));
-	    
+	    try {
+	        $form = new ImportUploadForm(new Action($this, 'new'), new Action($this));
+	        $helper = $this->createHelperCrud();
+	        if ( $helper->create($form) ){
+	            $entity = $helper->getEntity();
+	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> realizada com sucesso!', Alert::Success));
+	            $this->forward('/');
+	        }
+	    } catch ( InvalidRequestDataException $e ){
+	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        throw $e;
+	    } catch ( \Exception $e ) {
+	        $form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+	        throw $e;
+	    }
 	    return new Layout($form);
 	}
 	
@@ -57,5 +71,6 @@ class ImportController extends AbstractController {
 	private function createHelperCrud() {
 	    return new Crud($this->getEntityManager(), Import::getClass(), $this);
 	}
+	
 }
 ?>
