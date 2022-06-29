@@ -71,7 +71,7 @@ class ImportUploadForm extends AbstractForm {
 	public function hydrate( Import $object ) {
 		$data = $this->component->getData();
 		$object->setDescription($data['desc']);
-		$fileName = basename($data['file']['name']);
+		$fileName = md5(uniqid()) . '-' . time() . '.csv';
 		if ( ! move_uploaded_file($data['file']['tmp_name'], Import::getDirRoot() . $fileName) ) {
 		    throw new \ErrorException('unable to move upload file to target Directory');
 		}

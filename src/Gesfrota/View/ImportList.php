@@ -61,15 +61,28 @@ class ImportList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
-		$table->buildColumnText('fileSize', null, null, 50, null, function( $value ) {
-		    return $value;
+		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
+		    return $value . '/' . $import->getAmountItems();
 		});
-		$table->buildColumnText('createdAt', 'Criado em', clone $filter, 90, null, function (\DateTime $value) {
-	        return $value->format('d/m/Y H:i:s');
-	    });
-	    $table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
-	        return $value . '/' . $import->getAmountItems();
-	    });
+		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
+		        $bytes = floatval($bytes);
+		        $multiples = [
+		            ["UNIT" => "TB", "VALUE" => pow(1024, 4)],
+		            ["UNIT" => "GB", "VALUE" => pow(1024, 3)],
+		            ["UNIT" => "MB", "VALUE" => pow(1024, 2)],
+		            ["UNIT" => "KB", "VALUE" => 1024],
+		            ["UNIT" => "B ", "VALUE" => 1],
+		        ];
+		        
+		        foreach($multiples as $multiple) {
+		            if($bytes >= $multiple["VALUE"]) {
+		                $result = $bytes / $multiple["VALUE"];
+		                $result = strval(round($result, 1))." ".$multiple["UNIT"];
+		                break;
+		            }
+		        }
+		        return $result;
+		});
 		
 		$confirm = new Modal('modal-remove-confirm', new Title('Confirme', 3));
 		$confirm->setBody(new Paragraph('Você deseja excluir definitivamente esta Disposição?'));
@@ -78,8 +91,10 @@ class ImportList extends AbstractList {
 		$confirm->addButton(new Button('Cancelar', new TgModalClose()));
 		$this->panel->append($confirm);
 		
+		$table->buildColumnAction('download', new Icon('icon-download-alt'), $remove);
 		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
 		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $confirm);
+		
 	}
 	
 }
