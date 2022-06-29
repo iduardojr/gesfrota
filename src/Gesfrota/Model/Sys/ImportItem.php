@@ -12,7 +12,7 @@ use Gesfrota\Model\Domain\FleetItem;
 class ImportItem extends Entity {
     
     /**
-	 * @Column(type="array")
+	 * @Column(type="json_array")
 	 * @var array
 	 */
     protected $data;
@@ -25,14 +25,14 @@ class ImportItem extends Entity {
     protected $import;
     
      /**
-     * @ManyToOne(targetEntity="Agency")
+     * @ManyToOne(targetEntity="Gesfrota\Model\Domain\Agency")
      * @JoinColumn(name="agency_id", referencedColumnName="id")
      * @var Agency
      */
     protected $agency;
     
     /**
-     * @ManyToOne(targetEntity="FleetItem")
+     * @ManyToOne(targetEntity="Gesfrota\Model\Domain\FleetItem")
      * @JoinColumn(name="fleet_item_id", referencedColumnName="id")
      * @var FleetItem
      */

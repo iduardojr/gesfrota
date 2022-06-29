@@ -14,9 +14,18 @@ use Doctrine\Common\Collections\Criteria;
 class Import extends Entity {
     
     /**
+     * Diretório relativo ao link
+     * 
      * @var string
      */
-    const DIR = '/import/';
+    private static $DIR_BASE;
+    
+    /**
+     * Diretório raiz dos arquivos de importação
+     * 
+     * @var string
+     */
+    private static $DIR_ROOT;
     
     /**
      * @Column(type="string")
@@ -58,6 +67,7 @@ class Import extends Entity {
     public function __construct() {
         parent::__construct();
         $this->createdAt = new \DateTime();
+        $this->items = new ArrayCollection();
     }
     
     /**
@@ -114,15 +124,18 @@ class Import extends Entity {
      */
     public function setFileName($fileName) {
         $this->fileName = $fileName;
-        $this->fileSize = filesize(self::DIR . $fileName);
+        $this->fileSize = filesize(self::$DIR_ROOT . $fileName);
         
-        $file = fopen(self::DIR . $fileName, 'r', true);
+        $file = fopen(self::$DIR_ROOT . $fileName, 'r', true);
         
         $line = fgetcsv($file, 0, ";");
         if ( $line ) {
             $this->header = $line;
         }
         while ($data = fgetcsv($file, 0, ";")) {
+            foreach($data as $i => $val) {
+                $data[$i] = utf8_encode($val);
+            }
             $this->items->add(new ImportItem($this, $data));
         }
     }
@@ -140,8 +153,30 @@ class Import extends Entity {
     public function getAmountImported() {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->neq('reference', null));
-        return $this->items->count($criteria);
+        return $this->items->matching($criteria)->count();
     }
 
+    /**
+     * @param string $dir
+     */
+    public static function setDir($root, $base = '/imports') {
+        $base = rtrim($base, '/') . '/';
+        self::$DIR_ROOT = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $base);
+        self::$DIR_BASE = $base;
+    }
+    
+    /**
+     * @return string
+     */
+    public static function getDirRoot() {
+        return self::$DIR_ROOT;
+    }
+    
+    /**
+     * @return string
+     */
+    public static function getDirBase() {
+        return self::$DIR_BASE;
+    }
 }
 ?>
