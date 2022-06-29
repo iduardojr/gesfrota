@@ -1,21 +1,17 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Sys\Import;
 use Gesfrota\View\Widget\AbstractForm;
-use PHPBootstrap\Validate\Pattern\Email;
-use PHPBootstrap\Validate\Pattern\Pattern;
+use PHPBootstrap\Validate\Pattern\Upload;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\XFileBox;
-use PHPBootstrap\Widget\Form\Controls\Decorator\Mask;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Sys\Import;
-use PHPBootstrap\Validate\Pattern\Upload;
 
 class ImportUploadForm extends AbstractForm {
 	
@@ -69,13 +65,12 @@ class ImportUploadForm extends AbstractForm {
 	 */
 	public function hydrate( Import $object ) {
 		$data = $this->component->getData();
-		$object->setDescription($data['name']);
-		$object->setFile($data['nif']);
-		$object->setAcronym($data['acronym']);
-		$object->setContact($data['contact']);
-		$object->setEmail($data['email']);
-		$object->setPhone($data['phone']);
-		$object->setActive($data['active']);
+		$object->setDescription($data['desc']);
+		$fileName = Import::DIR . basename($data['file']['name']);
+		if ( ! move_uploaded_file($data['file']['tmp_name'], $fileName) ) {
+		    throw new \ErrorException('unable to move upload file to target Directory');
+		}
+		$object->setFileName($fileName);
 	}
 
 }
