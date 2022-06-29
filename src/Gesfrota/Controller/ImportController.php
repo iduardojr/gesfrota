@@ -10,6 +10,7 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\View\ImportUploadForm;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
+use Gesfrota\Controller\Helper\NotFoundEntityException;
 
 class ImportController extends AbstractController {
 	
@@ -18,8 +19,9 @@ class ImportController extends AbstractController {
 		    $filter = new Action($this);
 		    $new = new Action($this, 'new');
 		    $edit = new Action($this, 'edit');
+		    $down = new Action($this, 'down');
 		    $remove = new Action($this, 'remove');
-		    $list = new ImportList($filter, $new, $edit, $remove);
+		    $list = new ImportList($filter, $new, $edit, $down, $remove);
 		    
 		    $helper = $this->createHelperCrud();
 		    $query = $this->getEntityManager()->getRepository(Import::getClass())->createQueryBuilder('u');
@@ -63,6 +65,20 @@ class ImportController extends AbstractController {
 	        throw $e;
 	    }
 	    return new Layout($form);
+	}
+	
+	public function downAction() {
+	    try {
+    	    $key = $this->request->getQuery('key');
+    	    $entity = $this->getEntityManager()->find(Import::getClass(), $key);
+    	    if (! $entity instanceof Import) {
+    	        throw new NotFoundEntityException('Não foi possível baixar o Arquivo Importado. Importação <em>#' . $key . '</em> não encontrada.');
+    	    }
+    	    $this->redirect($entity->getDirBase() . $entity->getFileName());
+	    } catch ( NotFoundEntityException $e ) {
+	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        $this->forward('/');
+	    }
 	}
 	
 	/**
