@@ -130,7 +130,7 @@ class RequestController extends AbstractController {
 			}
 			
 			$query->addSelect('d');
-			$query->join('u.driverLicense', 'd');
+			$query->leftJoin('u.driverLicense', 'd');
 			$where = 'u.openedBy = :by OR d.user = :by';
 			if ($user instanceof Requester) {
 				$query->andWhere($where . ' OR u.requesterUnit = :r_unit');
