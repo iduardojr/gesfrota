@@ -198,7 +198,7 @@ class RequesterForm extends AbstractForm {
 		
 		$object->setName($data['name']);
 		
-		if ( $object->getId() < 0 ) {
+		if ( $object->getId() <= 0 ) {
 			$object->setNif($data['nif']);
 			$object->setEmail($data['email']);
 		}
