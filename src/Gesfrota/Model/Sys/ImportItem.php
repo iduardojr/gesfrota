@@ -102,6 +102,7 @@ class ImportItem extends Entity {
      */
     public function setReference(FleetItem $reference)  {
         $this->reference = $reference;
+        $this->agency = $reference->getResponsibleUnit();
     }
     
 }

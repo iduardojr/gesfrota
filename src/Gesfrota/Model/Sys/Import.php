@@ -15,17 +15,9 @@ class Import extends Entity {
     
     /**
      * Diretório relativo ao link
-     * 
      * @var string
      */
-    private static $DIR_BASE;
-    
-    /**
-     * Diretório raiz dos arquivos de importação
-     * 
-     * @var string
-     */
-    private static $DIR_ROOT;
+    const DIR = '/imports/';
     
     /**
      * @Column(type="string")
@@ -106,10 +98,10 @@ class Import extends Entity {
     }
 
     /**
-     * @return array
+     * @return ArrayCollection
      */
     public function getItems() {
-        return $this->items->toArray();
+        return $this->items;
     }
 
     /**
@@ -120,32 +112,24 @@ class Import extends Entity {
     }
     
     /**
+     * @param array $data
+     */
+    public function setHeader(array $data) {
+        $this->header = $data;
+    }
+    
+    /**
      * @param string $file
      */
     public function setFileName($fileName) {
         $this->fileName = $fileName;
-        $this->fileSize = filesize(self::$DIR_ROOT . $fileName);
-        
-        $file = fopen(self::$DIR_ROOT . $fileName, 'r', true);
-        
-        $header = fgetcsv($file, 0, ";");
-        if ( $header ) {
-            $this->header = $this->tranform($header);
-        }
-        while ($data = fgetcsv($file, 0, ";")) {
-            $this->items->add(new ImportItem($this, $this->tranform($data)));
-        }
     }
     
     /**
-     * @param array $data
-     * @return array
+     * @param integer $fileSize
      */
-    private function tranform(array $data) {
-        foreach($data as $i => $val) {
-            $data[$i] = utf8_encode($val);
-        }
-        return $data;
+    public function setFileSize($fileSize) {
+        $this->fileSize = $fileSize;
     }
     
     /**
@@ -164,27 +148,5 @@ class Import extends Entity {
         return $this->items->matching($criteria)->count();
     }
 
-    /**
-     * @param string $dir
-     */
-    public static function setDir($root, $base = '/imports') {
-        $base = rtrim($base, '/') . '/';
-        self::$DIR_ROOT = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $base);
-        self::$DIR_BASE = $base;
-    }
-    
-    /**
-     * @return string
-     */
-    public static function getDirRoot() {
-        return self::$DIR_ROOT;
-    }
-    
-    /**
-     * @return string
-     */
-    public static function getDirBase() {
-        return self::$DIR_BASE;
-    }
 }
 ?>
