@@ -74,7 +74,6 @@ $config = include '../src/config/application.config.php';
 if ( $isDevMode ) { 
 	$config = array_replace_recursive($config, include '../src/config/local.config.php');
 }
-Import::setDir(__DIR__);
 $paths = explode(PATH_SEPARATOR, get_include_path());
 $paths = array_merge($paths, $config['paths'], array(dirname(__DIR__), dirname(__DIR__) . DIRECTORY_SEPARATOR .'src'));
 set_include_path(implode(PATH_SEPARATOR, $paths)); 
@@ -97,6 +96,7 @@ Crypt::setKey('G35fr074');
 Place::setParameters(array_merge(['key' => $config['google']['key']], $config['google']['place']));
 
 define('GOOGLE_KEY_APP', $config['google']['key']);
+define('DIR_ROOT' , rtrim(__DIR__, DIRECTORY_SEPARATOR));
 
 // RENDERKIT
 RenderKit::getInstance()->addRenderer(DynInput::RendererType, RendererDynInput::class);
