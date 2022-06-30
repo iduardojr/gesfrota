@@ -106,7 +106,6 @@ abstract class User extends AbstractActivable {
 		$this->setPassword(null);
 		parent::__construct();
 		$this->resultCenters = new ArrayCollection();
-		$this->notices = new ArrayCollection();
 	}
 	
 	/**
