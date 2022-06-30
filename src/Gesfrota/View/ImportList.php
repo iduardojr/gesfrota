@@ -94,7 +94,27 @@ class ImportList extends AbstractList {
 		$this->panel->append($confirm);
 		
 		$table->buildColumnAction('download', new Icon('icon-download-alt'), $download);
-		$table->buildColumnAction('do', new Icon('icon-cog'), $preProcess);
+		$table->buildColumnAction('do', new Icon('icon-stop'), $preProcess, null, function (Button $btn, Import $import) use ($preProcess, $transform) {
+		    switch ($import->getStatus()) {
+		        case Import::UPLOADED:
+		            $action = clone $preProcess;
+		            $action->setParameter('key', $import->getId());
+		            $btn->setIcon(new Icon('icon-random'));
+		            $btn->setToggle(new TgLink($action));
+		            break;
+		          
+		        case Import::PREPROCESSED: 
+		            $action = clone $transform;
+		            $action->setParameter('key', $import->getId());
+		            $btn->setIcon(new Icon('icon-cog'));
+		            $btn->setToggle(new TgLink($action));
+		            break;
+		            
+		        case Import::FINISHED: 
+		            $btn->setDisabled(true);
+		            break;
+		    } 
+		});
 		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $confirm);
 		
 	}
