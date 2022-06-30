@@ -22,7 +22,7 @@ class ImportController extends AbstractController {
 		    $filter = new Action($this);
 		    $upload = new Action($this, 'upload');
 		    $process = new Action($this, 'pre-process');
-		    $transfom = new Action($this, 'transfom');
+		    $transfom = new Action($this, 'transform');
 		    $download = new Action($this, 'download');
 		    $remove = new Action($this, 'remove');
 		    $list = new ImportList($filter, $upload, $process, $transfom, $download, $remove);
@@ -120,7 +120,9 @@ class ImportController extends AbstractController {
 	                $qb->setParameter('term', $item['term']);
 	                $qb->getQuery()->execute();
 	            }
-	            
+	            $this->getEntityManager()->refresh($entity);
+	            $entity->setStatus(Import::PREPROCESSED);
+	            $this->getEntityManager()->flush();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Pré-processamento de <em>#' . $entity->code . ' ' . $entity->description .  '</em> realizado com sucesso!', Alert::Success));
 	            $this->forward('/');
 	        } 
@@ -165,7 +167,7 @@ class ImportController extends AbstractController {
 	            $options[$item->id] = $item . ' (' . $item->id . ')';
 	        }
 	        
-	        $form = new ImportProcessForm($data, $options, new Action($this, 'edit', ['key' => $key]), new Action($this));
+	        $form = new ImportPreProcessForm($data, $options, new Action($this, 'edit', ['key' => $key]), new Action($this));
 	        $helper = $this->createHelperCrud();
 	        if ( $helper->update($form, $entity) ) {
 	            $entity = $helper->getEntity();
