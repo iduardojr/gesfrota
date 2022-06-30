@@ -24,12 +24,13 @@ class ImportList extends AbstractList {
 	
 	/**
 	 * @param Action $filter
-	 * @param Action $new
-	 * @param Action $edit
-	 * @param Action $down
+	 * @param Action $upload
+	 * @param Action $preProcess
+	 * @param Action $transform
+	 * @param Action $download
 	 * @param Action $remove
 	 */
-	public function __construct( Action $filter, Action $new, Action $edit, Action $down, Action $remove) {
+	public function __construct( Action $filter, Action $upload, Action $preProcess, Action $transform, Action $download, Action $remove) {
 		$this->buildPanel('Sistema', 'Gerenciar Importações');
 		
 		$reset = clone $filter;
@@ -54,7 +55,7 @@ class ImportList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar(new Button('Importar', new TgLink($new), Button::Primary),
+		$this->buildToolbar(new Button('Importar', new TgLink($upload), Button::Primary),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
 		$table = $this->buildTable('import-list');
@@ -92,8 +93,8 @@ class ImportList extends AbstractList {
 		$confirm->addButton(new Button('Cancelar', new TgModalClose()));
 		$this->panel->append($confirm);
 		
-		$table->buildColumnAction('download', new Icon('icon-download-alt'), $down);
-		$table->buildColumnAction('edit', new Icon('icon-pencil'), $edit);
+		$table->buildColumnAction('download', new Icon('icon-download-alt'), $download);
+		$table->buildColumnAction('do', new Icon('icon-cog'), $preProcess);
 		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $confirm);
 		
 	}

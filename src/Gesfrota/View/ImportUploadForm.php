@@ -28,7 +28,7 @@ class ImportUploadForm extends AbstractForm {
 		$this->buildPanel('Sistema', 'Gerenciar Importações');
 		$form = $this->buildForm('import-upload-form');
 		
-		$fieldset = new Fieldset('Upload');
+		$fieldset = new Fieldset('Upload do Arquivo');
 		
 		$input = new TextBox('desc');
 		$input->setSpan(7);
