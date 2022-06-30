@@ -626,6 +626,15 @@ fieldset > legend {
 #fleet-vehicle-form #results_center_chosen {
 	width: 630px;
 }
+#import-process-form #title .controls {
+	margin-left: -37px;
+}
+#import-process-form .controls {
+	margin-left: 400px;
+}
+#import-process-form .control-label {
+	width: 380px;
+}
 @media print {
 	@page {
 		margin: 1.5cm;
