@@ -11,6 +11,9 @@ use PHPBootstrap\Widget\Misc\Alert;
 use Gesfrota\View\ImportUploadForm;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Model\Sys\ImportItem;
+use Gesfrota\Model\Domain\Agency;
+use Doctrine\ORM\Query\Expr\Join;
 
 class ImportController extends AbstractController {
 	
@@ -67,6 +70,44 @@ class ImportController extends AbstractController {
 	    return new Layout($form);
 	}
 	
+	public function editAction() {
+	    try {
+	        $key = $this->request->getQuery('key');
+	        $entity = $this->getEntityManager()->find(Import::getClass(), $key);
+	        if (! $entity instanceof Import) {
+	            throw new NotFoundEntityException('Não foi possível editar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
+	        }
+	        $qb = $this->getEntityManager()->createQueryBuilder();
+	        $qb->select('DISTINCT u.groupBy, a.id');
+	        $qb->from(ImportItem::getClass(), 'u');
+	        $qb->leftJoin(Agency::getClass(), 'a', Join::WITH, 'a.acronym LIKE CONCAT(CONCAT(\'%\', u.groupBy), \'%\') OR a.name LIKE CONCAT(CONCAT(\'%\', u.groupBy), \'%\')');
+	        $qb->where('u.reference IS NULL AND u.import = :key');
+	        $qb->setParameter('key', $entity);
+	        var_dump($qb->getQuery()->getArrayResult());
+	        /*
+	        $form = $this->createForm(new Action($this, 'edit', array('key' => $key)));
+	        $helper = $this->createHelperCrud();
+	        $helper->setException(new NotFoundEntityException('Não foi possível editar o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
+	        if ( $helper->update($form, $id) ) {
+	            $entity = $helper->getEntity();
+	            $this->setAlert(new Alert('<strong>Ok! </strong>Orgão <em>#' . $entity->code . ' ' . $entity->acronym .  '</em> alterado com sucesso!', Alert::Success));
+	            $this->forward('/');
+	        }
+	        */
+	    } catch ( NotFoundEntityException $e ) {
+	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        $this->forward('/');
+	    } catch ( InvalidRequestDataException $e ) {
+	        //$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	    } catch ( \Exception $e ) {
+	        throw $e;
+	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        $this->forward('/');
+	        //$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+	    }
+	    return new Layout();
+	}
+	
 	public function downAction() {
 	    try {
     	    $key = $this->request->getQuery('key');
@@ -74,7 +115,7 @@ class ImportController extends AbstractController {
     	    if (! $entity instanceof Import) {
     	        throw new NotFoundEntityException('Não foi possível baixar o Arquivo Importado. Importação <em>#' . $key . '</em> não encontrada.');
     	    }
-    	    $this->redirect($entity->getDirBase() . $entity->getFileName());
+    	    $this->redirect(Import::DIR . $entity->getFileName());
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	        $this->forward('/');
