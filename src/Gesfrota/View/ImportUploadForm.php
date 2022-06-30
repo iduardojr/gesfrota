@@ -12,6 +12,9 @@ use PHPBootstrap\Widget\Form\Controls\XFileBox;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Sys\ImportItem;
+use Doctrine\ORM\EntityManager;
+use Gesfrota\Model\Domain\Vehicle;
 
 class ImportUploadForm extends AbstractForm {
 	
@@ -68,14 +71,42 @@ class ImportUploadForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( Import $object ) {
+	public function hydrate( Import $object, EntityManager $em ) {
 		$data = $this->component->getData();
 		$object->setDescription($data['desc']);
 		$fileName = date('YmdHis') . '-' . uniqid() . '.csv';
-		if ( ! move_uploaded_file($data['file']['tmp_name'], Import::getDirRoot() . $fileName) ) {
+		$dirRoot = DIR_ROOT . str_replace('/', DIRECTORY_SEPARATOR, Import::DIR);
+		if ( ! move_uploaded_file($data['file']['tmp_name'], $dirRoot . $fileName) ) {
 		    throw new \ErrorException('Unable to move upload file to target Directory');
 		}
 		$object->setFileName($fileName);
+		$object->setFileSize($data['file']['size']);
+		
+		$file = fopen($dirRoot . $fileName, 'r', true);
+		
+		if ( $header = fgetcsv($file, 0, ";") ) {
+		    $object->setHeader($this->tranform($header));
+		}
+		$object->getItems()->clear();
+		while ($data = fgetcsv($file, 0, ";")) {
+		    $item = new ImportItem($object, $this->tranform($data));
+		    if ($vehicle = $em->getRepository(Vehicle::getClass())->findOneBy(['plate' => $data[1]])) {
+		        $item->setReference($vehicle);
+		    }
+		    $object->getItems()->add($item);
+		}
+		
+	}
+	
+	/**
+	 * @param array $data
+	 * @return array
+	 */
+	private function tranform(array $data) {
+	    foreach($data as $i => $val) {
+	        $data[$i] = utf8_encode($val);
+	    }
+	    return $data;
 	}
 
 }

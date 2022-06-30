@@ -38,7 +38,7 @@ class ImportList extends AbstractList {
 		$form = new BuilderForm('form-filter');
 		
 		$input = new TextBox('desc');
-		$input->setSpan(4);
+		$input->setSpan(5);
 		$form->buildField('Descrição', $input);
 		
 		$input = [];
@@ -50,6 +50,7 @@ class ImportList extends AbstractList {
 		$form->buildField('Período', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
+		$modalFilter->setWidth(750);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
