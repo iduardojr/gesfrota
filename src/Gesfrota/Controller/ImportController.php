@@ -3,28 +3,29 @@ namespace Gesfrota\Controller;
 
 use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
+use Gesfrota\Controller\Helper\InvalidRequestDataException;
+use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Sys\Import;
+use Gesfrota\Model\Sys\ImportItem;
 use Gesfrota\View\ImportList;
+use Gesfrota\View\ImportPreProcessForm;
+use Gesfrota\View\ImportUploadForm;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\View\ImportUploadForm;
-use Gesfrota\Controller\Helper\InvalidRequestDataException;
-use Gesfrota\Controller\Helper\NotFoundEntityException;
-use Gesfrota\Model\Sys\ImportItem;
-use Gesfrota\Model\Domain\Agency;
-use Doctrine\ORM\Query\Expr\Join;
 
 class ImportController extends AbstractController {
 	
 	public function indexAction() {
 		try {
 		    $filter = new Action($this);
-		    $new = new Action($this, 'new');
-		    $edit = new Action($this, 'edit');
-		    $down = new Action($this, 'down');
+		    $upload = new Action($this, 'upload');
+		    $process = new Action($this, 'pre-process');
+		    $transfom = new Action($this, 'transfom');
+		    $download = new Action($this, 'download');
 		    $remove = new Action($this, 'remove');
-		    $list = new ImportList($filter, $new, $edit, $down, $remove);
+		    $list = new ImportList($filter, $upload, $process, $transfom, $download, $remove);
 		    
 		    $helper = $this->createHelperCrud();
 		    $query = $this->getEntityManager()->getRepository(Import::getClass())->createQueryBuilder('u');
@@ -51,7 +52,7 @@ class ImportController extends AbstractController {
 		return new Layout($list);
 	}
 	
-	public function newAction() {
+	public function uploadAction() {
 	    try {
 	        $form = new ImportUploadForm(new Action($this, 'new'), new Action($this));
 	        $helper = $this->createHelperCrud();
@@ -70,45 +71,117 @@ class ImportController extends AbstractController {
 	    return new Layout($form);
 	}
 	
-	public function editAction() {
+	public function preProcessAction() {
 	    try {
 	        $key = $this->request->getQuery('key');
 	        $entity = $this->getEntityManager()->find(Import::getClass(), $key);
 	        if (! $entity instanceof Import) {
-	            throw new NotFoundEntityException('Não foi possível editar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
+	            throw new NotFoundEntityException('Não foi possível processar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
 	        $qb = $this->getEntityManager()->createQueryBuilder();
-	        $qb->select('DISTINCT u.groupBy, a.id');
+	        $qb->select('DISTINCT u.groupBy AS term');
 	        $qb->from(ImportItem::getClass(), 'u');
-	        $qb->leftJoin(Agency::getClass(), 'a', Join::WITH, 'a.acronym LIKE CONCAT(CONCAT(\'%\', u.groupBy), \'%\') OR a.name LIKE CONCAT(CONCAT(\'%\', u.groupBy), \'%\')');
 	        $qb->where('u.reference IS NULL AND u.import = :key');
 	        $qb->setParameter('key', $entity);
-	        var_dump($qb->getQuery()->getArrayResult());
-	        /*
-	        $form = $this->createForm(new Action($this, 'edit', array('key' => $key)));
+	        $data = $qb->getQuery()->getArrayResult();
+	        $qb = $this->getEntityManager()->createQueryBuilder();
+	        $qb->select('u.id');
+	        $qb->from(Agency::getClass(), 'u');
+	        $qb->setMaxResults(1);
+	        foreach ($data as $i => $item) {
+	            $qb->where('MATCH(u.acronym, u.name)  AGAINST(\'' . $item['term']  . '\') > 0');
+	            $qb->addOrderBy('MATCH(u.acronym, u.name)  AGAINST(\'' . $item['term']  . '\')', 'DESC');
+	            $data[$i]['suggest'] = $qb->getQuery()->getSingleScalarResult();
+	        }
+	        
+	        $qb = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+	        $qb->where('u.active = true AND u.id > 0');
+	        $qb->orderBy('u.acronym', 'ASC');
+	        $result = $qb->getQuery()->getResult();
+	        $options = ['' => 'Selecione um Órgão'];
+	        foreach ($result as $item) {
+	            $options[$item->id] = $item . ' (' . $item->id . ')';
+	        }
+	        
+	        $form = new ImportPreProcessForm($data, $options, new Action($this, 'pre-process', ['key' => $key]), new Action($this));
+	        $form->extract($entity);
+	        if ( $this->request->isPost() ) {
+	            $form->bind($this->request->getPost());
+	            if ( ! $form->valid() ) {
+	                throw new InvalidRequestDataException();
+	            }
+	            $qb = $this->getEntityManager()->createQueryBuilder();
+	            $qb->update(ImportItem::getClass(), 'u');
+	            $data = $form->getData();
+	            foreach ($data as $item) {
+	                $qb->set('u.agency', $item['suggest']);
+	                $qb->where('u.groupBy = :term AND u.id = :key');
+	                $qb->setParameter('key', $entity);
+	                $qb->setParameter('term', $item['term']);
+	                $qb->getQuery()->execute();
+	            }
+	            
+	            $this->setAlert(new Alert('<strong>Ok! </strong>Pré-processamento de <em>#' . $entity->code . ' ' . $entity->description .  '</em> realizado com sucesso!', Alert::Success));
+	            $this->forward('/');
+	        } 
+	    } catch ( InvalidRequestDataException $e ) {
+	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	    } catch ( \Exception $e ) {
+	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error));
+	        $this->forward('/');
+	    }
+	    return new Layout($form);
+	}
+	
+	public function transformAction() {
+	    try {
+	        $key = $this->request->getQuery('key');
+	        $entity = $this->getEntityManager()->find(Import::getClass(), $key);
+	        if (! $entity instanceof Import) {
+	            throw new NotFoundEntityException('Não foi possível processar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
+	        }
+	        $qb = $this->getEntityManager()->createQueryBuilder();
+	        $qb->select('DISTINCT u.groupBy AS term');
+	        $qb->from(ImportItem::getClass(), 'u');
+	        $qb->where('u.reference IS NULL AND u.import = :key');
+	        $qb->setParameter('key', $entity);
+	        $data = $qb->getQuery()->getArrayResult();
+	        $qb = $this->getEntityManager()->createQueryBuilder();
+	        $qb->select('u.id');
+	        $qb->from(Agency::getClass(), 'u');
+	        $qb->setMaxResults(1);
+	        foreach ($data as $i => $item) {
+	            $qb->where('MATCH(u.acronym, u.name)  AGAINST(\'' . $item['term']  . '\') > 0');
+	            $qb->addOrderBy('MATCH(u.acronym, u.name)  AGAINST(\'' . $item['term']  . '\')', 'DESC');
+	            $data[$i]['suggest'] = $qb->getQuery()->getSingleScalarResult();
+	        }
+	        
+	        $qb = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
+	        $qb->where('u.active = true AND u.id > 0');
+	        $qb->orderBy('u.acronym', 'ASC');
+	        $result = $qb->getQuery()->getResult();
+	        $options = ['' => 'Selecione um Órgão'];
+	        foreach ($result as $item) {
+	            $options[$item->id] = $item . ' (' . $item->id . ')';
+	        }
+	        
+	        $form = new ImportProcessForm($data, $options, new Action($this, 'edit', ['key' => $key]), new Action($this));
 	        $helper = $this->createHelperCrud();
-	        $helper->setException(new NotFoundEntityException('Não foi possível editar o Orgão. Orgão <em>#' . $id . '</em> não encontrado.'));
-	        if ( $helper->update($form, $id) ) {
+	        if ( $helper->update($form, $entity) ) {
 	            $entity = $helper->getEntity();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Orgão <em>#' . $entity->code . ' ' . $entity->acronym .  '</em> alterado com sucesso!', Alert::Success));
 	            $this->forward('/');
 	        }
-	        */
-	    } catch ( NotFoundEntityException $e ) {
-	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
-	        $this->forward('/');
 	    } catch ( InvalidRequestDataException $e ) {
-	        //$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	    } catch ( \Exception $e ) {
-	        throw $e;
-	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error));
 	        $this->forward('/');
-	        //$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 	    }
-	    return new Layout();
+	    return new Layout($form);
 	}
 	
-	public function downAction() {
+	public function downloadAction() {
 	    try {
     	    $key = $this->request->getQuery('key');
     	    $entity = $this->getEntityManager()->find(Import::getClass(), $key);
