@@ -12,6 +12,25 @@ use Doctrine\Common\Collections\Criteria;
  * @Table(name="imports")
  */
 class Import extends Entity {
+
+    /**
+     * Carregado
+     * @var integer
+     */
+    const UPLOADED = 1;
+    
+    /**
+     * Pré-processado
+     * @var integer
+     */
+    const PREPROCESSED = 2;
+    
+    /**
+     * Finalizado
+     * 
+     * @var integer
+     */
+    const FINISHED = 4;
     
     /**
      * Diretório relativo ao link
@@ -24,12 +43,6 @@ class Import extends Entity {
      * @var string
      */
     protected $description;
-    
-    /**
-     * @Column(name="created_at", type="datetime")
-     * @var \DateTime
-     */
-    protected $createdAt;
     
     /**
      * @Column(name="filename", type="string")
@@ -50,16 +63,29 @@ class Import extends Entity {
     protected $header;
     
     /**
+     * @Column(type="integer")
+     * @var integer
+     */
+    protected $status;
+    
+    /**
      * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"all"})
      * @var ArrayCollection
      */
     protected $items;
+    
+    /**
+     * @Column(name="created_at", type="datetime")
+     * @var \DateTime
+     */
+    protected $createdAt;
     
     
     public function __construct() {
         parent::__construct();
         $this->createdAt = new \DateTime();
         $this->items = new ArrayCollection();
+        $this->status = self::UPLOADED;
     }
     
     /**
@@ -103,6 +129,13 @@ class Import extends Entity {
     public function getItems() {
         return $this->items;
     }
+    
+    /**
+     * @return integer
+     */
+    public function getStatus() {
+        return $this->status;
+    }
 
     /**
      * @param string $text
@@ -133,10 +166,42 @@ class Import extends Entity {
     }
     
     /**
+     * @param integer $status
+     * @throws \DomainException
+     */
+    public function setStatus($status) {
+        if (!self::isStatusAllowed($status)) {
+            throw new \DomainException('The ' . $status . ' is not status allowed.');
+        }
+        $this->status = $status;
+    }
+
+    /**
      * @return integer
      */
     public function getAmountItems() {
         return $this->items->count();
+    }
+    
+    /**
+     * Verifica se o status é permitido
+     * @param integer $status
+     * @return bool
+     */
+    public static function isStatusAllowed( int $status ) {
+        return array_key_exists($status, self::getStatusAllowed());
+    }
+    
+    /**
+     * Obtem a lista de frotas permitidas
+     *
+     * @return string[]
+     */
+    public static function getStatusAllowed() {
+        return [self::UPLOADED => 'Carregado',
+                self::PREPROCESSED => 'Pré-processado',
+                self::FINISHED => 'Finalizado'
+        ];
     }
     
     /**
