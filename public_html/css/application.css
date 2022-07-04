@@ -412,9 +412,68 @@ fieldset > legend {
 	color: #999;
 	border-bottom: 1px solid #eee;
 }
+#notice-list.table .cell {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#about img {
+	float: right;
+}
+#about address {
+	letter-spacing: -0.02em;
+}
+#page-header {
+	margin: 30px 0;
+}
+#page-header h1 {
+	font-size: 16px;
+	line-height: 20px;
+	margin: 20px 0;
+}
+#signature {
+	margin: 80px auto !important;
+	width: 60%;	
+	border-top: 1px solid #333;
+	padding-top: 10px;
+	margin: 10px;
+	text-align: center;
+}
+#disposal-item-form .uneditable-input.span1 {
+   	width: 70px !important;
+   	text-align: center;
+}
+#disposal-item-form .output.span1 {
+	width: 70px !important;
+}
+#disposal-item-form .control-group {
+   	margin-bottom: 7px;
+}
+#disposal-item-form #section-survey .control-group {
+   	margin-bottom: 5px;
+}
+#disposal-item-form #asset-owner-nif {
+	white-space: nowrap;
+}
+#fleet-vehicle-form #results_center_chosen {
+	width: 630px;
+}
+#import-preprocess-form .controls {
+	margin-left: 400px;
+}
+#import-preprocess-form .control-label {
+	width: 380px;
+}
+#import-transform-container {
+	margin: 30px 0 10px 0;
+	max-width: 1000px;
+	overflow-x: auto;
+}
 .controls-row .help-inline {
 	margin-left: 0 !important;
 	margin-top: 5px !important;
+}
+.pagination-left {
+	text-align: left;
 }
 .card {
 	padding: 1.5rem;
@@ -580,60 +639,6 @@ fieldset > legend {
 	height: auto;
 	margin-bottom: 25px;
 	padding: 7px 9px;
-}
-#notice-list.table .cell {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-#about img {
-	float: right;
-}
-#about address {
-	letter-spacing: -0.02em;
-}
-#page-header {
-	margin: 30px 0;
-}
-#page-header h1 {
-	font-size: 16px;
-	line-height: 20px;
-	margin: 20px 0;
-}
-#signature {
-	margin: 80px auto !important;
-	width: 60%;	
-	border-top: 1px solid #333;
-	padding-top: 10px;
-	margin: 10px;
-	text-align: center;
-}
-#disposal-item-form .uneditable-input.span1 {
-   	width: 70px !important;
-   	text-align: center;
-}
-#disposal-item-form .output.span1 {
-	width: 70px !important;
-}
-#disposal-item-form .control-group {
-   	margin-bottom: 7px;
-}
-#disposal-item-form #section-survey .control-group {
-   	margin-bottom: 5px;
-}
-#disposal-item-form #asset-owner-nif {
-	white-space: nowrap;
-}
-#fleet-vehicle-form #results_center_chosen {
-	width: 630px;
-}
-#import-process-form #title .controls {
-	margin-left: -37px;
-}
-#import-process-form .controls {
-	margin-left: 400px;
-}
-#import-process-form .control-label {
-	width: 380px;
 }
 @media print {
 	@page {
