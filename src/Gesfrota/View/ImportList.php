@@ -66,6 +66,9 @@ class ImportList extends AbstractList {
 		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
 		    return $value . '/' . $import->getAmountItems();
 		});
+	    $table->buildColumnText('amountAppraised', '% Avaliados', null, 50, null, function ($value, Import $import) {
+	        return round($value / $import->getAmountItems()*100, 2) . '%';
+	    });
 		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
 		        $bytes = floatval($bytes);
 		        $multiples = [

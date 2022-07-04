@@ -14,6 +14,8 @@ use PHPBootstrap\Widget\Form\Controls\Output;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Model\Domain\Equipment;
 
 class ImportPreProcessForm extends AbstractForm {
 	
@@ -23,15 +25,11 @@ class ImportPreProcessForm extends AbstractForm {
 	 * @param Action $submit
 	 * @param Action $cancel
 	 */
-	public function __construct(array $data, array $options, Action $submit, Action $cancel ) {
+    public function __construct(Action $submit, Action $cancel, Import $import, array $data, array $options ) {
 		$this->buildPanel('Sistema', 'Gerenciar Importações');
-		$form = $this->buildForm('import-process-form');
+		$form = $this->buildForm('import-preprocess-form');
 		
-		$fieldset = new Fieldset('Pré-processamento');
-		
-		$input = new Output('desc');
-		$input->setSpan(7);
-		$form->buildField(null, $input, null, $fieldset)->setName('title');
+		$fieldset = new Fieldset('Pré-processamento <small>'. $import->getDescription(). '</small>');
 		
 		foreach($data as $item) {
     		$input = new ComboBox($this->toFieldName($item['term']));
@@ -65,8 +63,7 @@ class ImportPreProcessForm extends AbstractForm {
 	 * @see AbstractForm::extract()
 	 */
 	public function extract( Import $object ) {
-		$data['desc'] = $object->getDescription();
-		$this->component->setData($data);
+		
 	}
 
 	/**
@@ -81,20 +78,18 @@ class ImportPreProcessForm extends AbstractForm {
 		    if (isset($data[$fieldName])) {
 		        $item->setAgency($em->find(Agency::getClass(), $data[$fieldName]));
 		    }
+		    if ( $item->isVehicle() ) {
+		        $rep = $em->getRepository(Vehicle::getClass());
+		        $criteria = ['plate' => $item->getData()[1]];
+		    } else {
+		        $rep = $em->getRepository(Equipment::getClass());
+		        $criteria = ['assetCode' => $item->getData()[6], 'responsibleUnit' => $item->getAgency()];
+		    }
+		    if ($ref = $rep->findOneBy($criteria) ) {
+		        $item->setReference($ref);
+		    }
 		}
-	}
-	
-	/**
-	 * @return array
-	 */
-	public function getData() {
-	    $data = $this->component->getData();
-	    unset($data['desc']);
-	    foreach ($data as $key => $value) {
-	        $data[$key] = ['term' => $this->toGroupBy($key),
-	                       'suggest' => $value];
-	    }
-	    return $data;
+		$object->setStatus(Import::PREPROCESSED);
 	}
 	
 	/**

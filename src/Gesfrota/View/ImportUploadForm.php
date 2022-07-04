@@ -15,6 +15,7 @@ use PHPBootstrap\Widget\Nav\Tabbable;
 use Gesfrota\Model\Sys\ImportItem;
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Model\Domain\Equipment;
 
 class ImportUploadForm extends AbstractForm {
 	
@@ -90,9 +91,6 @@ class ImportUploadForm extends AbstractForm {
 		$object->getItems()->clear();
 		while ($data = fgetcsv($file, 0, ";")) {
 		    $item = new ImportItem($object, $this->tranform($data));
-		    if ($vehicle = $em->getRepository(Vehicle::getClass())->findOneBy(['plate' => $data[1]])) {
-		        $item->setReference($vehicle);
-		    }
 		    $object->getItems()->add($item);
 		}
 		
