@@ -84,10 +84,10 @@ class Import extends \Gesfrota\Model\Sys\Import implements \Doctrine\ORM\Proxy\P
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'description', 'createdAt', 'fileName', 'fileSize', 'header', 'items', 'id'];
+            return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'status', 'items', 'createdAt', 'id'];
         }
 
-        return ['__isInitialized__', 'description', 'createdAt', 'fileName', 'fileSize', 'header', 'items', 'id'];
+        return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'status', 'items', 'createdAt', 'id'];
     }
 
     /**
@@ -263,6 +263,17 @@ class Import extends \Gesfrota\Model\Sys\Import implements \Doctrine\ORM\Proxy\P
     /**
      * {@inheritDoc}
      */
+    public function getStatus()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getStatus', []);
+
+        return parent::getStatus();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setDescription($text)
     {
 
@@ -307,6 +318,17 @@ class Import extends \Gesfrota\Model\Sys\Import implements \Doctrine\ORM\Proxy\P
     /**
      * {@inheritDoc}
      */
+    public function setStatus($status)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setStatus', [$status]);
+
+        return parent::setStatus($status);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getAmountItems()
     {
 
@@ -324,6 +346,17 @@ class Import extends \Gesfrota\Model\Sys\Import implements \Doctrine\ORM\Proxy\P
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAmountImported', []);
 
         return parent::getAmountImported();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAmountAppraised()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAmountAppraised', []);
+
+        return parent::getAmountAppraised();
     }
 
     /**

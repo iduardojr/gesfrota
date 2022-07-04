@@ -44,17 +44,24 @@ class VehicleModel extends AbstractActivable {
 	protected $maker;
 	
 	/**
-	 * @see Entity::getCode()
+	 * @param string $name
 	 */
-	public function getCode() {
-		return $this->getFipe();
+	public function __construct($name = null, VehicleMaker $maker = null, VehicleFamily $family = null) {
+		parent::__construct();
+		$this->setName($name);
+		if ( $maker ) {
+		    $this->setMaker($maker);
+		}
+		if ( $family ) {
+		    $this->setFamily($family);
+		}
 	}
 	
 	/**
-	 * Construtor
+	 * @see Entity::getCode()
 	 */
-	public function __construct() {
-		parent::__construct();
+	public function getCode() {
+	    return $this->getFipe();
 	}
 	
 	/**
@@ -70,7 +77,10 @@ class VehicleModel extends AbstractActivable {
 	 * @return string
 	 */
 	public function getDescription() {
-	    return (string) $this->fullName;
+	    if ($this->fullName) {
+	       return (string) $this->fullName;
+	    }
+	    return $this->maker . ' ' . $this->name;
 	}
 	
 	/**

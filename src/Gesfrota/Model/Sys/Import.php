@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Criteria;
  * 
  * @Entity
  * @Table(name="imports")
+ * @EntityListeners({"Gesfrota\Model\Listener\ImportListener"})
  */
 class Import extends Entity {
 
@@ -184,6 +185,24 @@ class Import extends Entity {
     }
     
     /**
+     * @return integer
+     */
+    public function getAmountImported() {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('reference', null));
+        return $this->items->matching($criteria)->count();
+    }
+    
+    /**
+     * @return integer
+     */
+    public function getAmountAppraised() {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('status', null));
+        return $this->items->matching($criteria)->count();
+    }
+    
+    /**
      * Verifica se o status é permitido
      * @param integer $status
      * @return bool
@@ -204,14 +223,7 @@ class Import extends Entity {
         ];
     }
     
-    /**
-     * @return integer
-     */
-    public function getAmountImported() {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->neq('reference', null));
-        return $this->items->matching($criteria)->count();
-    }
+
 
 }
 ?>
