@@ -132,18 +132,6 @@ class BuilderTable extends Table {
 		}
 	}
 	
-	/**
-	 * Obtem Paginação
-	 *
-	 * @return Pageable
-	 */
-	public function getPagination() {
-		$ds = $this->getDataSource();
-		if ( $ds->getLimit() > 0 && $ds->getTotal() > $ds->getLimit() ) { 
-			return parent::getPagination();
-		}
-		return null;
-	}
 	
 	/**
 	 * Constroi um paginador a partir do datasource

@@ -92,6 +92,12 @@ form,
 .pagination {
 	margin: 20px 0 10px 0;
 }
+.pagination .pagination-label {
+	display: inline-block;
+    vertical-align: top;
+    padding: 5px 15px;
+    color: #999;
+}
 .text-left {
 	text-align: left !important;
 }

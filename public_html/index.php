@@ -24,6 +24,8 @@ use PHPBootstrap\Mvc\Application;
 use PHPBootstrap\Render\RenderKit;
 use PHPBootstrap\Widget\Action\Action;
 use Gesfrota\Util\MatchAgainst;
+use PHPBootstrap\Widget\Pagination\Pagination;
+use Gesfrota\View\Render\Html5\RendererPagination;
 
 // MODE
 $isDevMode = getenv('APPLICATION_ENV') == 'development';
@@ -104,6 +106,7 @@ RenderKit::getInstance()->addRenderer(DynInputRemove::RendererType, RendererDynI
 RenderKit::getInstance()->addRenderer(PlaceInput::RendererType, RendererPlaceInput::class);
 RenderKit::getInstance()->addRenderer(WaypointsInput::RendererType, RendererWaypointsInput::class);
 RenderKit::getInstance()->addRenderer(Direction::RendererType, RendererDirection::class);
+RenderKit::getInstance()->addRenderer(Pagination::RendererType, RendererPagination::class);
 
 // EXECUTE
 Logger::begin();
