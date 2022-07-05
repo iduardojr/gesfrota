@@ -145,7 +145,7 @@ class RequestController extends AbstractController {
 				$query->setParameter('rc_user', $user->getAllResultCenters());
 			}
 			
-			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) use ($user){
+			$helper->read($list, $query, array('limit' => 12, 'order' => 'DESC', 'processQuery' => function( QueryBuilder $query, array $data ) use ($user){
 				
 				if ( !empty($data['type']) ) {
 					$query->andWhere('u INSTANCE OF ' . ( $data['type'] == 'T' ? RequestTrip::getClass() : RequestFreight::getClass()));

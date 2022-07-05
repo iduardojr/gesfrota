@@ -83,7 +83,7 @@ class DisposalController extends AbstractController {
 		try {
 			$helper = $this->createHelperCrud();
 			$helper->read($list, $query, array(
-				'limit' => 12,
+				'limit' => 20,
 				'processQuery' => function (QueryBuilder $query, array $data) {
 					if (!empty($data['agency'])) {
 						$query->andWhere('u.requesterUnit = :agency');

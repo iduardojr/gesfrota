@@ -23,7 +23,7 @@ footer hr {
 }
 #main {
 	position: relative;
-    padding: 60px 0 90px 0;
+    padding: 56px 0;
 }
 #navbar .brand {
 	margin-right: 10px;
@@ -91,6 +91,12 @@ form,
 }
 .pagination {
 	margin: 20px 0 10px 0;
+}
+.pagination .pagination-label {
+	display: inline-block;
+    vertical-align: top;
+    padding: 5px 15px;
+    color: #999;
 }
 .text-left {
 	text-align: left !important;

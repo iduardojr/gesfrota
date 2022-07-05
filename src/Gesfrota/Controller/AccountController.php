@@ -2,26 +2,24 @@
 namespace Gesfrota\Controller;
 
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
+use Gesfrota\Model\Notice;
 use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Services\Auth;
 use Gesfrota\View\AccountAccessTable;
+use Gesfrota\View\AccountNoticesTable;
 use Gesfrota\View\AccountPasswordForm;
 use Gesfrota\View\AccountProfileForm;
 use Gesfrota\View\Layout;
 use Gesfrota\View\Widget\EntityDatasource;
-use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Services\Auth;
-use Gesfrota\View\AccountNoticesTable;
-use Gesfrota\Model\Notice;
-use Gesfrota\Controller\Helper\Crud;
 use PHPBootstrap\Mvc\Http\Cookie;
-use Gesfrota\Controller\Helper\NotFoundEntityException;
+use PHPBootstrap\Widget\Action\Action;
+use PHPBootstrap\Widget\Action\TgLink;
+use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Layout\Panel;
-use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Paragraph;
-use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Action\TgLink;
+use PHPBootstrap\Widget\Misc\Title;
 
 class AccountController extends AbstractController { 
 	
@@ -118,7 +116,7 @@ class AccountController extends AbstractController {
     	    $response = $this->getResponse();
     	    
     	    
-    	    $defaults = ['limit' => 12, 'sort' => 'updatedAt', 'order' => 'desc'];
+    	    $defaults = ['limit' => 20, 'sort' => 'updatedAt', 'order' => 'desc'];
     	    
     	    $storage = ['identify' => md5('account_notices')];
     	    $cookie = $request->getCookie('storage');
@@ -171,9 +169,9 @@ class AccountController extends AbstractController {
 				Auth::getInstance()->getStorage()->write(['user-id' => $this->getUserActive()->getId(), 'lotation-id' => (int) $key]);
 				$this->setAlert(new Alert('<strong>Ok! </strong>Órgão <em>' . $agency->acronym . ' (#' . $agency->code . ') </em> acessado com sucesso!', Alert::Success));
 			}
-			$query = $this->em->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 			$table = new AccountAccessTable(new Action($this, 'access'), $this->getAgencyActive());
-			$table->setDatasource(new EntityDatasource($query, ['limit' => 0]));
+			$table->setDatasource(new EntityDatasource($query, ['limit' => 0, 'sort' => 'acronym']));
 			$table->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
 			$table->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));

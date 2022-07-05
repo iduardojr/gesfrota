@@ -28,7 +28,7 @@ class ResultCenterController extends AbstractController {
 			$query = $this->getEntityManager()->getRepository(ResultCenter::getClass())->createQueryBuilder('u');
 			
 			$helper = $this->createHelperCrud();
-			$helper->read($list, $query, ['limit' => 12, 'sort' => 'agency', 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $query, ['limit' => 20, 'sort' => 'agency', 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
 					$query->where('u.agency = :agency');
 					$query->setParameter('agency', $data['agency']);

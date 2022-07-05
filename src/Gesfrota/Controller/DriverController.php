@@ -61,7 +61,7 @@ class DriverController extends AbstractController {
 				$query->join('u.lotation', 'l', Join::WITH, 'l.agency = :agency');
 				$query->setParameter('agency', $this->getAgencyActive()->getId());
 			}
-			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $query, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
 					$query->join('u.lotation', 'l', Join::WITH, 'l.agency = :agency');
 					$query->setParameter('agency', $data['agency']);
