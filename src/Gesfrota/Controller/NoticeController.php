@@ -12,10 +12,6 @@ use Gesfrota\View\NoticeList;
 use Gesfrota\View\NoticeReadTable;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use PHPBootstrap\Mvc\View\JsonView;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Layout\Box;
-use PHPBootstrap\Widget\Layout\Panel;
 
 
 class NoticeController extends AbstractController {
@@ -44,8 +40,9 @@ class NoticeController extends AbstractController {
 				    $query->andWhere('u.createdAt <= :final');
 				    $query->setParameter('final', $data['date-final'] . ' 23:59:59');
 				}
-				if ( !empty($data['active']) ) {
-				    $query->andWhere('u.active = true');
+				if ( !empty($data['status']) ) {
+				    $query->andWhere('u.active = :status');
+				    $query->setParameter('status', $data['status'] > 0);
 				}
 			}));
 			$list->setAlert($this->getAlert());

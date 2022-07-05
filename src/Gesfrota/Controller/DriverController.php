@@ -91,8 +91,9 @@ class DriverController extends AbstractController {
 					$query->andWhere('EXISTS ( ' . $subquery->getDQL() . ' )');
 				}
 				
-				if ( !empty($data['only-active']) ) {
-					$query->andWhere('u.active = true');
+				if ( !empty($data['status']) ) {
+				    $query->andWhere('u.active = :status');
+				    $query->setParameter('status', $data['status'] > 0);
 				}
 			}));
 			$list->setAlert($this->getAlert());

@@ -31,6 +31,7 @@ use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use PHPBootstrap\Widget\Button\ButtonGroup;
 use PHPBootstrap\Widget\Button\TgButtonRadio;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
+use PHPBootstrap\Widget\Form\Controls\RadioButtonList;
 
 class FleetList extends AbstractList {
 	
@@ -74,7 +75,7 @@ class FleetList extends AbstractList {
 		
 		if ($showAgencies) {
 			$input = new ComboBox('agency');
-			$input->setSpan(2);
+			$input->setSpan(3);
 			$input->setOptions($showAgencies);
 			$form->buildField('Órgão', $input);
 		}
@@ -100,8 +101,12 @@ class FleetList extends AbstractList {
 		$input->setOptions(Vehicle::getFleetAllowed());
 		$form->buildField('Tipo da Frota', $input);
 		
-		$input = new CheckBox('only-active', 'Apenas ativos');
-		$form->buildField(null, $input);
+		$input = new ComboBox('status');
+		$input->setSpan(2);
+		$input->addOption(0, 'Todos');
+		$input->addOption(1, 'Ativos');
+		$input->addOption(-1, 'Inativos');
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));

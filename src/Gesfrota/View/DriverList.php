@@ -11,7 +11,6 @@ use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\TgFormSubmit;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
 use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
@@ -78,8 +77,12 @@ class DriverList extends AbstractList {
 		$input->setOptions(DriverLicense::getCategoriesAllowed());
 		$form->buildField('CNH', $input);
 		
-		$input = new CheckBox('only-active', 'Apenas ativos');
-		$form->buildField(null, $input);
+		$input = new ComboBox('status');
+		$input->setSpan(2);
+		$input->addOption(0, 'Todos');
+		$input->addOption(1, 'Ativos');
+		$input->addOption(-1, 'Inativos');
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));

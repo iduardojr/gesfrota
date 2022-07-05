@@ -43,8 +43,12 @@ class AdministrativeUnitList extends AbstractList {
 		$input->setSpan(4);
 		$form->buildField('Descrição', $input);
 		
-		$input = new CheckBox('only-active', 'Apenas ativos');
-		$form->buildField(null, $input);
+		$input = new ComboBox('status');
+		$input->setSpan(2);
+		$input->addOption(0, 'Todos');
+		$input->addOption(1, 'Ativos');
+		$input->addOption(-1, 'Inativos');
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
