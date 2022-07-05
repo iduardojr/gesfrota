@@ -33,6 +33,7 @@ use Gesfrota\Model\Domain\Disposal;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\Import;
 
 class FleetController extends AbstractController {
 	
@@ -49,6 +50,7 @@ class FleetController extends AbstractController {
 			$edit 	= new Action($this, 'edit');
 			$active = new Action($this, 'active');
 			$search = new Action($this, 'searchVehiclePlate');
+			$import = new Action(ImportController::getClass());
 			$transfer = new Action($this, 'transferVehicle');
 			
 			$showAgencies = $this->getShowAgencies();
@@ -82,7 +84,7 @@ class FleetController extends AbstractController {
 			$query->andWhere('u.id NOT IN (' . $q1->getDQL() . ')');
 			$query->setParameter('disposal', [Disposal::DRAFTED, Disposal::DECLINED]);
 			
-			$list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $transfer, $optResultCenter, $showAgencies);
+			$list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $import, $transfer, $optResultCenter, $showAgencies);
 		
 			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if (!empty($data['agency'])) {
