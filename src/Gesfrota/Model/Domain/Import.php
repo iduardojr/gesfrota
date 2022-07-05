@@ -1,9 +1,9 @@
 <?php
-namespace Gesfrota\Model\Sys;
+namespace Gesfrota\Model\Domain;
 
-use Gesfrota\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
+use Gesfrota\Model\Entity;
 
 /**
  * Importação
@@ -76,18 +76,29 @@ class Import extends Entity {
     protected $items;
     
     /**
+     * @ManyToOne(targetEntity="Agency")
+     * @JoinColumn(name="agency_id", referencedColumnName="id")
+     * @var Agency
+     */
+    protected $agency;
+    
+    /**
      * @Column(name="created_at", type="datetime")
      * @var \DateTime
      */
     protected $createdAt;
     
-    
-    public function __construct() {
+    /**
+     * @param Agency $agency
+     */
+    public function __construct(Agency $agency = null) {
         parent::__construct();
+        $this->agency = $agency;
         $this->createdAt = new \DateTime();
         $this->items = new ArrayCollection();
         $this->status = self::UPLOADED;
     }
+    
     
     /**
      * @return string
@@ -122,6 +133,13 @@ class Import extends Entity {
      */
     public function getHeader() {
         return $this->header;
+    }
+    
+    /**
+     * @return Agency
+     */
+    public function getAgency() {
+        return $this->agency;
     }
 
     /**
@@ -176,6 +194,14 @@ class Import extends Entity {
         }
         $this->status = $status;
     }
+    
+    /**
+     * @param Agency $agency
+     */
+    public function setAgency(Agency $agency) {
+        $this->agency = $agency;
+    }
+    
 
     /**
      * @return integer

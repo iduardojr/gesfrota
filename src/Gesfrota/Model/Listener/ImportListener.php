@@ -2,7 +2,7 @@
 namespace Gesfrota\Model\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Gesfrota\Model\Sys\Import;
+use Gesfrota\Model\Domain\Import;
 
 class ImportListener {
     
@@ -10,5 +10,6 @@ class ImportListener {
         $filename = DIR_ROOT . str_replace('/', DIRECTORY_SEPARATOR, Import::DIR) . $import->getFileName();
         unlink($filename);
     }
+    
 }
 ?>

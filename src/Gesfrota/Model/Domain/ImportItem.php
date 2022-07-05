@@ -1,16 +1,7 @@
 <?php
-namespace Gesfrota\Model\Sys;
+namespace Gesfrota\Model\Domain;
 
 use Gesfrota\Model\Entity;
-use Gesfrota\Model\Domain\Agency;
-use Gesfrota\Model\Domain\FleetItem;
-use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\Equipment;
-use Gesfrota\Model\Domain\Engine;
-use Gesfrota\Model\Domain\Fleet;
-use Gesfrota\Model\Domain\VehicleModel;
-use Gesfrota\Model\Domain\VehicleMaker;
-use Gesfrota\Model\Domain\VehicleFamily;
 
 /**
  * @Entity
@@ -25,24 +16,11 @@ class ImportItem extends Entity {
     protected $data;
     
     /**
-     * @Column(name="group_by", type="string")
-     * @var string
-     */
-    protected $groupBy;
-    
-    /**
      * @ManyToOne(targetEntity="Import", inversedBy="items")
      * @JoinColumn(name="import_id", referencedColumnName="id")
      * @var Import
      */
     protected $import;
-    
-     /**
-     * @ManyToOne(targetEntity="Gesfrota\Model\Domain\Agency")
-     * @JoinColumn(name="agency_id", referencedColumnName="id")
-     * @var Agency
-     */
-    protected $agency;
     
     /**
      * @ManyToOne(targetEntity="Gesfrota\Model\Domain\FleetItem")
@@ -64,7 +42,6 @@ class ImportItem extends Entity {
     public function __construct(Import $import, array $data) {
         parent::__construct();
         $this->import = $import;
-        $this->groupBy = $data[0];
         $this->data = $data;
     }
     
@@ -78,12 +55,6 @@ class ImportItem extends Entity {
         return $this->data[1] . ' ' . $this->data[3];
     }
     
-    /**
-     * @return string
-     */
-    public function getGroupBy() {
-        return $this->groupBy;
-    }
     
     /**
      * @return boolean
@@ -114,13 +85,6 @@ class ImportItem extends Entity {
     }
 
     /**
-     * @return Agency
-     */
-    public function getAgency() {
-        return $this->agency;
-    }
-
-    /**
      * @return FleetItem
      */
     public function getReference() {
@@ -128,18 +92,11 @@ class ImportItem extends Entity {
     }
 
     /**
-     * @param Agency $agency
-     */
-    public function setAgency(Agency $agency) {
-        $this->agency = $agency;
-    }
-    
-    /**
      * return FleetItem
      */
     public function toTransform() {
         if ( $this->isVehicle() ) {
-            $new = new Vehicle($this->agency);
+            $new = new Vehicle($this->import->getAgency());
             $new->setModel(new VehicleModel($this->data[3], new VehicleMaker($this->data[2]), new VehicleFamily($this->data[4])));
             $new->setPlate($this->data[1]);
             $new->setRenavam($this->data[5]);
@@ -147,7 +104,7 @@ class ImportItem extends Entity {
             $new->setYear($this->data[8], $this->data[9]);
             $new->setOdometer($this->data[10]);
         } else {
-            $new = new Equipment($this->agency);
+            $new = new Equipment($this->import->getAgency());
             $new->setDescription($this->data[3]);
             $new->setAssetCode($this->data[6]);
         }
@@ -201,7 +158,6 @@ class ImportItem extends Entity {
         if ( $reference ) {
             $this->status = true;
             $this->reference = $reference;
-            $this->agency = $reference->getResponsibleUnit();
         }
     }
     
