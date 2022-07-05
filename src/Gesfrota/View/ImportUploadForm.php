@@ -1,7 +1,9 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Sys\Import;
+use Doctrine\ORM\EntityManager;
+use Gesfrota\Model\Domain\Import;
+use Gesfrota\Model\Domain\ImportItem;
 use Gesfrota\View\Widget\AbstractForm;
 use PHPBootstrap\Validate\Pattern\Upload;
 use PHPBootstrap\Validate\Required\Required;
@@ -12,24 +14,48 @@ use PHPBootstrap\Widget\Form\Controls\XFileBox;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Sys\ImportItem;
-use Doctrine\ORM\EntityManager;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Modal\TgModalClose;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\Equipment;
 
 class ImportUploadForm extends AbstractForm {
 	
 	/**
-	 * Construtor
-	 * 
 	 * @param Action $submit
 	 * @param Action $cancel
+	 * @param Action $seekAgency
+	 * @param Action $searchAgency
+	 * @param boolean $showAgencies
 	 */
-	public function __construct( Action $submit, Action $cancel ) {
-		$this->buildPanel('Sistema', 'Gerenciar Importações');
+    public function __construct( Action $submit, Action $cancel, Action $seekAgency, Action $searchAgency, $showAgencies = false) {
+	    $this->buildPanel('Minha Frota', 'Nova Importação');
 		$form = $this->buildForm('import-upload-form');
 		
-		$fieldset = new Fieldset('Upload do Arquivo');
+		$fieldset = new Fieldset('Enviar Arquivo para Importação');
+		
+		if ($showAgencies) {
+		    $modal = new Modal('agency-search', new Title('Órgãos', 3));
+		    $modal->setWidth(600);
+		    $modal->addButton(new Button('Cancelar', new TgModalClose()));
+		    $form->append($modal);
+		    
+		    $input = [];
+		    $input[0] = new TextBox('agency-id');
+		    $input[0]->setSuggestion(new Seek($seekAgency));
+		    $input[0]->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		    $input[0]->setSpan(1);
+		    
+		    $input[1] = new SearchBox('agency-name', $searchAgency, $modal);
+		    $input[1]->setEnableQuery(false);
+		    $input[1]->setSpan(6);
+		    
+		    $form->buildField('Órgão', $input, null, $fieldset);
+		}
 		
 		$input = new TextBox('desc');
 		$input->setSpan(7);
@@ -45,13 +71,9 @@ class ImportUploadForm extends AbstractForm {
 		
 		$tab = new Tabbable('import-tabs');
 		$tab->setPlacement(Tabbable::Left);
-		$tab->addItem(new NavLink('Upload'), null, new TabPane($fieldset));
+		$tab->addItem(new NavLink('Upload do Arquivo'), null, new TabPane($fieldset));
 		
 		$link = new NavLink('Pré-processamento');
-		$link->setDisabled(true);
-		$tab->addItem($link);
-		
-		$link = new NavLink('Transformação');
 		$link->setDisabled(true);
 		$tab->addItem($link);
 		
@@ -91,9 +113,20 @@ class ImportUploadForm extends AbstractForm {
 		$object->getItems()->clear();
 		while ($data = fgetcsv($file, 0, ";")) {
 		    $item = new ImportItem($object, $this->tranform($data));
+		    if ( $item->isVehicle() ) {
+		        $rep = $em->getRepository(Vehicle::getClass());
+		        $criteria = ['plate' => $item->getData()[1]];
+		    } else {
+		        $rep = $em->getRepository(Equipment::getClass());
+		        $criteria = ['assetCode' => $item->getData()[6], 'responsibleUnit' => $object->getAgency()];
+		    }
+		    if ($ref = $rep->findOneBy($criteria) ) {
+		        $item->setReference($ref);
+		    }
 		    $object->getItems()->add($item);
 		}
 		
+		$object->setStatus(Import::PREPROCESSED);
 	}
 	
 	/**

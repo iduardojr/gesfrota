@@ -43,7 +43,7 @@ class FleetList extends AbstractList {
 	 * @param array $optResultCenter
 	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $newVehicle, Action $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer, array $optResultCenter, array $showAgencies = null ) {
+	public function __construct( Action $filter, Action $newVehicle, Action $newGear, Action $edit, Action $active, Action $seekVehicle, Action $import, Action $transfer, array $optResultCenter, array $showAgencies = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
@@ -122,6 +122,7 @@ class FleetList extends AbstractList {
 		$drop->addItem(new DropdownLink('Equipamento', new TgLink($newGear)));
 		
 		$this->buildToolbar(array(new Button('Novo', null, Button::Primary), new Button('', new TgDropdown($drop), Button::Primary)),
+		                    array(new Button('Importar', new TgLink($import), Button::Success)),
 							array(new Button('Transferir Veículo', new TgModalOpen($modalTransfer), Button::Success)),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		

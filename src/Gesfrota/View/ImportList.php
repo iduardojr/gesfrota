@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Sys\Import;
+use Gesfrota\Model\Domain\Import;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Format\DateFormat;
@@ -19,6 +19,7 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
 class ImportList extends AbstractList {
 	
@@ -26,17 +27,23 @@ class ImportList extends AbstractList {
 	 * @param Action $filter
 	 * @param Action $upload
 	 * @param Action $preProcess
-	 * @param Action $transform
 	 * @param Action $download
 	 * @param Action $remove
 	 */
-	public function __construct( Action $filter, Action $upload, Action $preProcess, Action $transform, Action $download, Action $remove) {
-		$this->buildPanel('Sistema', 'Gerenciar Importações');
+	public function __construct( Action $filter, Action $upload, Action $preProcess, Action $download, Action $remove, array $showAgencies = null) {
+		$this->buildPanel('Minha Frota', 'Importar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
 		$reset->setParameter('reset', 1);
 		
 		$form = new BuilderForm('form-filter');
+		
+		if ($showAgencies) {
+		    $input = new ComboBox('agency');
+		    $input->setSpan(2);
+		    $input->setOptions($showAgencies);
+		    $form->buildField('Órgão', $input);
+		}
 		
 		$input = new TextBox('desc');
 		$input->setSpan(5);
@@ -55,7 +62,7 @@ class ImportList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar(new Button('Importar', new TgLink($upload), Button::Primary),
+		$this->buildToolbar(new Button('Nova', new TgLink($upload), Button::Primary),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
 		$table = $this->buildTable('import-list');
@@ -63,11 +70,14 @@ class ImportList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		if ($showAgencies) {
+		    $table->buildColumnText('agency', 'Órgão', clone $filter, 70);
+		}
 		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
 		    return $value . '/' . $import->getAmountItems();
 		});
-	    $table->buildColumnText('amountAppraised', '% Avaliados', null, 50, null, function ($value, Import $import) {
-	        return round($value / $import->getAmountItems()*100, 2) . '%';
+	    $table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, Import $import) {
+	        return round($value / $import->getAmountItems()*100, 1) . '%';
 	    });
 		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
 		        $bytes = floatval($bytes);
@@ -97,27 +107,7 @@ class ImportList extends AbstractList {
 		$this->panel->append($confirm);
 		
 		$table->buildColumnAction('download', new Icon('icon-download-alt'), $download);
-		$table->buildColumnAction('do', new Icon('icon-stop'), $preProcess, null, function (Button $btn, Import $import) use ($preProcess, $transform) {
-		    switch ($import->getStatus()) {
-		        case Import::UPLOADED:
-		            $action = clone $preProcess;
-		            $action->setParameter('key', $import->getId());
-		            $btn->setIcon(new Icon('icon-random'));
-		            $btn->setToggle(new TgLink($action));
-		            break;
-		          
-		        case Import::PREPROCESSED: 
-		            $action = clone $transform;
-		            $action->setParameter('key', $import->getId());
-		            $btn->setIcon(new Icon('icon-cog'));
-		            $btn->setToggle(new TgLink($action));
-		            break;
-		            
-		        case Import::FINISHED: 
-		            $btn->setDisabled(true);
-		            break;
-		    } 
-		});
+		$table->buildColumnAction('do', new Icon('icon-list'), $preProcess);
 		$table->buildColumnAction('remove', new Icon('icon-remove'), $remove, $confirm);
 		
 	}
