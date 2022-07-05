@@ -28,6 +28,9 @@ use PHPBootstrap\Widget\Misc\Badge;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Form\Controls\ChosenBox;
+use PHPBootstrap\Widget\Button\ButtonGroup;
+use PHPBootstrap\Widget\Button\TgButtonRadio;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 
 class FleetList extends AbstractList {
 	
@@ -50,6 +53,24 @@ class FleetList extends AbstractList {
 		$reset->setParameter('reset', 1);
 		
 		$form = new BuilderForm('form-filter');
+		
+		$btnGroup = new ButtonGroup();
+		
+		$btn = new Button('Todos');
+		$btn->setName('type_all');
+		$btnGroup->addButton($btn);
+		
+		$btn = new Button('Veículo');
+		$btn->setName('type_vehicle');
+		$btnGroup->addButton($btn);
+		
+		$btn = new Button('Equipamento');
+		$btn->setName('type_equipment');
+		$btnGroup->addButton($btn);
+		
+		$btnGroup->setToggle(new TgButtonRadio());
+		$input = new Hidden('type');
+		$form->buildField(null, [$btnGroup, $input])->setName('fleet_types');
 		
 		if ($showAgencies) {
 			$input = new ComboBox('agency');

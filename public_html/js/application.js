@@ -549,6 +549,30 @@ $(function() {
 			$('#request_types #type_all').trigger('click');
 	}
 	
+	$('body').on('click', '#fleet_types #type_all', function(e) {
+		$('#fleet_types #type').field('value', null);
+	});
+	
+	$('body').on('click', '#fleet_types #type_vehicle', function(e) {
+		$('#fleet_types #type').field('value', 'V');
+	});
+	
+	$('body').on('click', '#fleet_types #type_equipment', function(e) {
+		$('#fleet_types #type').field('value', 'E');
+	});
+	switch ($('#fleet_types #type').field('value')) {
+		case 'V':
+			$('#fleet_types #type_vehicle').trigger('click');
+			break;
+			
+		case 'E':
+			$('#fleet_types #type_equipment').trigger('click');
+			break;
+			
+		default:
+			$('#fleet_types #type_all').trigger('click');
+	}
+	
 	$('body').on('click', '#agency-search #agency-table [data-storage]', function(e) {
 		$('#agency-id').seek('lookup');
 	});

@@ -85,6 +85,9 @@ class FleetController extends AbstractController {
 			$list = new FleetList($filter, $new1, $new2, $edit, $active, $search, $transfer, $optResultCenter, $showAgencies);
 		
 			$helper->read($list, $query, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			    if ( !empty($data['type']) ) {
+			        $query->andWhere('u INSTANCE OF ' . ( $data['type'] == 'V' ? Vehicle::getClass() : Equipment::getClass()));
+			    }
 				if (!empty($data['agency'])) {
 					$query->andWhere('u.responsibleUnit = :agency');
 					$query->setParameter('agency', $data['agency']);
