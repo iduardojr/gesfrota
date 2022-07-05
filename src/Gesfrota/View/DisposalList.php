@@ -2,16 +2,16 @@
 namespace Gesfrota\View;
 
 use Gesfrota\Model\Domain\Disposal;
-use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
+use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
-use PHPBootstrap\Widget\Action\TgWindows;
 use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
-use PHPBootstrap\Widget\Form\Controls\Output;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
@@ -22,14 +22,6 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Misc\Anchor;
-use PHPBootstrap\Widget\Form\Controls\DateBox;
-use PHPBootstrap\Validate\Pattern\Date;
-use PHPBootstrap\Format\DateFormat;
-use PHPBootstrap\Widget\Form\Controls\ComboBox;
-use PHPBootstrap\Widget\Dropdown\Dropdown;
-use PHPBootstrap\Widget\Dropdown\DropdownLink;
-use PHPBootstrap\Widget\Dropdown\TgDropdown;
 
 class DisposalList extends AbstractList {
 	

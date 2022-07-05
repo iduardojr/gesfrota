@@ -4,25 +4,24 @@ namespace Gesfrota\View;
 use Gesfrota\Model\Notice;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
+use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Form\Controls\TextBox;
-use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Modal\TgModalOpen;
-use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Misc\Label;
-use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Modal\TgModalLoad;
-use PHPBootstrap\Widget\Misc\Paragraph;
-use PHPBootstrap\Widget\Modal\TgModalConfirm;
-use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
-use PHPBootstrap\Validate\Pattern\Date;
-use PHPBootstrap\Format\DateFormat;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
+use PHPBootstrap\Widget\Form\Controls\TextBox;
+use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Misc\Label;
+use PHPBootstrap\Widget\Misc\Paragraph;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Modal\TgModalClose;
+use PHPBootstrap\Widget\Modal\TgModalConfirm;
+use PHPBootstrap\Widget\Modal\TgModalLoad;
+use PHPBootstrap\Widget\Modal\TgModalOpen;
+use PHPBootstrap\Widget\Table\ColumnText;
 
 class NoticeList extends AbstractList {
 	
@@ -53,8 +52,12 @@ class NoticeList extends AbstractList {
 		$input[2]->setSpan(2);
 		$form->buildField('Período', $input);
 		
-		$input = new CheckBox('active', 'Somente Publicados');
-		$form->buildField(null, $input);
+		$input = new ComboBox('status');
+		$input->setSpan(2);
+		$input->addOption(0, 'Todos');
+		$input->addOption(1, 'Publicados');
+		$input->addOption(-1, 'Não Publicados');
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
 		$modalFilter->setWidth(750);

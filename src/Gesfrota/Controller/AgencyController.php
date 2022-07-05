@@ -33,8 +33,9 @@ class AgencyController extends AbstractController {
 					$query->andWhere('u.name LIKE :name or u.acronym LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');
 				}
-				if ( !empty($data['only-active']) ) {
-					$query->andWhere('u.active = true');
+				if ( !empty($data['status']) ) {
+				    $query->andWhere('u.active = :status');
+				    $query->setParameter('status', $data['status'] > 0);
 				}
 			}));
 			$list->setAlert($this->getAlert());

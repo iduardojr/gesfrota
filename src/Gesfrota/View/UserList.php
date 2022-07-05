@@ -16,7 +16,6 @@ use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
@@ -68,8 +67,12 @@ class UserList extends AbstractList {
 		$input->setOptions(['M' => Manager::USER_TYPE, 'F' => FleetManager::USER_TYPE, 'T' => TrafficController::USER_TYPE, 'D' => Driver::USER_TYPE, 'R' => Requester::USER_TYPE]);
 		$form->buildField('Perfil de Usuário', $input);
 		
-		$input = new CheckBox('only-active', 'Apenas ativos');
-		$form->buildField(null, $input);
+		$input = new ComboBox('status');
+		$input->setSpan(2);
+		$input->addOption(0, 'Todos');
+		$input->addOption(1, 'Ativos');
+		$input->addOption(-1, 'Inativos');
+		$form->buildField('Status', $input);
 		
 		$modalFilter = $this->buildFilter($form, $filter, $reset);
 		$modalFilter->setWidth(700);

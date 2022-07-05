@@ -34,9 +34,14 @@ class AdministrativeUnitController extends AbstractController {
 					$query->andWhere('p0.name LIKE :name OR p0.acronym LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');
 				}
-				if ( !empty($data['only-active']) ) {
-					$query->andWhere('u.active = true');
-					$query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				if ( !empty($data['status']) ) {
+				    if ($data['status'] > 0) {
+				        $query->andWhere('u.active = true');
+				        $query->andWhere('u.id NOT IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				    } else {
+				        $query->andWhere('u.active = false');
+				        $query->orWhere('u.id IN(SELECT p1.id FROM ' . AdministrativeUnit::getClass() . ' p1, ' . AdministrativeUnit::getClass() . ' p2 WHERE p2.active = false AND p1.lft BETWEEN p2.lft AND p2.rgt)');
+				    }
 				}
 			}]);
 			$list->setAlert($this->getAlert());

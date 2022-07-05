@@ -45,8 +45,9 @@ class VehicleModelController extends AbstractController {
 					$query->andWhere('f.id = :family');
 					$query->setParameter('family', $data['family']);
 				}
-				if ( !empty($data['only-active']) ) {
-					$query->andWhere('u.active = true');
+				if ( !empty($data['status']) ) {
+				    $query->andWhere('u.active = :status');
+				    $query->setParameter('status', $data['status'] > 0);
 				}
 			}]);
 			$list->setAlert($this->getAlert());
