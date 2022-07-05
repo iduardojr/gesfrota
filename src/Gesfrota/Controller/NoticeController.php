@@ -30,7 +30,7 @@ class NoticeController extends AbstractController {
 			$list = new NoticeList($filter, $new, $edit, $remove, $views);
 			$helper = $this->createHelperCrud();
 			$query = $this->getEntityManager()->getRepository(Notice::getClass())->createQueryBuilder('u');
-			$helper->read($list, $query, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, $query, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['terms']) ) {
 					$query->andWhere('MATCH(u.title, u.body) AGAINST(:term boolean)>0');
 					$query->setParameter('term',  $data['terms']);

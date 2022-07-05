@@ -18,7 +18,7 @@ class VehicleMakerController extends AbstractController {
 		$list = new VehicleMakerList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, null, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
 					$query->andWhere('u.name LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');

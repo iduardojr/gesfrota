@@ -71,7 +71,7 @@ class UserController extends AbstractController {
 		
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, null, array('limit' => 15, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['type']) ) {
 					foreach($data['type'] as $type) {
 						switch ($type) {

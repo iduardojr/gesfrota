@@ -36,7 +36,7 @@ class AuditController extends AbstractController {
 	public function indexAction() {
 		$table = new AuditLogTable(new Action($this), new Action($this, 'view'), $this->getOptClassname());
 		$helper = new Crud($this->getEntityManager(), Log::class, $this);
-		$helper->read($table, null, ['sort' => 'created', 'order' => 'desc', 'limit' => 25, 'processQuery' => function( QueryBuilder $query, array $data ) {
+		$helper->read($table, null, ['sort' => 'created', 'order' => 'desc', 'limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 			if ( !empty($data['id']) ) {
 				$query->andWhere('u.id IN (:id)');
 				$query->setParameter('id', explode(',', $data['id']));

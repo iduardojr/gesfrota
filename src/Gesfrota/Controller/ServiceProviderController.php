@@ -19,7 +19,7 @@ class ServiceProviderController extends AbstractController {
 		$list = new ServiceProviderList(new Action($this), new Action($this, 'new'), new Action($this, 'edit'), new Action($this, 'active'));
 		try {
 			$helper = $this->createHelperCrud();
-			$helper->read($list, null, array('limit' => 12, 'processQuery' => function( QueryBuilder $query, array $data ) {
+			$helper->read($list, null, array('limit' => 20, 'processQuery' => function( QueryBuilder $query, array $data ) {
 				if ( !empty($data['name']) ) {
 					$query->andWhere('u.name LIKE :name OR u.alias LIKE :name');
 					$query->setParameter('name', '%' . $data['name'] . '%');
