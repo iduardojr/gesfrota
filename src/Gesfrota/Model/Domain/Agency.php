@@ -95,7 +95,7 @@ class Agency extends AbstractActivable {
 	 * @return string
 	 */
 	public function getAcronym() {
-		return $this->acronym;
+		return str_replace('#', '', $this->acronym);
 	}
 	
 	/**

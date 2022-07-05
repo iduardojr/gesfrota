@@ -171,9 +171,9 @@ class AccountController extends AbstractController {
 				Auth::getInstance()->getStorage()->write(['user-id' => $this->getUserActive()->getId(), 'lotation-id' => (int) $key]);
 				$this->setAlert(new Alert('<strong>Ok! </strong>Órgão <em>' . $agency->acronym . ' (#' . $agency->code . ') </em> acessado com sucesso!', Alert::Success));
 			}
-			$query = $this->em->getRepository(Agency::getClass())->createQueryBuilder('u');
+			$query = $this->getEntityManager()->getRepository(Agency::getClass())->createQueryBuilder('u');
 			$table = new AccountAccessTable(new Action($this, 'access'), $this->getAgencyActive());
-			$table->setDatasource(new EntityDatasource($query, ['limit' => 0]));
+			$table->setDatasource(new EntityDatasource($query, ['limit' => 0, 'sort' => 'acronym']));
 			$table->setAlert($this->getAlert());
 		} catch ( \Exception $e ) {
 			$table->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
