@@ -1,23 +1,21 @@
 <?php
 namespace Gesfrota\Controller;
 
-use Gesfrota\View\Layout;
-use Gesfrota\Model\Domain\Request;
-use Gesfrota\Services\Log;
-use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\Equipment;
-use Gesfrota\Model\Domain\Requester;
-use Gesfrota\Model\Domain\Driver;
-use Gesfrota\Model\Domain\RequestTrip;
-use Gesfrota\Model\Domain\RequestFreight;
 use Doctrine\ORM\Query\ResultSetMapping;
-use Gesfrota\Model\Domain\Agency;
 use Doctrine\ORM\Query\Expr\Join;
-use Gesfrota\Model\Domain\FleetManager;
-use Gesfrota\Model\Domain\FleetItem;
-use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Notice;
-use Gesfrota\Model\NoticeRead;
+use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\Equipment;
+use Gesfrota\Model\Domain\Fleet;
+use Gesfrota\Model\Domain\FleetItem;
+use Gesfrota\Model\Domain\Request;
+use Gesfrota\Model\Domain\RequestFreight;
+use Gesfrota\Model\Domain\RequestTrip;
+use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Services\Log;
+use Gesfrota\View\Layout;
 
 class IndexController extends AbstractController {
 	
@@ -325,31 +323,36 @@ class IndexController extends AbstractController {
 		$builder1->select('COUNT(u1.id)');
 		$builder1->from(FleetItem::getClass(), 'u1');
 		$builder1->where('u1.active = true AND u1.responsibleUnit = a.id AND u1.fleet = ' . Fleet::OWN);
-		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as score'. Fleet::OWN);
-		
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS score'. Fleet::OWN);
 		
 		$builder1 = $this->getEntityManager()->createQueryBuilder();
 		$builder1->select('COUNT(u2.id)');
 		$builder1->from(FleetItem::getClass(), 'u2');
 		$builder1->where('u2.active = true AND u2.responsibleUnit = a.id AND u2.fleet = ' . Fleet::RENTED);
-		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as score'. Fleet::RENTED);
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS score'. Fleet::RENTED);
 		
 		$builder1 = $this->getEntityManager()->createQueryBuilder();
 		$builder1->select('COUNT(u3.id)');
 		$builder1->from(FleetItem::getClass(), 'u3');
 		$builder1->where('u3.active = true AND u3.responsibleUnit = a.id AND u3.fleet = ' . Fleet::GUARDED);
-		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as score' . Fleet::GUARDED);
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS score' . Fleet::GUARDED);
 		
 		$builder1 = $this->getEntityManager()->createQueryBuilder();
 		$builder1->select('COUNT(u4.id)');
 		$builder1->from(FleetItem::getClass(), 'u4');
 		$builder1->where('u4.active = true AND u4.responsibleUnit = a.id AND u4.fleet = ' . Fleet::ASSIGNED);
-		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as score' . Fleet::ASSIGNED);
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS score' . Fleet::ASSIGNED);
 		
 		$builder1 = $this->getEntityManager()->createQueryBuilder();
 		$builder1->select('COUNT(u5.id)');
 		$builder1->from(FleetItem::getClass(), 'u5');
-		$builder1->where('u5.active = true AND u5.responsibleUnit = a.id');
+		$builder1->where('u5.active = false AND u5.responsibleUnit = a.id');
+		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS score0');
+		
+		$builder1 = $this->getEntityManager()->createQueryBuilder();
+		$builder1->select('COUNT(u6.id)');
+		$builder1->from(FleetItem::getClass(), 'u6');
+		$builder1->where('u6.responsibleUnit = a.id');
 		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS HIDDEN total');
 		
 		$builder->from(FleetItem::getClass(), 'u');
@@ -359,8 +362,9 @@ class IndexController extends AbstractController {
 		
 		$result = $builder->getQuery()->getResult();
 		$data = [];
+		$allowed = FleetItem::getFleetAllowed() + [0 => 'Inativa'];
 		foreach ($result as $item) {
-			foreach (FleetItem::getFleetAllowed() as $key => $serie) {
+			foreach ($allowed as $key => $serie) {
 				$data[$serie][] = ['x' => $item['label'], 'y' => (int) $item['score'.$key]];
 			}
 		}
