@@ -2,8 +2,8 @@
 namespace Gesfrota\Controller;
 
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
-use Gesfrota\Model\Notice;
 use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Sys\Notice;
 use Gesfrota\Services\Auth;
 use Gesfrota\View\AccountAccessTable;
 use Gesfrota\View\AccountNoticesTable;

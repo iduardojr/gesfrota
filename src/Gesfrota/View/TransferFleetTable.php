@@ -2,9 +2,6 @@
 namespace Gesfrota\View;
 
 use Gesfrota\Model\Domain\FleetItem;
-use Gesfrota\Model\Domain\Vehicle;
-use PHPBootstrap\Widget\Misc\Badge;
-use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Table\ColumnText;
 
 class TransferFleetTable extends TransferTable  {

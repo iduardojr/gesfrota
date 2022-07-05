@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Notice;
+use Gesfrota\Model\Sys\Notice;
 use Gesfrota\View\Widget\AbstractForm;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Validate\Required\Required;

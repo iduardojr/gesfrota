@@ -2,10 +2,14 @@
 namespace Gesfrota\Services;
 
 use Gesfrota\Controller\AbstractController;
+use Gesfrota\Controller\AuthController;
+use Gesfrota\Controller\IndexController;
+use Gesfrota\Model\Sys\Notice;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\TrafficController;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\View\Layout;
 use PHPBootstrap\Mvc\Plugin;
@@ -13,12 +17,6 @@ use PHPBootstrap\Mvc\Acl\Acl;
 use PHPBootstrap\Mvc\Http\HttpRequest;
 use PHPBootstrap\Mvc\Http\HttpResponse;
 use PHPBootstrap\Mvc\Routing\Dispatcher;
-use Gesfrota\Controller\AuthController;
-use Gesfrota\Controller\IndexController;
-use Gesfrota\Model\Domain\TrafficController;
-use Gesfrota\Model\Domain\Request;
-use Gesfrota\Model\Notice;
-use Doctrine\ORM\QueryBuilder;
 
 class AclResource implements Plugin {
 	
