@@ -463,15 +463,12 @@ fieldset > legend {
 #fleet-vehicle-form #results_center_chosen {
 	width: 630px;
 }
-#import-preprocess-form .controls {
-	margin-left: 400px;
+#import-preprocess-form #flash-message {
+	min-height: 38px;
 }
-#import-preprocess-form .control-label {
-	width: 380px;
-}
-#import-transform-container {
-	margin: 30px 0 10px 0;
-	max-width: 1000px;
+#import-preprocess-form #import-preprocess-container {
+	margin-bottom: 10px;
+	max-width: 1010px;
 	overflow-x: auto;
 }
 .controls-row .help-inline {
