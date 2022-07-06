@@ -28,7 +28,7 @@ use PHPBootstrap\Widget\Pagination\Pagination;
 use Gesfrota\View\Render\Html5\RendererPagination;
 
 // MODE
-$isDevMode = getenv('APPLICATION_ENV') == 'development';
+$isDevMode = getenv('APPLICATION_ENV') == 'development' || stripos($_SERVER['HTTP_HOST'], 'homo') !== false;
 
 // LOADER
 if ( file_exists('../vendor/autoload.php') ) {
