@@ -24,7 +24,7 @@ use PHPBootstrap\Widget\Pagination\Pagination;
 use Gesfrota\Model\Domain\ImportItem;
 use PHPBootstrap\Widget\Misc\Icon;
 
-class ImportTransformForm extends AbstractForm {
+class ImportPreProcessForm extends AbstractForm {
     
     /**
      * @var BuilderTable
@@ -71,7 +71,6 @@ class ImportTransformForm extends AbstractForm {
         }
 		$this->pagination = $this->table->buildPagination(clone $submit);
 		$this->table->setPagination(null);
-		$this->pagination->setAlign(Pagination::Center);
 		
 		$fieldset->append(new Row(true, [new Box(12, new Panel($this->table, 'import-transform-container'))]));
 		$fieldset->append($this->pagination);
