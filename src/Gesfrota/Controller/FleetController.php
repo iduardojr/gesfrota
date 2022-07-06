@@ -5,11 +5,16 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Controller\Helper\SearchAgency;
+use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Disposal;
+use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\Model\Domain\Equipment;
 use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Owner;
 use Gesfrota\Model\Domain\OwnerCompany;
 use Gesfrota\Model\Domain\OwnerPerson;
+use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\ServiceCard;
 use Gesfrota\Model\Domain\ServiceProvider;
 use Gesfrota\Model\Domain\Vehicle;
@@ -28,12 +33,6 @@ use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Model\Domain\DisposalItem;
-use Gesfrota\Model\Domain\Disposal;
-use Gesfrota\Controller\Helper\SearchAgency;
-use Gesfrota\Model\Domain\Agency;
-use Gesfrota\Model\Domain\ResultCenter;
-use Gesfrota\Model\Domain\Import;
 
 class FleetController extends AbstractController {
 	
@@ -143,8 +142,8 @@ class FleetController extends AbstractController {
 		
 			$helper = $this->createHelperCrud();
 			if ($this->request->isPost()) {
-				$plate = $this->getRequest()->getPost('plate');
-				$entity = $this->getEntityManager()->getRepository(Vehicle::getClass())->findOneBy(['plate' => $plate]);
+				$criteria = ['plate' => $this->request->getPost('plate')];
+				$entity = $this->getEntityManager()->getRepository(Vehicle::getClass())->findOneBy($criteria);
 				if ( $entity instanceof Vehicle ) {
 					throw new \DomainException('Veículo <em>' . $entity->getPlate() . ' ' . $entity->getDescription() . '</em> já está registrado em '. $entity->getResponsibleUnit()->getAcronym());
 				}
@@ -161,19 +160,31 @@ class FleetController extends AbstractController {
 		} catch ( InvalidRequestDataException $e ){
 			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->forward('/');
 		}
 		return new Layout($form);
 	}
 	
 	public function newEquipmentAction() {
-		$form = $this->createForm(Equipment::getClass(), new Action($this, 'newEquipment'));
 		try {
+		    $form = $this->createForm(Equipment::getClass(), new Action($this, 'newEquipment'));
 			$helper = $this->createHelperCrud();
+			
 			$agency = null;
 			if (! $this->getAgencyActive()->isGovernment()) {
-				$agency = $this->getAgencyActive();
+			    $agency = $this->getAgencyActive();
 			}
+			
+			if ($this->request->isPost()) {
+			    $criteria = ['assetCode' => $this->request->getPost('asset-code'),
+			                 'responsibleUnit' => $agency ? $agency : $this->request->getPost('agency-id')];
+			    $entity = $this->getEntityManager()->getRepository(Equipment::getClass())->findOneBy($criteria);
+			    if ( $entity instanceof Equipment ) {
+			        throw new \DomainException('Equipamento <em>' . $entity->getAssetCode() . ' ' . $entity->getDescription() . '</em> já está registrado em '. $entity->getResponsibleUnit()->getAcronym());
+			    }
+		    }
+		 
 			if ( $helper->create($form, new Equipment($agency)) ) {
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>' . $entity->fleetType . ' <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
@@ -182,7 +193,8 @@ class FleetController extends AbstractController {
 		} catch ( InvalidRequestDataException $e ){
 			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->forward('/');
 		}
 		return new Layout($form);
 	}

@@ -16,7 +16,7 @@ use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\FleetEquipmentForm;
 use Gesfrota\View\FleetVehicleForm;
 use Gesfrota\View\ImportList;
-use Gesfrota\View\ImportTransformForm;
+use Gesfrota\View\ImportPreProcessForm;
 use Gesfrota\View\ImportUploadForm;
 use Gesfrota\View\Layout;
 use Gesfrota\View\Widget\BuilderForm;
@@ -110,7 +110,7 @@ class ImportController extends AbstractController {
 	        $transform = new Action($this, 'transform-item');
 	        $dismiss = new Action($this, 'dismiss-item');
 	        
-	        $form = new ImportTransformForm($submit, $cancel, $transform, $dismiss, $entity, $this->getAgencyActive());
+	        $form = new ImportPreProcessForm($submit, $cancel, $transform, $dismiss, $entity, $this->getAgencyActive());
 	        
 	        $query = $this->getEntityManager()->getRepository(ImportItem::getClass())->createQueryBuilder('u');
 	        $query->where('u.import = :key ');
@@ -153,10 +153,26 @@ class ImportController extends AbstractController {
     	        throw new NotFoundEntityException('Não foi possível transformar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
     	    }
     	    $helper = new Crud($this->getEntityManager(), FleetItem::getClass(), $this);
-    	    $item = $entity->getStatus() ? $entity->getReference() : $entity->toTransform();
-    	    
+    	    if (! $entity->getStatus() ) {
+        	    if ( $entity->isVehicle() ) {
+        	        $rep = $this->getEntityManager()->getRepository(Vehicle::getClass());
+        	        $criteria = ['plate' => $entity->getData()[1]];
+        	    } else {
+        	        $rep = $this->getEntityManager()->getRepository(Equipment::getClass());
+        	        $criteria = ['assetCode' => $entity->getData()[6], 'responsibleUnit' => $entity->getImport()->getAgency()];
+        	    }
+        	    if ($item = $rep->findOneBy($criteria) ) {
+        	        $entity->setReference($item);
+        	        $this->getEntityManager()->flush();
+        	        $this->setAlert(new Alert('<strong>Ops! </strong>Item de Importação <em>#' . $entity->alias . ' </em> já foi transformado!'));
+        	    } else {
+        	        $item = $entity->toTransform();
+        	    }
+    	    } else {
+    	        $item = $entity->getReference();
+    	    }
     	    $form = $this->createForm($item, new Action($this, 'transform-item', ['key' => $entity->id]), new Action($this, 'pre-process', ['key' => $entity->getImport()->id]));
-    	    
+    	    $form->setAlert($this->getAlert());
     	    if ( $item->getId() > 0 ) {
     	        if ( $helper->update($form, $item) ) {
     	            $this->setAlert(new Alert('<strong>Ok! </strong>' . $item->fleetType . ' <em>#' . $item->code . ' ' . $item->description .  '</em> alterado com sucesso!', Alert::Success));
@@ -185,11 +201,28 @@ class ImportController extends AbstractController {
 	        if (! $entity instanceof ImportItem) {
 	            throw new NotFoundEntityException('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
 	        }
+	        if ( $entity->getStatus() === null ) {
+	            if ( $entity->isVehicle() ) {
+	                $rep = $this->getEntityManager()->getRepository(Vehicle::getClass());
+	                $criteria = ['plate' => $entity->getData()[1]];
+	            } else {
+	                $rep = $this->getEntityManager()->getRepository(Equipment::getClass());
+	                $criteria = ['assetCode' => $entity->getData()[6], 'responsibleUnit' => $entity->getImport()->getAgency()];
+	            }
+	            if ($item = $rep->findOneBy($criteria) ) {
+	                $entity->setReference($item);
+	                $this->getEntityManager()->flush();
+	            } 
+	            
+	        } 
+	        if ( $entity->getReference() ) {
+	            throw new \DomainException('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $entity->alias . '</em> já foi importado.');
+	        }
 	        $entity->setReference(null);
 	        $this->getEntityManager()->flush();
-	        $this->setAlert(new Alert('<strong>Ok! </strong>Item de Importação <em>#' . $entity->code . ' ' . $entity->alias . '</em> rejeitado com sucesso!', Alert::Success));
+	        $this->setAlert(new Alert('<strong>Ok! </strong>Item de Importação <em>#' . $entity->alias . '</em> rejeitado com sucesso!', Alert::Success));
             $this->forward('/pre-process/' . $entity->getImport()->id);
-	    } catch (NotFoundEntityException $e) {
+	    } catch (\Exception $e) {
 	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error));
 	        $this->redirect($this->request->getHeader('Referer'));
 	    }
