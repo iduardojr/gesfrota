@@ -23,6 +23,7 @@ use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Pagination\Pagination;
 use Gesfrota\Model\Domain\ImportItem;
 use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Form\Controls\Output;
 
 class ImportPreProcessForm extends AbstractForm {
     
@@ -45,7 +46,7 @@ class ImportPreProcessForm extends AbstractForm {
 	 */
     public function __construct(Action $submit, Action $cancel, Action $transform, Action $dismiss, Import $import ) {
         $this->buildPanel('Minha Frota', 'Transformar Importação');
-		$form = $this->buildForm('import-transform-form');
+		$form = $this->buildForm('import-preprocess-form');
 		$fieldset = new Fieldset('Dados Pré-processados <small>'. $import->getDescription(). '</small>');
 		
 		$this->panel->remove($this->alert);
@@ -59,7 +60,7 @@ class ImportPreProcessForm extends AbstractForm {
 	    $header = $import->getHeader();
 	    unset($header[0]);
 	    $this->table->buildColumnAction('transform', new Icon('icon-cog'), $transform, null, function (Button $btn, ImportItem $item) {
-	        $btn->setDisabled($item->getImport()->getStatus() == Import::FINISHED && $item->getStatus() === false);
+	        $btn->setDisabled($item->getImport()->getFinished() && $item->getStatus() === false);
 	    });
         $this->table->buildColumnAction('dismiss', new Icon('icon-remove-sign'), $dismiss, null, function(Button $btn, ImportItem $item) {
             $btn->setDisabled($item->getStatus() !== null);
@@ -72,7 +73,7 @@ class ImportPreProcessForm extends AbstractForm {
 		$this->pagination = $this->table->buildPagination(clone $submit);
 		$this->table->setPagination(null);
 		
-		$fieldset->append(new Row(true, [new Box(12, new Panel($this->table, 'import-transform-container'))]));
+		$fieldset->append(new Row(true, [new Box(12, new Panel($this->table, 'import-preprocess-container'))]));
 		$fieldset->append($this->pagination);
 		
 		$tab = new Tabbable('import-tabs');
@@ -93,7 +94,7 @@ class ImportPreProcessForm extends AbstractForm {
 		$confirm->addButton(new Button('Cancelar', new TgModalClose()));
 		$this->panel->append($confirm);
 
-		$form->buildButton('submit', 'Finalizar', new TgModalOpen($confirm))->setDisabled(($import->getStatus() == Import::FINISHED));
+		$form->buildButton('submit', 'Finalizar', new TgModalOpen($confirm))->setDisabled(($import->getFinished()));
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
@@ -109,7 +110,7 @@ class ImportPreProcessForm extends AbstractForm {
 	 * @see AbstractForm::extract()
 	 */
 	public function extract( Import $object ) {
-	    
+
 	}
 
 	/**
@@ -121,7 +122,7 @@ class ImportPreProcessForm extends AbstractForm {
 	            $item->setReference(null);
 	        }
 	    }
-	    $object->setStatus(Import::FINISHED);
+	    $object->toFinish();
 	}
 	
 }

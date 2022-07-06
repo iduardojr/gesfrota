@@ -125,8 +125,6 @@ class ImportUploadForm extends AbstractForm {
 		    }
 		    $object->getItems()->add($item);
 		}
-		
-		$object->setStatus(Import::PREPROCESSED);
 	}
 	
 	/**
