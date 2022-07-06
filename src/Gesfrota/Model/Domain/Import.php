@@ -15,25 +15,6 @@ use Gesfrota\Model\Entity;
 class Import extends Entity {
 
     /**
-     * Carregado
-     * @var integer
-     */
-    const UPLOADED = 1;
-    
-    /**
-     * Pré-processado
-     * @var integer
-     */
-    const PREPROCESSED = 2;
-    
-    /**
-     * Finalizado
-     * 
-     * @var integer
-     */
-    const FINISHED = 4;
-    
-    /**
      * Diretório relativo ao link
      * @var string
      */
@@ -64,10 +45,10 @@ class Import extends Entity {
     protected $header;
     
     /**
-     * @Column(type="integer")
-     * @var integer
+     * @Column(type="boolean")
+     * @var boolean
      */
-    protected $status;
+    protected $finished;
     
     /**
      * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"all"})
@@ -89,14 +70,20 @@ class Import extends Entity {
     protected $createdAt;
     
     /**
+     * @Column(name="finished_at", type="datetime")
+     * @var \DateTime
+     */
+    protected $finishedAt;
+    
+    /**
      * @param Agency $agency
      */
     public function __construct(Agency $agency = null) {
         parent::__construct();
         $this->agency = $agency;
-        $this->createdAt = new \DateTime();
         $this->items = new ArrayCollection();
-        $this->status = self::UPLOADED;
+        $this->finished = false;
+        $this->createdAt = new \DateTime();
     }
     
     
@@ -112,6 +99,13 @@ class Import extends Entity {
      */
     public function getCreatedAt() {
         return $this->createdAt;
+    }
+    
+    /**
+     * @return \DateTime
+     */
+    public function getFinishedAt() {
+        return $this->finishedAt;
     }
 
     /**
@@ -150,10 +144,10 @@ class Import extends Entity {
     }
     
     /**
-     * @return integer
+     * @return boolean
      */
-    public function getStatus() {
-        return $this->status;
+    public function getFinished() {
+        return $this->finished;
     }
 
     /**
@@ -185,14 +179,14 @@ class Import extends Entity {
     }
     
     /**
-     * @param integer $status
      * @throws \DomainException
      */
-    public function setStatus($status) {
-        if (!self::isStatusAllowed($status)) {
-            throw new \DomainException('The ' . $status . ' is not status allowed.');
+    public function toFinish() {
+        if ($this->finished === true ) {
+            throw new \DomainException('The import cannot be finished.');
         }
-        $this->status = $status;
+        $this->finished = true;
+        $this->finishedAt = new \DateTime();
     }
     
     /**
@@ -228,28 +222,6 @@ class Import extends Entity {
         return $this->items->matching($criteria)->count();
     }
     
-    /**
-     * Verifica se o status é permitido
-     * @param integer $status
-     * @return bool
-     */
-    public static function isStatusAllowed( int $status ) {
-        return array_key_exists($status, self::getStatusAllowed());
-    }
-    
-    /**
-     * Obtem a lista de frotas permitidas
-     *
-     * @return string[]
-     */
-    public static function getStatusAllowed() {
-        return [self::UPLOADED => 'Carregado',
-                self::PREPROCESSED => 'Pré-processado',
-                self::FINISHED => 'Finalizado'
-        ];
-    }
-    
-
 
 }
 ?>

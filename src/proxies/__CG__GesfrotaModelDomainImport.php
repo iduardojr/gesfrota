@@ -84,10 +84,10 @@ class Import extends \Gesfrota\Model\Domain\Import implements \Doctrine\ORM\Prox
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'status', 'items', 'agency', 'createdAt', 'id'];
+            return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'finished', 'items', 'agency', 'createdAt', 'finishedAt', 'id'];
         }
 
-        return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'status', 'items', 'agency', 'createdAt', 'id'];
+        return ['__isInitialized__', 'description', 'fileName', 'fileSize', 'header', 'finished', 'items', 'agency', 'createdAt', 'finishedAt', 'id'];
     }
 
     /**
@@ -219,6 +219,17 @@ class Import extends \Gesfrota\Model\Domain\Import implements \Doctrine\ORM\Prox
     /**
      * {@inheritDoc}
      */
+    public function getFinishedAt()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getFinishedAt', []);
+
+        return parent::getFinishedAt();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getFileName()
     {
 
@@ -274,12 +285,12 @@ class Import extends \Gesfrota\Model\Domain\Import implements \Doctrine\ORM\Prox
     /**
      * {@inheritDoc}
      */
-    public function getStatus()
+    public function getFinished()
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getStatus', []);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getFinished', []);
 
-        return parent::getStatus();
+        return parent::getFinished();
     }
 
     /**
@@ -329,12 +340,12 @@ class Import extends \Gesfrota\Model\Domain\Import implements \Doctrine\ORM\Prox
     /**
      * {@inheritDoc}
      */
-    public function setStatus($status)
+    public function toFinish()
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setStatus', [$status]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'toFinish', []);
 
-        return parent::setStatus($status);
+        return parent::toFinish();
     }
 
     /**
