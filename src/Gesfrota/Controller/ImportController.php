@@ -54,11 +54,11 @@ class ImportController extends AbstractController {
 		            $query->setParameter('desc', '%' . $data['desc'] . '%');
 		        }
 		        if ( !empty($data['date-initial']) ) {
-		            $query->andWhere('u.openedAt >= :initial');
+		            $query->andWhere('u.createdAt >= :initial');
 		            $query->setParameter('initial', $data['date-initial']);
 		        }
 		        if ( !empty($data['date-final']) ) {
-		            $query->andWhere('u.openedAt <= :final');
+		            $query->andWhere('u.createdAt <= :final');
 		            $query->setParameter('final', $data['date-final'] . ' 23:59:59');
 		        }
 		    }]);
@@ -102,9 +102,6 @@ class ImportController extends AbstractController {
 	        if (! $entity instanceof Import) {
 	            throw new NotFoundEntityException('Não é possível transformar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
-	        if ($entity->getStatus() < Import::PREPROCESSED) {
-	            throw new \ErrorException('Não é possível transformar a Importação. Importação <em>#' . $key . '</em> não foi processada.');
-	        }
 	        $submit = new Action($this, 'pre-process', ['key' => $key]);
 	        $cancel = new Action($this);
 	        $transform = new Action($this, 'transform-item');
@@ -115,15 +112,14 @@ class ImportController extends AbstractController {
 	        $query = $this->getEntityManager()->getRepository(ImportItem::getClass())->createQueryBuilder('u');
 	        $query->where('u.import = :key ');
 	        $query->setParameter('key', $entity);
-	        $query->orderBy('u.status', $entity->getStatus() == Import::FINISHED ? 'DESC' : 'ASC');
+	        $query->orderBy('u.status', $entity->getFinished() ? 'DESC' : 'ASC');
 	        
 	        $ds = new EntityDatasource($query, ['limit' => 20]);
 	        $ds->setPage($this->request->getQuery('page'));
 	        $form->setDatasource($ds);
 	        
-	        $form->extract($entity);
 	        if ( $this->request->isPost() ) {
-	            if ($entity->getStatus() == Import::FINISHED) {
+	            if ( $entity->getFinished() ) {
 	                throw new \ErrorException('Não é possível finalizar a Importação. Importação <em>#' . $key . '</em> já foi encerrada.');
 	            }
 	            $form->bind($this->request->getPost());
@@ -134,6 +130,8 @@ class ImportController extends AbstractController {
 	            $this->getEntityManager()->flush();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description .  '</em> finalizada com sucesso!', Alert::Success));
 	            $this->forward('/');
+	        } elseif ( $entity->getFinished() ){
+	            $this->setAlert(new Alert('<strong>Ops! </strong>Importação finalizada em <em>' . $entity->getFinishedAt()->format('d/m/Y H:i:s') . '</em>'));
 	        }
 	        $form->setAlert($this->getAlert());
 	    } catch ( InvalidRequestDataException $e ) {
@@ -251,7 +249,7 @@ class ImportController extends AbstractController {
 	        }
 	        $helper = $this->createHelperCrud();
 	        $helper->delete($entity);
-	        $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $id . ' ' . $entity->description . '</em> excluída com sucesso!', Alert::Success));
+	        $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> excluída com sucesso!', Alert::Success));
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	    } catch ( \Exception $e ) {
