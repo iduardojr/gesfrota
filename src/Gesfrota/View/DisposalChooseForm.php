@@ -59,7 +59,8 @@ class DisposalChooseForm extends AbstractForm {
 		$input = new TextBox('description');
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Nome da Lista', $input, null, $general);
+		$input->setValue('Disposição feita na ' . ucfirst(utf8_encode(strftime('%A, %d %B %G %T', strtotime('now')))));
+		$form->buildField('Descrição', $input, null, $general);
 		
 		$table = new DisposalAssetsTable('assets');
 		$table->setDataSource(new ArrayDatasource($assets, 'id'));
