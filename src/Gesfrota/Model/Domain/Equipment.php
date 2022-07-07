@@ -22,27 +22,48 @@ class Equipment extends FleetItem {
 	protected $description;
 	
 	/**
-	 * @return string
+	 * @Column(name="serial_number", type="string")
+	 * @var string
 	 */
-	public function getDescription() {
-		return $this->description;
-	}
-
+	protected $serialNumber;
 	
 	/**
 	 * {@inheritDoc}
 	 * @see Entity::getCode()
 	 */
 	public function getCode() {
-		return $this->getAssetCode();
+	    return $this->getSerialNumber();
 	}
-
+	
 	/**
-	 * @param string $description
+	 * @return string
 	 */
-	public function setDescription($description) {
-		$this->description = $description;
+	public function getDescription() {
+		return $this->description;
 	}
+	
+	/**
+     * @return string
+     */
+    public function getSerialNumber() {
+        return $this->serialNumber;
+    }
+    
+    /**
+     * @param string $description
+     */
+    public function setDescription($description) {
+        $this->description = $description;
+    }
+    
+    /**
+     * @param string $serialNumber
+     */
+    public function setSerialNumber($serialNumber) {
+        $this->serialNumber = $serialNumber;
+    }
+
+    
 
 
 }

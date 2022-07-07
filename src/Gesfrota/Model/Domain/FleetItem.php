@@ -159,7 +159,7 @@ abstract class FleetItem extends AbstractActivable {
      * @param integer $fleet
      * @throws \DomainException
      */
-    public function setFleet(int $fleet) {
+    public function setFleet($fleet) {
         if (!self::isFleetAllowed($fleet)) {
             throw new \DomainException('The ' . $fleet . ' is not fleet type allowed.');
         }
@@ -172,7 +172,7 @@ abstract class FleetItem extends AbstractActivable {
      * @param integer $engine
      * @throws \DomainException
      */
-    public function setEngine (int $engine) {
+    public function setEngine ($engine) {
         if (!self::isEngineAllowed($engine)) {
             throw new \DomainException('The ' . $engine . ' is not engine type allowed.');
         }
@@ -261,7 +261,7 @@ abstract class FleetItem extends AbstractActivable {
      * @param integer $engine
      * @return bool
      */
-    public static function isEngineAllowed( int $engine ) {
+    public static function isEngineAllowed( $engine ) {
         return array_key_exists($engine, self::getEnginesAllowed());
     }
     
@@ -270,7 +270,7 @@ abstract class FleetItem extends AbstractActivable {
      * @param integer $fleet
      * @return bool
      */
-    public static function isFleetAllowed( int $fleet ) {
+    public static function isFleetAllowed( $fleet ) {
         return array_key_exists($fleet, self::getFleetAllowed());
     }
     
