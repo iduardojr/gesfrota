@@ -2,7 +2,7 @@
 namespace Gesfrota\Model\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Gesfrota\Model\Notice;
+use Gesfrota\Model\Sys\Notice;
 
 class NoticeListener {
     
@@ -11,6 +11,5 @@ class NoticeListener {
             throw new \DomainException('It is not allowed to delete the Notice.');
         }
     }
-    
 }
 ?>

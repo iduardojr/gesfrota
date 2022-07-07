@@ -2,7 +2,7 @@
 namespace Gesfrota\View;
 
 
-use Gesfrota\Model\Notice;
+use Gesfrota\Model\Domain\Notice;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderTable;

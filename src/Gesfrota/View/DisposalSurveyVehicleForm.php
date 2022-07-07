@@ -5,8 +5,8 @@ use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\Survey;
+use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\Widget\AbstractForm;
-use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\PlaceInput;
 use PHPBootstrap\Format\NumberFormat;
 use PHPBootstrap\Validate\Pattern\Number;
@@ -25,7 +25,6 @@ use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Domain\Vehicle;
 
 class DisposalSurveyVehicleForm extends AbstractForm {
 	

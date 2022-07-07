@@ -5,18 +5,24 @@ use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
+use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Button\ButtonGroup;
+use PHPBootstrap\Widget\Button\TgButtonRadio;
 use PHPBootstrap\Widget\Dropdown\Dropdown;
 use PHPBootstrap\Widget\Dropdown\DropdownLink;
 use PHPBootstrap\Widget\Dropdown\TgDropdown;
 use PHPBootstrap\Widget\Form\TgFormSubmit;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
 use PHPBootstrap\Widget\Form\Controls\CheckBoxList;
+use PHPBootstrap\Widget\Form\Controls\ChosenBox;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\Output;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Misc\Badge;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Misc\Title;
@@ -24,14 +30,6 @@ use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Misc\Badge;
-use PHPBootstrap\Widget\Form\Controls\ComboBox;
-use PHPBootstrap\Validate\Required\Required;
-use PHPBootstrap\Widget\Form\Controls\ChosenBox;
-use PHPBootstrap\Widget\Button\ButtonGroup;
-use PHPBootstrap\Widget\Button\TgButtonRadio;
-use PHPBootstrap\Widget\Form\Controls\Hidden;
-use PHPBootstrap\Widget\Form\Controls\RadioButtonList;
 
 class FleetList extends AbstractList {
 	
@@ -47,7 +45,7 @@ class FleetList extends AbstractList {
 	 * @param array $optResultCenter
 	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $newVehicle, Action $newGear, Action $edit, Action $active, Action $seekVehicle, Action $transfer, array $optResultCenter, array $showAgencies = null ) {
+	public function __construct( Action $filter, Action $newVehicle, Action $newGear, Action $edit, Action $active, Action $seekVehicle, Action $import, Action $transfer, array $optResultCenter, array $showAgencies = null ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Veículos e Equipamentos');
 		
 		$reset = clone $filter;
@@ -148,6 +146,7 @@ class FleetList extends AbstractList {
 		$drop->addItem(new DropdownLink('Equipamento', new TgLink($newGear)));
 		
 		$this->buildToolbar(array(new Button('Novo', null, Button::Primary), new Button('', new TgDropdown($drop), Button::Primary)),
+		                    array(new Button('Importar', new TgLink($import), Button::Success)),
 							array(new Button('Transferir Veículo', new TgModalOpen($modalTransfer), Button::Success)),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		

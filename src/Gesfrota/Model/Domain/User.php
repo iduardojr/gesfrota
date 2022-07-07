@@ -5,7 +5,6 @@ use Gesfrota\Util\Crypt;
 use Gesfrota\Model\AbstractActivable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Gesfrota\Model\Notice;
 
 /**
  * Usuário
@@ -107,7 +106,6 @@ abstract class User extends AbstractActivable {
 		$this->setPassword(null);
 		parent::__construct();
 		$this->resultCenters = new ArrayCollection();
-		$this->notices = new ArrayCollection();
 	}
 	
 	/**

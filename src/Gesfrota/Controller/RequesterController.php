@@ -5,26 +5,21 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
+use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\AdministrativeUnit;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\User;
-use Gesfrota\View\AdministrativeUnitTable;
 use Gesfrota\View\Layout;
 use Gesfrota\View\RequesterForm;
 use Gesfrota\View\RequesterList;
-use Gesfrota\View\Widget\EntityDatasource;
-use Gesfrota\View\Widget\PanelQuery;
 use PHPBootstrap\Mvc\View\JsonView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Modal\Modal;
-use Gesfrota\Controller\Helper\SearchAgency;
-use Gesfrota\Model\Domain\ResultCenter;
 
 class RequesterController extends AbstractController { 
 	

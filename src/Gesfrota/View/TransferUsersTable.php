@@ -1,14 +1,9 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Driver;
-use Gesfrota\Model\Domain\FleetManager;
-use Gesfrota\Model\Domain\Manager;
-use Gesfrota\Model\Domain\Requester;
-use PHPBootstrap\Widget\Misc\Badge;
+use Gesfrota\Model\Domain\AdministrativeUnit;
 use PHPBootstrap\Widget\Misc\Label;
 use PHPBootstrap\Widget\Table\ColumnText;
-use Gesfrota\Model\Domain\AdministrativeUnit;
 
 class TransferUsersTable extends TransferTable  {
 	
