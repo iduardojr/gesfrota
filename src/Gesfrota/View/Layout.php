@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Domain\Notice;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\Requester;
 use Gesfrota\Model\Domain\TrafficController;

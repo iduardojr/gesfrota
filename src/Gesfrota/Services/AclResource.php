@@ -4,7 +4,7 @@ namespace Gesfrota\Services;
 use Gesfrota\Controller\AbstractController;
 use Gesfrota\Controller\AuthController;
 use Gesfrota\Controller\IndexController;
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Domain\Notice;
 use Gesfrota\Model\Domain\Driver;
 use Gesfrota\Model\Domain\FleetManager;
 use Gesfrota\Model\Domain\Manager;
@@ -23,6 +23,7 @@ class AclResource implements Plugin {
 	const Dashboard = 'IndexController';
 	
 	const Fleet = 'FleetController';
+	const Import = 'ImportController';
 	const Disposal = 'DisposalController';
 	const Driver = 'DriverController';
 	const Requester = 'RequesterController';
@@ -65,6 +66,7 @@ class AclResource implements Plugin {
 		$resource = [
 			self::Dashboard,
 			self::Fleet, 
+		    self::Import,
 			self::Disposal, 
 			self::Driver, 
 			self::Requester,

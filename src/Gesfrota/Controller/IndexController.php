@@ -13,7 +13,7 @@ use Gesfrota\Model\Domain\RequestFreight;
 use Gesfrota\Model\Domain\RequestTrip;
 use Gesfrota\Model\Domain\Requester;
 use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Domain\Notice;
 use Gesfrota\Services\Log;
 use Gesfrota\View\Layout;
 

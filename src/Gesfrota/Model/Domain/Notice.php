@@ -1,9 +1,8 @@
 <?php
-namespace Gesfrota\Model\Sys;
+namespace Gesfrota\Model\Domain;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Gesfrota\Model\AbstractActivable;
-use Gesfrota\Model\Domain\User;
 
 /**
  * Notificação
@@ -14,6 +13,11 @@ use Gesfrota\Model\Domain\User;
  */
 class Notice extends AbstractActivable {
     
+    /**
+     * Sobre
+     * 
+     * @var integer
+     */
     const ABOUT = 1;
     
     /**

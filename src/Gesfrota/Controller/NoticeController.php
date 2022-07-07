@@ -5,7 +5,7 @@ use Doctrine\ORM\QueryBuilder;
 use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Domain\Notice;
 use Gesfrota\View\Layout;
 use Gesfrota\View\NoticeForm;
 use Gesfrota\View\NoticeList;

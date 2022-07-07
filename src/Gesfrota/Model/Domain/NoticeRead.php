@@ -1,7 +1,6 @@
 <?php
-namespace Gesfrota\Model\Sys;
+namespace Gesfrota\Model\Domain;
 
-use Gesfrota\Model\Domain\User;
 
 /**
  * @Entity
@@ -11,7 +10,7 @@ class NoticeRead {
     
     /**
      * @Id
-     * @OneToOne(targetEntity="Gesfrota\Model\Domain\User")
+     * @OneToOne(targetEntity="User")
      * @JoinColumn(name="user_id", referencedColumnName="id")
      * @var User
      */
