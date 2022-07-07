@@ -28,7 +28,6 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Misc\Label;
 
 class DisposalConfirmForm extends AbstractForm {
 	

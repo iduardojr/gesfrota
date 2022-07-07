@@ -390,6 +390,8 @@ class DisposalController extends AbstractController {
 			
 			$table = new DisposalAssetsTable('assets');
 			$table->setDataSource(new ArrayDatasource($this->getAssets($entity), 'id'));
+			$fakeForm = new DisposalChooseForm(new Action($this), new Action($this), new Action($this), new Action($this), []);
+			$table->prepare($fakeForm->getBuilderForm());
 			
 			$data[$table->getName()] = $table;
 			
