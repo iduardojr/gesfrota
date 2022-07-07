@@ -7,12 +7,18 @@ use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
+use Gesfrota\Model\Domain\Engine;
 use Gesfrota\Model\Domain\Equipment;
+use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Import;
 use Gesfrota\Model\Domain\ImportItem;
+use Gesfrota\Model\Domain\OwnerCompany;
 use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\Vehicle;
+use Gesfrota\Model\Domain\VehicleFamily;
+use Gesfrota\Model\Domain\VehicleMaker;
+use Gesfrota\Model\Domain\VehicleModel;
 use Gesfrota\View\FleetEquipmentForm;
 use Gesfrota\View\FleetVehicleForm;
 use Gesfrota\View\ImportList;
@@ -23,6 +29,7 @@ use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Gesfrota\Util\Format;
 
 class ImportController extends AbstractController {
 	
@@ -44,7 +51,7 @@ class ImportController extends AbstractController {
 		    $helper = $this->createHelperCrud();
 		    $query = $this->getEntityManager()->getRepository(Import::getClass())->createQueryBuilder('u');
 		    
-		    $helper->read($list, $query, ['limit' => 12, 'order' => 'DESC', 'processQuery' => function( QueryBuilder $query, array $data ) {
+		    $helper->read($list, $query, ['limit' => 20, 'order' => 'DESC', 'processQuery' => function( QueryBuilder $query, array $data ) {
 		        if (!empty($data['agency'])) {
 		            $query->andWhere('u.agency = :agency');
 		            $query->setParameter('agency', $data['agency']);
@@ -72,6 +79,7 @@ class ImportController extends AbstractController {
 	
 	public function newAction() {
 	    try {
+	        set_time_limit(0);
 	        $agency = $this->getAgencySelected();
 	        $submit = new Action($this, 'new');
 	        $cancel = new Action($this);
@@ -114,7 +122,7 @@ class ImportController extends AbstractController {
 	        $query->setParameter('key', $entity);
 	        $query->orderBy('u.status', $entity->getFinished() ? 'DESC' : 'ASC');
 	        
-	        $ds = new EntityDatasource($query, ['limit' => 20]);
+	        $ds = new EntityDatasource($query, ['limit' => 15]);
 	        $ds->setPage($this->request->getQuery('page'));
 	        $form->setDatasource($ds);
 	        
@@ -151,23 +159,11 @@ class ImportController extends AbstractController {
     	        throw new NotFoundEntityException('Não foi possível transformar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
     	    }
     	    $helper = new Crud($this->getEntityManager(), FleetItem::getClass(), $this);
-    	    if (! $entity->getStatus() ) {
-        	    if ( $entity->isVehicle() ) {
-        	        $rep = $this->getEntityManager()->getRepository(Vehicle::getClass());
-        	        $criteria = ['plate' => $entity->getData()[1]];
-        	    } else {
-        	        $rep = $this->getEntityManager()->getRepository(Equipment::getClass());
-        	        $criteria = ['assetCode' => $entity->getData()[6], 'responsibleUnit' => $entity->getImport()->getAgency()];
-        	    }
-        	    if ($item = $rep->findOneBy($criteria) ) {
-        	        $entity->setReference($item);
-        	        $this->getEntityManager()->flush();
-        	        $this->setAlert(new Alert('<strong>Ops! </strong>Item de Importação <em>#' . $entity->alias . ' </em> já foi transformado!'));
-        	    } else {
-        	        $item = $entity->toTransform();
-        	    }
-    	    } else {
+    	    if ($entity->toPreProcess($this->getEntityManager())) {
     	        $item = $entity->getReference();
+    	    } else {
+    	        $item = $entity->toTransform($this->getEntityManager());
+    	        $entity->setReference($item);
     	    }
     	    $form = $this->createForm($item, new Action($this, 'transform-item', ['key' => $entity->id]), new Action($this, 'pre-process', ['key' => $entity->getImport()->id]));
     	    $form->setAlert($this->getAlert());
@@ -199,26 +195,14 @@ class ImportController extends AbstractController {
 	        if (! $entity instanceof ImportItem) {
 	            throw new NotFoundEntityException('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
 	        }
-	        if ( $entity->getStatus() === null ) {
-	            if ( $entity->isVehicle() ) {
-	                $rep = $this->getEntityManager()->getRepository(Vehicle::getClass());
-	                $criteria = ['plate' => $entity->getData()[1]];
-	            } else {
-	                $rep = $this->getEntityManager()->getRepository(Equipment::getClass());
-	                $criteria = ['assetCode' => $entity->getData()[6], 'responsibleUnit' => $entity->getImport()->getAgency()];
-	            }
-	            if ($item = $rep->findOneBy($criteria) ) {
-	                $entity->setReference($item);
-	                $this->getEntityManager()->flush();
-	            } 
-	            
-	        } 
-	        if ( $entity->getReference() ) {
-	            throw new \DomainException('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $entity->alias . '</em> já foi importado.');
+	        if ( $entity->toPreProcess($this->getEntityManager())) {
+	            $this->setAlert(new Alert('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $entity->alias . '</em> já foi importado.'));
+	        } else {
+	            $entity->setReference(null);
+	            $this->setAlert(new Alert('<strong>Ok! </strong>Item de Importação <em>#' . $entity->alias . '</em> rejeitado com sucesso!', Alert::Success));
 	        }
-	        $entity->setReference(null);
 	        $this->getEntityManager()->flush();
-	        $this->setAlert(new Alert('<strong>Ok! </strong>Item de Importação <em>#' . $entity->alias . '</em> rejeitado com sucesso!', Alert::Success));
+	        
             $this->forward('/pre-process/' . $entity->getImport()->id);
 	    } catch (\Exception $e) {
 	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error));
@@ -242,6 +226,7 @@ class ImportController extends AbstractController {
 	
 	public function removeAction() {
 	    try {
+	        set_time_limit(0);
 	        $id = $this->request->getQuery('key');
 	        $entity = $this->getEntityManager()->find(Import::getClass(), $id);
 	        if (! $entity instanceof Import) {
@@ -249,7 +234,7 @@ class ImportController extends AbstractController {
 	        }
 	        $helper = $this->createHelperCrud();
 	        $helper->delete($entity);
-	        $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> excluída com sucesso!', Alert::Success));
+	        $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . Format::code($id, 3) . ' ' . $entity->description . '</em> excluída com sucesso!', Alert::Success));
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	    } catch ( \Exception $e ) {

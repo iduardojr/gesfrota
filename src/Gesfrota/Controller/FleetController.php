@@ -110,7 +110,7 @@ class FleetController extends AbstractController {
 						$q2 = $this->getEntityManager()->getRepository(Equipment::getClass())->createQueryBuilder('e');
 						$q2->select('e.id');
 						$q2->where('e.description LIKE :query');
-						$q2->orWhere('e.assetCode LIKE :query');
+						$q2->orWhere('e.serialNumber LIKE :query');
 						
 						$query->andWhere('u.id IN (' . $q1->getDQL() . ') OR u.id IN (' . $q2->getDQL(). ')');
 						$query->setParameter('query', '%' . $data['description'] . '%');
@@ -177,8 +177,7 @@ class FleetController extends AbstractController {
 			}
 			
 			if ($this->request->isPost()) {
-			    $criteria = ['assetCode' => $this->request->getPost('asset-code'),
-			                 'responsibleUnit' => $agency ? $agency : $this->request->getPost('agency-id')];
+			    $criteria = ['serialNumber' => $this->request->getPost('serial-number')];
 			    $entity = $this->getEntityManager()->getRepository(Equipment::getClass())->findOneBy($criteria);
 			    if ( $entity instanceof Equipment ) {
 			        throw new \DomainException('Equipamento <em>' . $entity->getAssetCode() . ' ' . $entity->getDescription() . '</em> já está registrado em '. $entity->getResponsibleUnit()->getAcronym());
