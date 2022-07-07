@@ -46,15 +46,9 @@ class VehicleModel extends AbstractActivable {
 	/**
 	 * @param string $name
 	 */
-	public function __construct($name = null, VehicleMaker $maker = null, VehicleFamily $family = null) {
+	public function __construct($name = null) {
 		parent::__construct();
 		$this->setName($name);
-		if ( $maker ) {
-		    $this->setMaker($maker);
-		}
-		if ( $family ) {
-		    $this->setFamily($family);
-		}
 	}
 	
 	/**

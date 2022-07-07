@@ -6,9 +6,11 @@ use Doctrine\ORM\EntityManager;
 use Gesfrota\Util\Format;
 
 /**
+ * Item importado
+ * 
  * @Entity
  * @Table(name="import_items")
- * @EntityListeners({})
+ * @EntityListeners({"Gesfrota\Model\Listener\ImportItemListener"})
  */
 class ImportItem extends Entity {
     
@@ -122,77 +124,104 @@ class ImportItem extends Entity {
      * @return FleetItem
      */
     public function toTransform(EntityManager $em = null) {
+        $short = 15-count($this->import->getHeader());
+        $expanded = ! $short > 0; 
         if ( $this->isVehicle() ) {
+            
+            // VEHICLE
             $item = new Vehicle();
-            if ($this->data[1] && $em) {
-                $model = $em->getRepository(VehicleModel::getClass())->findOneBy(['fipe' => $this->data[1]]);
+            $item->setPlate($this->data[0]);
+            if ($expanded ) {
+                if ($em && !empty($this->data[1]) ) {
+                    $model = $em->getRepository(VehicleModel::getClass())->findOneBy(['fipe' => $this->data[1]]);
+                }
+                $item->setAssetCode($this->data[2]);
             }
             if (!isset($model)) {
-                $model = new VehicleModel($this->data[2], new VehicleMaker($this->data[3]), new VehicleFamily($this->data[4]));
-                $model->setFipe($this->data[1]);
+                $model = new VehicleModel($this->data[3-$short]);
+                $model->setFamily(new VehicleFamily($this->data[4-$short]));
+                $model->setMaker(new VehicleMaker($this->data[5-$short]));
             }
             $item->setModel($model);
-            $item->setPlate($this->data[0]);
-            $item->setRenavam($this->data[5]);
-            $item->setVin($this->data[6]);
-            $item->setYear($this->data[8], $this->data[9]);
-            $item->setOdometer((int) $this->data[10]);
-            if ($this->data[13] && $em) {
-                $nif = Format::CNPJ($this->data[13]);
+            if ($value = $this->toFleet($this->data[6-$short])) {
+                $item->setFleet($value);
+            }
+            $item->setRenavam($this->data[7-$short]);
+            $item->setVin($this->data[8-$short]);
+            if ($value = $this->toEngine($this->data[9-$short])) {
+                $item->setEngine($value);
+            }
+            $item->setYear($this->data[10-$short], $this->data[11-$short]);
+            $item->setOdometer( $this->data[12-$short]);
+            if (!empty($this->data[13-$short]) && $em) {
+                $nif = Format::CNPJ($this->data[13-$short]);
                 $owner = $em->getRepository(OwnerCompany::getClass())->findOneBy(['nif' => $nif]);
-                if ($owner == null && $this->data[14]) {
+                if ($owner == null && !empty($this->data[14-$short])) {
                     $owner = new OwnerCompany();
                     $owner->setNif($nif);
-                    $owner->setName($this->data[14]);
+                    $owner->setName($this->data[14-$short]);
                 }
                 $item->setOwner($owner);
             }
         } else {
+            
+            // EQUIPAMENT
             $item = new Equipment();
-            $item->setDescription($this->data[3]);
-            $item->setSerialNumber($this->data[6]);
+            if ($expanded) {
+                $item->setAssetCode($this->data[2]);
+            }
+            $item->setDescription($this->data[3-$short]);
+            if ($value = $this->toFleet($this->data[6-$short])) {
+                $item->setFleet($value);
+            }
+            $item->setSerialNumber($this->data[8-$short]);
+            if ($value = $this->toEngine($this->data[9-$short])) {
+                $item->setEngine($value);
+            }
         }
         $item->setResponsibleUnit($this->import->getAgency());
-        try {
-            switch (strtoupper($this->data[7])) {
-                case 'GASOLINA':
-                    $item->setEngine(Engine::GASOLINE);
-                    break;
-                    
-                case 'ETANOL':
-                    $item->setEngine(Engine::ETHANOL);
-                    break;
-                    
-                case 'FLEX':
-                    $item->setEngine(Engine::FLEX);
-                    break;
-                    
-                case 'DIESEL':
-                    $item->setEngine(Engine::DIESEL);
-                    break;
-            }
-        } catch (\DomainException $e) { }
-        try {
-            switch (str_replace('Ó', 'O', strtoupper(substr($this->data[11], 0, -1)))) {
-                case 'PROPRI':
-                    $item->setFleet(Fleet::OWN);
-                    break;
-                    
-                case 'LOCAD':
-                    $item->setFleet(Fleet::RENTED);
-                    break;
-                    
-                case 'CEDID':
-                    $item->setFleet(Fleet::ASSIGNED);
-                    break;
-                    
-                case 'ACAUTELAD':
-                    $item->setFleet(Fleet::GUARDED);
-                    break;
-            }
-        } catch (\DomainException $e) { }
-        $item->setAssetCode($this->data[12]);
         return $item;
+    }
+    
+    /**
+     * 
+     * @param string $value
+     * @return integer
+     */
+    private function toEngine($value) {
+        switch (strtoupper($value)) {
+            case 'GASOLINA':
+                return Engine::GASOLINE;
+                
+            case 'ETANOL':
+                return Engine::ETHANOL;
+                
+            case 'FLEX':
+                return Engine::FLEX;
+                
+            case 'DIESEL':
+                return Engine::DIESEL;
+        }
+    }
+    
+    /**
+     * @param string $value
+     * @return integer
+     */
+    private function toFleet($value) {
+        switch (str_replace('Ó', 'O', strtoupper(substr($value, 0, -1)))) {
+            case 'PROPRI':
+                return Fleet::OWN;
+                
+            case 'LOCAD':
+                return Fleet::RENTED;
+                
+            case 'CEDID':
+                return Fleet::ASSIGNED;
+                
+            case 'ACAUTELAD':
+                return Fleet::GUARDED;
+        }
     }
 
     
@@ -200,7 +229,8 @@ class ImportItem extends Entity {
      * @return boolean
      */
     private function isVehicle() {
-        return stripos($this->data[4], 'EQUIPAMENTO') === false;
+        $short = 15-count($this->import->getHeader());
+        return stripos($this->data[4-$short], 'EQUIPAMENTO') === false;
     }
     
 }

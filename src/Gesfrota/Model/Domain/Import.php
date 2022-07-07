@@ -51,7 +51,7 @@ class Import extends Entity {
     protected $finished;
     
     /**
-     * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"all"})
+     * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"persist"})
      * @var ArrayCollection
      */
     protected $items;
