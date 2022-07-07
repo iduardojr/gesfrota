@@ -58,7 +58,6 @@ class ImportPreProcessForm extends AbstractForm {
 		});
 		    
 	    $header = $import->getHeader();
-	    unset($header[0]);
 	    $this->table->buildColumnAction('transform', new Icon('icon-cog'), $transform, null, function (Button $btn, ImportItem $item) {
 	        $btn->setDisabled($item->getImport()->getFinished() && $item->getStatus() === false);
 	    });
@@ -67,7 +66,7 @@ class ImportPreProcessForm extends AbstractForm {
         });
         foreach ($header as $index => $head) {
             $this->table->buildColumnText('data', $head, null, null, null, function ($data) use ($index) {
-                return $data[$index];
+                return ! empty($data[$index]) ? $data[$index] : '<code>null</code>';
             });
         }
 		$this->pagination = $this->table->buildPagination(clone $submit);

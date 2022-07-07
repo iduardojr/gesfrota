@@ -22,6 +22,9 @@ use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\Equipment;
+use PHPBootstrap\Widget\Form\Controls\Help;
+use PHPBootstrap\Widget\Misc\Well;
+use PHPBootstrap\Widget\Layout\Panel;
 
 class ImportUploadForm extends AbstractForm {
 	
@@ -66,8 +69,35 @@ class ImportUploadForm extends AbstractForm {
 		$input = new XFileBox('file');
 		$input->setPlaceholder('Escolha um arquivo .csv');
 		$input->setPattern(new Upload(['text/csv' => 'csv'], 'Informe um arquivo .csv'));
-		$input->setSpan(3);
-		$form->buildField(null, $input, null, $fieldset);
+		$input->setSpan(7);
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$form->buildField('Arquivo', $input, null, $fieldset);
+		
+		$text[]= '<p>O arquivo deve ter o tamanho máximo de <code>'. ini_get('upload_max_filesize') . 'B</code>
+                     e os seus valores devem ser separados por <code>;</code> e delimitados por <code>"</code>.</p>';
+		$text[]= '<p>A primeira linha é o cabeçalho do arquivo correspondendo ao nome dos campos 
+                     e as demais linhas é um registro com os seus respectivos valores formatados da seguintes forma e sequência:</p>';
+		$text[]= '<dl class="dl-horizontal">
+                     <dt>Placa</dt>                 <dd>AAA9*999</dd>
+                     <dt>FIPE</dt>                  <dd>999999-9</dd>   
+                     <dt>Modelo</dt>                <dd><i>alfanumérico</i></dd>
+                     <dt>Fabricante</dt>            <dd><i>alfanumérico</i></dd>
+                     <dt>Categoria</dt>             <dd>EQUIPAMENTO|VEICULO(<i>alfanumérico</i>)</dd>
+                     <dt>Renavam</dt>               <dd><i>numérico</i></dd>
+                     <dt>Chassi / Nº de Série</dt>  <dd><i>alfanúmerico</i></dd>
+                     <dt>Motor</dt>                 <dd>GASOLINA|ETANOL|FLEX|DIESEL</dd>
+                     <dt>Ano Fabricação</dt>        <dd>9999</dd>
+                     <dt>Ano Modelo</dt>            <dd>9999</dd>
+                     <dt>Hodômetro</dt>             <dd><i>numérico</i></dd>
+                     <dt>Tipo da Frota</dt>         <dd>PROPRIA|LOCADA|ACAUTELADA|CEDIDA</dd>
+                     <dt>Cod. Patrimonial</dt>      <dd><i>alfanúmerico</i></dd>
+                     <dt>CNPJ Proprietário</dt>     <dd><i>numérico</i></dd>
+                     <dt>Razão Social</dt>          <dd><i>alfanumérico</i></dd>
+                  </dl>';
+		$text[]= '<p>As seguintes definições representam um caractere 
+                     <code>A</code> alfabético, <code>9</code> numérico e <code>*</code> alfanumérico.</p>';
+
+		$form->buildField(null, new Well('info', new Panel(implode('', $text))), null, $fieldset);
 		
 		$tab = new Tabbable('import-tabs');
 		$tab->setPlacement(Tabbable::Left);
@@ -113,16 +143,7 @@ class ImportUploadForm extends AbstractForm {
 		$object->getItems()->clear();
 		while ($data = fgetcsv($file, 0, ";")) {
 		    $item = new ImportItem($object, $this->tranform($data));
-		    if ( $item->isVehicle() ) {
-		        $rep = $em->getRepository(Vehicle::getClass());
-		        $criteria = ['plate' => $item->getData()[1]];
-		    } else {
-		        $rep = $em->getRepository(Equipment::getClass());
-		        $criteria = ['assetCode' => $item->getData()[6], 'responsibleUnit' => $object->getAgency()];
-		    }
-		    if ($ref = $rep->findOneBy($criteria) ) {
-		        $item->setReference($ref);
-		    }
+		    $item->toPreProcess($em);
 		    $object->getItems()->add($item);
 		}
 	}
