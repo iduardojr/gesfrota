@@ -51,7 +51,7 @@ class DisposalList extends AbstractList {
 		
 		$input = new TextBox('description');
 		$input->setSpan(5);
-		$form->buildField('Nome da Lista', $input);
+		$form->buildField('Descrição', $input);
 		
 		$input = [];
 		$input[1] = new DateBox('date-initial', new Date(new DateFormat('dd/mm/yyyy')));
@@ -77,7 +77,7 @@ class DisposalList extends AbstractList {
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId(null, clone $filter);
-		$table->buildColumnText('description', 'Nome da Lista', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
 		
 		if ($showAgencies) {
 			$table->buildColumnText('requesterUnit', 'Órgão', clone $filter, 70);
