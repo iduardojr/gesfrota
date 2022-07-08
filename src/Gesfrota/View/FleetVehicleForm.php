@@ -42,6 +42,7 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
+use PHPBootstrap\Validate\Pattern\Pattern;
 
 class FleetVehicleForm extends AbstractForm {
     
@@ -149,6 +150,7 @@ class FleetVehicleForm extends AbstractForm {
 		$input->setSpan(2);
 		$input->setMask('?99999999999');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
+		$input->setPattern(new Pattern(Pattern::Digits, utf8_decode('Por favor, informe apenas dígitos')));
 		$form->buildField('Renavam', $input, null, $general);
 		
 		$input = new NumberBox('odometer', new Number(new NumberFormat(0, '', '.')));

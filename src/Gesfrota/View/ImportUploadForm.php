@@ -8,23 +8,20 @@ use Gesfrota\View\Widget\AbstractForm;
 use PHPBootstrap\Validate\Pattern\Upload;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
+use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
+use PHPBootstrap\Widget\Form\Controls\SearchBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\XFileBox;
+use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
+use PHPBootstrap\Widget\Layout\Panel;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Misc\Well;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Misc\Title;
-use PHPBootstrap\Widget\Button\Button;
-use PHPBootstrap\Widget\Modal\TgModalClose;
-use PHPBootstrap\Widget\Form\Controls\Decorator\Seek;
-use PHPBootstrap\Widget\Form\Controls\SearchBox;
-use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\Equipment;
-use PHPBootstrap\Widget\Form\Controls\Help;
-use PHPBootstrap\Widget\Misc\Well;
-use PHPBootstrap\Widget\Layout\Panel;
 
 class ImportUploadForm extends AbstractForm {
 	
@@ -79,18 +76,18 @@ class ImportUploadForm extends AbstractForm {
                      e as demais linhas é um registro com os seus respectivos valores formatados da seguintes forma e sequência:</p>';
 		$text[]= '<dl class="dl-horizontal">
                      <dt>Placa</dt>                 <dd>AAA9*999</dd>
-                     <dt>FIPE</dt>                  <dd>999999-9</dd>   
+                     <dt>[FIPE]</dt>                <dd>999999-9</dd>   
+                     <dt>[Cod. Patrimonial]</dt>    <dd><i>alfanúmerico</i></dd>
                      <dt>Modelo</dt>                <dd><i>alfanumérico</i></dd>
-                     <dt>Fabricante</dt>            <dd><i>alfanumérico</i></dd>
                      <dt>Categoria</dt>             <dd>EQUIPAMENTO|VEICULO(<i>alfanumérico</i>)</dd>
+                     <dt>Fabricante</dt>            <dd><i>alfanumérico</i></dd>
+                     <dt>Tipo da Frota</dt>         <dd>PROPRIA|LOCADA|ACAUTELADA|CEDIDA</dd>
                      <dt>Renavam</dt>               <dd><i>numérico</i></dd>
                      <dt>Chassi / Nº de Série</dt>  <dd><i>alfanúmerico</i></dd>
                      <dt>Motor</dt>                 <dd>GASOLINA|ETANOL|FLEX|DIESEL</dd>
                      <dt>Ano Fabricação</dt>        <dd>9999</dd>
                      <dt>Ano Modelo</dt>            <dd>9999</dd>
                      <dt>Hodômetro</dt>             <dd><i>numérico</i></dd>
-                     <dt>Tipo da Frota</dt>         <dd>PROPRIA|LOCADA|ACAUTELADA|CEDIDA</dd>
-                     <dt>Cod. Patrimonial</dt>      <dd><i>alfanúmerico</i></dd>
                      <dt>CNPJ Proprietário</dt>     <dd><i>numérico</i></dd>
                      <dt>Razão Social</dt>          <dd><i>alfanumérico</i></dd>
                   </dl>';
