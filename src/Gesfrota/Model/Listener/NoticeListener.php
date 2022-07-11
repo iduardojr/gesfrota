@@ -2,7 +2,7 @@
 namespace Gesfrota\Model\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Gesfrota\Model\Sys\Notice;
+use Gesfrota\Model\Domain\Notice;
 
 class NoticeListener {
     

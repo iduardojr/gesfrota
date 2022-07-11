@@ -89,7 +89,7 @@ class AccountController extends AbstractController {
     	            $display->append(new Paragraph('<small>' . $date . '</small>'));
     	           
     	            $display->append(new Panel('<hr>'));
-    	            $display->append(new Panel(str_replace('{notice-read-current}', '/notice/read/' . $notice->getId(), $notice->getBody())));
+    	            $display->append(new Panel(str_replace('{notice-read-current}', '/notice/read/' . $notice->getId(), $notice->getBody()), 'notice-body'));
     	        } else {
     	            $display->append(new Alert('<strong>Ops! </strong> Notificação não encontrada.'));
     	        }

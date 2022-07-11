@@ -60,7 +60,6 @@ class IndexController extends AbstractController {
 		$layout->vehicle_x_equipament = $this->getVehicleXEquipament($agency);
 		
 		$layout->notice = $this->getLastNotification();
-		
 		return $layout;
 	}
 	

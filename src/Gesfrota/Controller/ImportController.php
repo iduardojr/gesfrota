@@ -7,18 +7,13 @@ use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
-use Gesfrota\Model\Domain\Engine;
 use Gesfrota\Model\Domain\Equipment;
-use Gesfrota\Model\Domain\Fleet;
 use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\Import;
 use Gesfrota\Model\Domain\ImportItem;
-use Gesfrota\Model\Domain\OwnerCompany;
 use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\Vehicle;
-use Gesfrota\Model\Domain\VehicleFamily;
-use Gesfrota\Model\Domain\VehicleMaker;
-use Gesfrota\Model\Domain\VehicleModel;
+use Gesfrota\Util\Format;
 use Gesfrota\View\FleetEquipmentForm;
 use Gesfrota\View\FleetVehicleForm;
 use Gesfrota\View\ImportList;
@@ -29,7 +24,6 @@ use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use Gesfrota\Util\Format;
 
 class ImportController extends AbstractController {
 	
@@ -37,6 +31,15 @@ class ImportController extends AbstractController {
     
 	public function indexAction() {
 		try {
+		    if ( ! $this->getAgencyActive()->isGovernment() ) {
+		        $rep = $this->getEntityManager()->getRepository(Import::getClass());
+		        $import = $rep->findOneBy(['agency' => $this->getAgencyActive(), 'finished' => false], ['id' => 'desc']);
+		        if ($import instanceof Import) {
+		            $this->forward('/pre-process/' . $import->getId());
+		        } else {
+		            $this->forward('/new');
+		        }
+		    }
 		    $filter = new Action($this);
 		    $upload = new Action($this, 'new');
 		    $process = new Action($this, 'pre-process');
@@ -82,7 +85,7 @@ class ImportController extends AbstractController {
 	        set_time_limit(0);
 	        $agency = $this->getAgencySelected();
 	        $submit = new Action($this, 'new');
-	        $cancel = new Action($this);
+	        $cancel = $this->getAgencyActive()->isGovernment() ? new Action($this) : new Action(FleetController::getClass());
 	        $seek 	= new Action($this, 'seek-agency');
 	        $search = new Action($this, 'search-agency');
 	        $showAgencies = $this->getAgencyActive()->isGovernment();
@@ -111,11 +114,13 @@ class ImportController extends AbstractController {
 	            throw new NotFoundEntityException('Não é possível transformar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
 	        $submit = new Action($this, 'pre-process', ['key' => $key]);
-	        $cancel = new Action($this);
+	        $remove = new Action($this, 'remove', ['key' => $key]);
+	        $download = new Action($this,'download', ['key' => $key]);
+	        $cancel = $this->getAgencyActive()->isGovernment() ? new Action($this) : new Action(FleetController::getClass());
 	        $transform = new Action($this, 'transform-item');
 	        $dismiss = new Action($this, 'dismiss-item');
 	        
-	        $form = new ImportPreProcessForm($submit, $cancel, $transform, $dismiss, $entity, $this->getAgencyActive());
+	        $form = new ImportPreProcessForm($submit, $remove, $download, $cancel, $transform, $dismiss, $entity);
 	        
 	        $query = $this->getEntityManager()->getRepository(ImportItem::getClass())->createQueryBuilder('u');
 	        $query->where('u.import = :key ');

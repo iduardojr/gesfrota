@@ -412,6 +412,13 @@ fieldset > legend {
 #notice-display #mark-read {
 	float: right;
 }
+#account-notices-table .cell {
+	height: auto;
+}
+#account-notices-table.table td, 
+#account-notices-table.table th  {
+	vertical-align: top;
+}
 #notice-aside-form h5 {
 	margin: 5px 0 15px 0;
 	padding-bottom: 7px;
@@ -470,6 +477,9 @@ fieldset > legend {
 	margin-bottom: 10px;
 	max-width: 1010px;
 	overflow-x: auto;
+}
+.notification {
+	margin-top: -15px;
 }
 .controls-row .help-inline {
 	margin-left: 0 !important;
