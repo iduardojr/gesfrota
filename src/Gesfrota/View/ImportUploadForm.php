@@ -73,13 +73,13 @@ class ImportUploadForm extends AbstractForm {
 		$text[]= '<p>O arquivo deve ter o tamanho máximo de <code>'. ini_get('upload_max_filesize') . 'B</code>
                      e os seus valores devem ser separados por <code>;</code> e delimitados por <code>"</code>.</p>';
 		$text[]= '<p>A primeira linha é o cabeçalho do arquivo correspondendo ao nome dos campos 
-                     e as demais linhas é um registro com os seus respectivos valores formatados da seguintes forma e sequência:</p>';
+                     e as demais linhas é um registro com os seus respectivos valores formatados da seguinte forma e sequência:</p>';
 		$text[]= '<dl class="dl-horizontal">
                      <dt>Placa</dt>                 <dd>AAA9*999</dd>
                      <dt>[FIPE]</dt>                <dd>999999-9</dd>   
                      <dt>[Cod. Patrimonial]</dt>    <dd><i>alfanúmerico</i></dd>
                      <dt>Modelo</dt>                <dd><i>alfanumérico</i></dd>
-                     <dt>Categoria</dt>             <dd>EQUIPAMENTO|VEICULO(<i>alfanumérico</i>)</dd>
+                     <dt>Categoria</dt>             <dd>EQUIPAMENTO|VEICULO<i>&lt;alfanumérico&gt;</i></dd>
                      <dt>Fabricante</dt>            <dd><i>alfanumérico</i></dd>
                      <dt>Tipo da Frota</dt>         <dd>PROPRIA|LOCADA|ACAUTELADA|CEDIDA</dd>
                      <dt>Renavam</dt>               <dd><i>numérico</i></dd>
@@ -92,7 +92,8 @@ class ImportUploadForm extends AbstractForm {
                      <dt>Razão Social</dt>          <dd><i>alfanumérico</i></dd>
                   </dl>';
 		$text[]= '<p>As seguintes definições representam um caractere 
-                     <code>A</code> alfabético, <code>9</code> numérico e <code>*</code> alfanumérico.</p>';
+                     alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>. 
+                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 13 ou 15 colunas (arquivo reduzido ou expandido).</p>';
 
 		$form->buildField(null, new Well('info', new Panel(implode('', $text))), null, $fieldset);
 		

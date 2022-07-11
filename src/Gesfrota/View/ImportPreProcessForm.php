@@ -2,6 +2,7 @@
 namespace Gesfrota\View;
 
 use Gesfrota\Model\Domain\Import;
+use Gesfrota\Model\Domain\ImportItem;
 use Gesfrota\View\Widget\AbstractForm;
 use Gesfrota\View\Widget\BuilderTable;
 use Gesfrota\View\Widget\EntityDatasource;
@@ -12,6 +13,7 @@ use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Layout\Panel;
 use PHPBootstrap\Widget\Layout\Row;
+use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Misc\Paragraph;
 use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Modal\Modal;
@@ -21,9 +23,6 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Pagination\Pagination;
-use Gesfrota\Model\Domain\ImportItem;
-use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Form\Controls\Output;
 
 class ImportPreProcessForm extends AbstractForm {
     
@@ -44,7 +43,7 @@ class ImportPreProcessForm extends AbstractForm {
 	 * @param Action $dismiss
 	 * @param Import $import
 	 */
-    public function __construct(Action $submit, Action $cancel, Action $transform, Action $dismiss, Import $import ) {
+    public function __construct(Action $submit, Action $remove, Action $download, Action $cancel, Action $transform, Action $dismiss, Import $import ) {
         $this->buildPanel('Minha Frota', 'Transformar Importação');
 		$form = $this->buildForm('import-preprocess-form');
 		$fieldset = new Fieldset('Dados Pré-processados <small>'. $import->getDescription(). '</small>');
@@ -86,14 +85,15 @@ class ImportPreProcessForm extends AbstractForm {
 		
 		$form->append($tab);
 		
-		$confirm = new Modal('modal-import-finish-confirm', new Title('Confirme', 3));
-		$confirm->setBody(new Paragraph('Você tem certeza que quer finalizar essa importação?'));
-		$confirm->setWidth(380);
-		$confirm->addButton(new Button('Ok', new TgFormSubmit($submit, $form), Button::Primary));
-		$confirm->addButton(new Button('Cancelar', new TgModalClose()));
-		$this->panel->append($confirm);
+		$confirmFinished = new Modal('modal-import-finish-confirm', new Title('Confirme', 3));
+		$confirmFinished->setBody(new Paragraph('Você tem certeza que quer finalizar essa importação?'));
+		$confirmFinished->setWidth(380);
+		$confirmFinished->addButton(new Button('Ok', new TgFormSubmit($submit, $form), Button::Primary));
+		$confirmFinished->addButton(new Button('Cancelar', new TgModalClose()));
+		$this->panel->append($confirmFinished);
 
-		$form->buildButton('submit', 'Finalizar', new TgModalOpen($confirm))->setDisabled(($import->getFinished()));
+		$form->buildButton('submit', 'Finalizar', new TgModalOpen($confirmFinished))->setDisabled(($import->getFinished()));
+		$form->buildButton('download', 'Baixar Arquivo', $download);
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
