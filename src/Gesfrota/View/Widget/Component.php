@@ -19,6 +19,11 @@ class Component implements Renderable {
 	protected $panel;
 	
 	/**
+	 * @var Panel
+	 */
+	protected $alert;
+	
+	/**
 	 * @var Widget
 	 */
 	protected $component;
@@ -29,10 +34,7 @@ class Component implements Renderable {
 	 * @param Alert $alert
 	 */
 	public function setAlert( Alert $alert = null ) {
-		$flashMessage = $this->panel->getByName('flash-message');
-		if ( $alert ) {
-			$flashMessage->setContent($alert);
-		}
+	    $this->alert->setContent($alert);
 	}
 	
 	/**
@@ -55,7 +57,8 @@ class Component implements Renderable {
 			if ( func_num_args() ) {
 				$panel->append($this->buildHeader($title, $subtext));
 			}
-			$panel->append(new Panel(null, 'flash-message'));
+			$this->alert = new Panel(null, 'flash-message');
+			$panel->append($this->alert);
 			$this->panel = $panel;
 		}
 		return $this->panel;

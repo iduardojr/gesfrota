@@ -94,6 +94,7 @@ class RendererDynInput extends RendererComponent {
 	}
 	
 	protected function format($label, $index) {
+	    $seq = null;
 		$seq = function ($i) use (&$seq){
 			if ($i > 25) {
 				return $seq(($i/26)-1). $seq($i%26);

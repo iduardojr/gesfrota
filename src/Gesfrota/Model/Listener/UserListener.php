@@ -4,7 +4,6 @@ namespace Gesfrota\Model\Listener;
 use Gesfrota\Model\Domain\User;
 use Gesfrota\Util\Crypt;
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 
 class UserListener {
 	

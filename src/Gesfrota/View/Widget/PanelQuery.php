@@ -1,16 +1,15 @@
 <?php
 namespace Gesfrota\View\Widget;
 
-use PHPBootstrap\Widget\Layout\Box;
-use PHPBootstrap\Widget\Layout\Panel;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgAjax;
-use PHPBootstrap\Widget\Table\Table;
 use PHPBootstrap\Widget\Form\Controls\SearchBox;
-use PHPBootstrap\Widget\Pagination\AbstractPagination;
-use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Table\Column;
+use PHPBootstrap\Widget\Layout\Box;
+use PHPBootstrap\Widget\Layout\Panel;
 use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Pagination\AbstractPagination;
+use PHPBootstrap\Widget\Table\Table;
 
 
 class PanelQuery extends Box {

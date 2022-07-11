@@ -28,6 +28,7 @@ use PHPBootstrap\Widget\Form\Controls\ChosenBox;
 use Gesfrota\Model\Domain\ResultCenter;
 use PHPBootstrap\Widget\Form\Controls\Hidden;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
+use Gesfrota\Model\Domain\Fleet;
 
 class FleetEquipmentForm extends AbstractForm {
     
@@ -47,11 +48,11 @@ class FleetEquipmentForm extends AbstractForm {
 		
 		$general = new Fieldset('Identificação do Equipamento');
 		
-		$input = new TextBox('asset-code');
+		$input = new TextBox('serial-number');
 		$input->setSpan(3);
 		$input->addFilter('strtoupper');
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
-		$form->buildField('Cód. Patrimonial', $input, null, $general);
+		$form->buildField('Nº de Série', $input, null, $general);
 		
 		$input = new TextBox('description');
 		$input->setSpan(7);
@@ -100,6 +101,14 @@ class FleetEquipmentForm extends AbstractForm {
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Tipo da Frota', $input, null, $general);
 		
+		$context = new InputContext($input, Fleet::OWN);
+		
+		$input = new TextBox('asset-code');
+		$input->setSpan(2);
+		$input->addFilter('strtoupper');
+		$input->setRequired(new Required($context, 'Por favor, preencha esse campo'));
+		$form->buildField('Cód. Patrimonial', $input, null, $general);
+		
 		$input = new CheckBox('active', 'Ativo');
 		$input->setValue(true);
 		$form->buildField(null, $input, null, $general);
@@ -129,7 +138,7 @@ class FleetEquipmentForm extends AbstractForm {
 	 * @see AbstractForm::extract()
 	 */
 	public function extract( Equipment $object ) {
-	    $data['asset-code'] = $object->getAssetCode();
+	    $data['serial-number'] = $object->getSerialNumber();
 	    $data['description'] = $object->getDescription();
 	    if ($object->getResponsibleUnit()) {
 	    	$data['agency-id'] = $object->getResponsibleUnit()->getCode();
@@ -138,6 +147,7 @@ class FleetEquipmentForm extends AbstractForm {
 	    $data['results-center'] = array_keys($object->getAllResultCenters());
 		$data['engine'] = $object->getEngine();
 		$data['fleet'] = $object->getFleet();
+		$data['asset-code'] = $object->getAssetCode();
 		$data['active'] = $object->getActive();
 		$data['cards'] = $object->getAllCards();
 		if ($object->getId()) {
@@ -153,10 +163,11 @@ class FleetEquipmentForm extends AbstractForm {
 	 */
 	public function hydrate( Equipment $object, EntityManager $em ) {
 		$data = $this->component->getData();
-		$object->setAssetCode($data['asset-code']);
+		$object->setSerialNumber($data['serial-number']);
 		$object->setDescription($data['description']);
 		$object->setEngine((int) $data['engine']);
 		$object->setFleet((int) $data['fleet']);
+		$object->setAssetCode($data['asset-code']);
 		$object->setActive($data['active']);
 		if (isset($data['agency-id'])) {
 			$object->setResponsibleUnit($em->find(Agency::getClass(), $data['agency-id']));

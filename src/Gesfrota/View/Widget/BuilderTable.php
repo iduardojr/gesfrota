@@ -1,22 +1,21 @@
 <?php
 namespace Gesfrota\View\Widget;
 
-use PHPBootstrap\Widget\Table\Table;
-use PHPBootstrap\Widget\Layout\Panel;
+use Gesfrota\Model\Entity;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
+use PHPBootstrap\Widget\Layout\Panel;
 use PHPBootstrap\Widget\Modal\Modal;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
-use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Table\ColumnAction;
-use PHPBootstrap\Widget\Table\DataSource;
-use PHPBootstrap\Widget\Pagination\Pageable;
 use PHPBootstrap\Widget\Pagination\Pagination;
 use PHPBootstrap\Widget\Pagination\Paginator;
 use PHPBootstrap\Widget\Pagination\Scrolling\Sliding;
-use Gesfrota\Model\Entity;
-use PHPBootstrap\Widget\Toggle\Togglable;
+use PHPBootstrap\Widget\Table\ColumnAction;
+use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Table\DataSource;
+use PHPBootstrap\Widget\Table\Table;
 use PHPBootstrap\Widget\Toggle\Parameterizable;
+use PHPBootstrap\Widget\Toggle\Togglable;
 
 class BuilderTable extends Table {
 	

@@ -161,6 +161,7 @@ class Direction extends AbstractComponent {
 	}
 	
 	protected function format($marker, $index) {
+	    $seq = null;
 		$seq = function ($i) use (&$seq){
 			if ($i > 25) {
 				return $seq(($i/26)-1). $seq($i%26);

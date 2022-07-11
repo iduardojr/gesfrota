@@ -51,7 +51,7 @@ class Vehicle extends FleetItem {
     protected $model;
     
     /**
-     * @ManyToOne(targetEntity="Owner")
+     * @ManyToOne(targetEntity="Owner", cascade={"persist"})
      * @JoinColumn(name="owner_id", referencedColumnName="id")
      * @var Owner
      */
@@ -170,14 +170,14 @@ class Vehicle extends FleetItem {
     /**
      * @param integer $year
      */
-    public function setYearModel(int $year)   {
+    public function setYearModel($year)   {
         $this->yearModel = $year;
     }
 
     /**
      * @param integer $year
      */
-    public function setYearManufacture(int $year) {
+    public function setYearManufacture($year) {
         $this->yearManufacture = $year;
     }
     
@@ -187,7 +187,7 @@ class Vehicle extends FleetItem {
      * @param int $model
      * @param int $manufacture
      */
-    public function setYear(int $manufacture, int $model = null) {
+    public function setYear($manufacture, $model = null) {
         $this->setYearManufacture($manufacture);
         if ($model <= 0) {
             $model = $manufacture;
@@ -199,7 +199,7 @@ class Vehicle extends FleetItem {
      * @param boolean $simple
      * @return integer[]
      */
-    public function getYear(bool $simple = true) {
+    public function getYear($simple = true) {
         if ($simple && $this->getYearModel() == $this->getYearManufacture()) {
             return  [$this->getYearModel()];
         }
@@ -217,7 +217,7 @@ class Vehicle extends FleetItem {
     /**
      * @param integer $renavam
      */
-    public function setRenavam(int $renavam) {
+    public function setRenavam($renavam) {
         $this->renavam = $renavam;
     }
 
