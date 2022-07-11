@@ -4,14 +4,8 @@ use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\RequestTrip;
 use Gesfrota\Model\Domain\Request;
 use Gesfrota\Model\Domain\Requester;
-use Gesfrota\Model\Domain\Notice;
 ?>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<?php if ($this->notice instanceof Notice ) {?>
-<div id="notice">
-  <?php echo str_replace('{notice-read-current}', '/notice/read/' . $this->notice->id, $this->notice->getBody()); ?>
-</div>
-<?php } ?>
 <div class="page-header">
 	<form action="/" method="post" class="form-inline pull-right" style="display: inline-block; margin: 7px;">
 		<label>Período</label>
