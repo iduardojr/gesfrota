@@ -32,7 +32,11 @@ class RequestFieldsetInitiate extends RequestFieldSetStep {
 	}
 	
 	public function toDo(User $user, Request $obj, array $data, EntityManager $em) {
-		$obj->toInitiate($user, $data['odometer-initial']);
+	    try {
+		    $obj->toInitiate($user, $data['odometer-initial']);
+	    } catch (\InvalidArgumentException $e) {
+	        throw new \InvalidArgumentException('O hodômetro inicial não pode ser menor que o hodômetro do veículo: ' . $obj->getVehicle()->getOdometer() . ' km.');
+	    }
 	}
 
 	public function toArray(Request $obj) {

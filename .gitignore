@@ -8,9 +8,5 @@
 /logs
 /public_html/fipe.php
 /public_html/imports/
-<<<<<<< HEAD
-=======
 /public_html/media/
->>>>>>> refs/heads/hotfix
 /docs/data-modeling.mwb.bak
-/src/config/local.config.php
