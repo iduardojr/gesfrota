@@ -32,7 +32,11 @@ class RequestFieldsetFinish extends RequestFieldSetStep {
 	}
 	
 	public function toDo(User $user, Request $obj, array $data, EntityManager $em) {
-		$obj->toFinish($user, $data['odometer-final']);
+	    try {
+		    $obj->toFinish($user, $data['odometer-final']);
+	    } catch (\InvalidArgumentException $e) {
+	        throw new \InvalidArgumentException('O hodômetro final não pode ser menor que o hodômetro do veículo: ' . $obj->getVehicle()->getOdometer() . ' km.');
+	    }
 	}
 
 	public function toArray(Request $obj) {
