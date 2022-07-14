@@ -292,6 +292,11 @@ class FleetController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				$data = $form->getData();
+			    $owner = $this->getEntityManager()->getRepository(Owner::getClass())->findOneBy(['nif' => $data['nif']]);
+			    if ($owner instanceof Owner) {
+			        $type = $owner instanceof OwnerCompany ? 'CNPJ' : 'CPF';
+			        throw new \ErrorException('Este <em>' . $type . ' ' . $owner->getNif() . '</em> já está cadastrado para o Proprietário <em>#' .$owner->getCode() . ' ' . $owner->getName() . '</em>');
+			    }
 				$owner = new OwnerPerson();
 				$owner->setName($data['name']);
 				$owner->setNif($data['nif']);
@@ -317,6 +322,11 @@ class FleetController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				$data = $form->getData();
+				$owner = $this->getEntityManager()->getRepository(Owner::getClass())->findOneBy(['nif' => $data['nif']]);
+				if ($owner instanceof Owner) {
+				    $type = $owner instanceof OwnerCompany ? 'CNPJ' : 'CPF';
+				    throw new \ErrorException('Este <em>' . $type . ' ' . $owner->getNif() . '</em> já está cadastrado para o Proprietário <em>#' .$owner->getCode() . ' ' . $owner->getName() . '</em>');
+				}
 				$owner = new OwnerCompany();
 				$owner->setName($data['name']);
 				$owner->setNif($data['nif']);
