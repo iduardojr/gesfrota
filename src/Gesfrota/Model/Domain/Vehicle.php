@@ -1,6 +1,8 @@
 <?php
 namespace Gesfrota\Model\Domain;
 
+use Gesfrota\Util\Format;
+
 /**
  * Veículo
  * @Entity
@@ -136,7 +138,7 @@ class Vehicle extends FleetItem {
      * @return integer
      */
     public function getRenavam() {
-        return $this->renavam;
+        return Format::code($this->renavam, 11);
     }
 
     /**
