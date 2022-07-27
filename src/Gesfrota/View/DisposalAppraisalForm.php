@@ -16,6 +16,8 @@ use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
+use PHPBootstrap\Widget\Action\TgWindows;
+use PHPBootstrap\Widget\Misc\Icon;
 
 class DisposalAppraisalForm extends AbstractForm {
 	
@@ -30,7 +32,7 @@ class DisposalAppraisalForm extends AbstractForm {
 	 * @param Action $cancel
 	 * @param DisposalItemTable $table
 	 */
-	public function __construct( Disposal $disposal, Action $next, Action $cancel, DisposalItemTable $table ) {
+	public function __construct( Disposal $disposal, Action $next, Action $print, Action $cancel, DisposalItemTable $table ) {
 	    $this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		$form = $this->buildForm('disposal-appraisal-form');
 		
@@ -79,6 +81,7 @@ class DisposalAppraisalForm extends AbstractForm {
 		$form->append($tab);
 
 		$form->buildButton('submit', 'Encaminhar Disposição', $next);
+		$form->buildButton('print', [new Icon('icon-print'), 'Imprimir Disposição'], new TgWindows($print, 1024, 762));
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	

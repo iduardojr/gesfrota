@@ -5,15 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sistema de Gestão de Frotas</title>
         <link rel="stylesheet" href="/vendor/bootstrap/bootstrap-2.3.2.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/vendor/bootstrap-datepicker/bootstrap-datepicker.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/vendor/bootstrap-timepicker/bootstrap-timepicker-0.2.3.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/vendor/bootstrap-colorpicker/bootstrap-colorpicker.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/vendor/chosen/chosen-1.0.0.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/vendor/phpbootstrap/phpbootstrap.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/css/application.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/css/print.css" type="text/css" media="all" />
     </head>
     <body>
-    	<div class="container">
+    	<div id="content-print" class="container">
             <?php echo $this->__CONTENT__; ?>
 			<div class="text-center no-print" style="margin: 50px 0 100px 0">
 			<button type="button" id="print" class="btn btn-primary"><i class="icon-print icon-white"></i> Imprimir</button>
@@ -25,7 +20,6 @@
 	        </div>
         </footer>
 		<script type="text/javascript">
-		
 		document.getElementById("print").addEventListener('click', function(e) {
 			window.print();
 			return false;

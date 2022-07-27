@@ -9,24 +9,28 @@ use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Driver;
+use Gesfrota\Model\Domain\FleetManager;
+use Gesfrota\Model\Domain\Manager;
 use Gesfrota\Model\Domain\Place;
 use Gesfrota\Model\Domain\Request;
 use Gesfrota\Model\Domain\RequestFreight;
 use Gesfrota\Model\Domain\RequestTrip;
 use Gesfrota\Model\Domain\Requester;
+use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\TrafficController;
+use Gesfrota\Model\Domain\User;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Services\AclResource;
 use Gesfrota\View\DriverTable;
 use Gesfrota\View\FleetVehicleTable;
 use Gesfrota\View\Layout;
-use Gesfrota\View\RequestFieldSetCancel;
-use Gesfrota\View\RequestFieldSetDecline;
-use Gesfrota\View\RequestFieldsetConfirm;
-use Gesfrota\View\RequestFieldsetFinish;
-use Gesfrota\View\RequestFieldsetInitiate;
-use Gesfrota\View\RequestForm;
 use Gesfrota\View\RequestFreightForm;
 use Gesfrota\View\RequestList;
+use Gesfrota\View\RequestStepCancel;
+use Gesfrota\View\RequestStepConfirm;
+use Gesfrota\View\RequestStepDecline;
+use Gesfrota\View\RequestStepFinish;
+use Gesfrota\View\RequestStepInitiate;
 use Gesfrota\View\RequestTripForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use Gesfrota\View\Widget\PanelQuery;
@@ -36,11 +40,6 @@ use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Misc\Alert;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Tooltip\Tooltip;
-use Gesfrota\Model\Domain\ResultCenter;
-use Gesfrota\Model\Domain\Manager;
-use Gesfrota\Model\Domain\FleetManager;
-use Gesfrota\Model\Domain\TrafficController;
-use Gesfrota\Model\Domain\User;
 
 class RequestController extends AbstractController {
 	
@@ -284,7 +283,14 @@ class RequestController extends AbstractController {
 			}
 			$this->setResultCenterSelected($entity->getResultCenter());
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
-			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this, 'decline', ['key' => $id]), $this->createFildesetConfirm());
+			$confirm = new Action($this,'confirm', ['key' => $id]);
+			$decline = new Action($this, 'decline', ['key' => $id]);
+			$cancel  = new Action($this);
+			$seek1   = new Action($this, 'seekVehicle');
+			$search1 = new Action($this, 'searchVehicle');
+			$seek2   = new Action($this,'seekDriver');
+			$search2 = new Action($this, 'searchDriver');
+			$form = new RequestStepConfirm($entity, $confirm, $decline, $cancel, $seek1, $search1, $seek2, $search2);
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
 			if ( $helper->update($form, $entity) ){
@@ -299,7 +305,10 @@ class RequestController extends AbstractController {
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
-		return new Layout($form);
+		$layout = new Layout('request/print.phtml');
+		$layout->request = $entity;
+		$layout->step = $form;
+		return $layout;
 	}
 	
 	public function declineAction() {
@@ -310,7 +319,7 @@ class RequestController extends AbstractController {
 				throw new NotFoundEntityException('Não foi possível recusar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
-			$form = new RequestForm($entity, new Action($this,'confirm', ['key' => $id]), new Action($this), new Action($this,'decline', ['key' => $id]), new RequestFieldSetDecline());
+			$form = new RequestStepDecline($entity, new Action($this,'confirm', ['key' => $id]), new Action($this,'decline', ['key' => $id]), new Action($this));
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
 			if ( $helper->update($form, $entity) ){
@@ -325,7 +334,10 @@ class RequestController extends AbstractController {
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
-		return new Layout($form);
+		$layout = new Layout('request/print.phtml');
+		$layout->request = $entity;
+		$layout->step = $form;
+		return $layout;
 	}
 	
 	public function initiateAction() {
@@ -341,7 +353,7 @@ class RequestController extends AbstractController {
 			    throw new NotFoundEntityException('Não foi possível iniciar a requisição. Usuário não tem permissão para realizar operação.');
 			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
-			$form = new RequestForm($entity, new Action($this,'initiate', ['key' => $id]), new Action($this), null, new RequestFieldsetInitiate());
+			$form = new RequestStepInitiate($entity, new Action($this,'initiate', ['key' => $id]), new Action($this));
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
 			if ( $helper->update($form, $entity) ){
@@ -356,7 +368,10 @@ class RequestController extends AbstractController {
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
-		return new Layout($form);
+		$layout = new Layout('request/print.phtml');
+		$layout->request = $entity;
+		$layout->step = $form;
+		return $layout;
 	}
 	
 	public function finishAction() {
@@ -372,7 +387,7 @@ class RequestController extends AbstractController {
 			    throw new NotFoundEntityException('Não foi possível finalizar a requisição. Usuário não tem permissão para realizar operação.');
 			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
-			$form = new RequestForm($entity, new Action($this,'finish', ['key' => $id]), new Action($this), null, new RequestFieldsetFinish());
+			$form = new RequestStepFinish($entity, new Action($this,'finish', ['key' => $id]), new Action($this));
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
 			if ( $helper->update($form, $entity) ){
@@ -387,7 +402,10 @@ class RequestController extends AbstractController {
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
-		return new Layout($form);
+		$layout = new Layout('request/print.phtml');
+		$layout->request = $entity;
+		$layout->step = $form;
+		return $layout;
 	}
 	
 	public function cancelAction() {
@@ -398,7 +416,7 @@ class RequestController extends AbstractController {
 				throw new NotFoundEntityException('Não foi possível cancelar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
 			$this->setAgencySelected($entity->getRequesterUnit()->getAgency());
-			$form = new RequestForm($entity, new Action($this,'cancel', ['key' => $id]), new Action($this), null, new RequestFieldSetCancel());
+			$form = new RequestStepCancel($entity, new Action($this,'cancel', ['key' => $id]), new Action($this));
 			$form->initialize($this->getUserActive());
 			$helper = $this->createHelperCrud();
 			if ( $helper->update($form, $entity) ){
@@ -413,7 +431,10 @@ class RequestController extends AbstractController {
 		} catch ( \Exception $e ) {
 			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		}
-		return new Layout($form);
+		$layout = new Layout('request/print.phtml');
+		$layout->request = $entity;
+		$layout->step = $form;
+		return $layout;
 	}
 	
 	public function printAction() {
@@ -423,16 +444,16 @@ class RequestController extends AbstractController {
 			if (! $entity instanceof Request ) {
 				throw new NotFoundEntityException('Não foi possível cancelar a requisição. Requisição <em>#' . $id . '</em> não encontrada.');
 			}
-			$form = new RequestForm($entity, new Action($this,'cancel', ['key' => $id]), new Action($this));
-			
 		} catch ( NotFoundEntityException $e ){
 			$this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 			$this->forward('/');
 		} catch ( \Exception $e ) {
-			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 			$this->forward('/');
 		}
-		return new Layout($form, 'layout/print.phtml');
+		$layout = new Layout('request/print.phtml', 'layout/print.phtml');
+		$layout->request = $entity;
+		return $layout;
 	}
 	
 	public function seekVehicleAction() {
@@ -524,7 +545,7 @@ class RequestController extends AbstractController {
 			$datasource->setPage(isset($params['page']) ? $params['page'] : 1);
 			$table = new DriverTable(new Action($this,'searchDriver', $params));
 			$table->setDataSource($datasource);
-			$widget = new PanelQuery($table, new Action($this,'searchDriver'), $params['query'], $this->createFildesetConfirm()->getModalDriver());
+			$widget = new PanelQuery($table, new Action($this,'searchDriver'), $params['query'], 'driver-search');
 		} catch ( \Exception $e ) {
 			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
@@ -564,7 +585,7 @@ class RequestController extends AbstractController {
 			$datasource->setPage(isset($params['page']) ? $params['page'] : 1);
 			$table = new FleetVehicleTable(new Action($this,'searchVehicle', $params));
 			$table->setDataSource($datasource);
-			$widget = new PanelQuery($table, new Action($this,'searchVehicle', $params), $params['query'], $this->createFildesetConfirm()->getModalVehicle());
+			$widget = new PanelQuery($table, new Action($this,'searchVehicle', $params), $params['query'], 'vehicle-search');
 		} catch ( \Exception $e ) {
 			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
@@ -591,13 +612,6 @@ class RequestController extends AbstractController {
 	 */
 	private function createHelperCrud() {
 		return new Crud($this->getEntityManager(), Request::getClass(), $this);
-	}
-	
-	/**
-	 * @return RequestFieldsetConfirm
-	 */
-	private function createFildesetConfirm() {
-		return new RequestFieldsetConfirm(new Action($this, 'seekVehicle'), new Action($this, 'searchVehicle'), new Action($this,'seekDriver'), new Action($this, 'searchDriver'));
 	}
 	
 	/**

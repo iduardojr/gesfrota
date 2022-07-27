@@ -39,11 +39,12 @@ class DisposalConfirmForm extends AbstractForm {
 	/**
 	 * @param Disposal $disposal
 	 * @param Action $cancel
-	 * @param Action $view
+	 * @param Action $printAsset
+	 * @param Action $print
 	 * @param Action $confirm
 	 * @param Action $decline
 	 */
-	public function __construct( Disposal $disposal, Action $cancel, Action $view, Action $confirmOrPrint, Action $decline = null ) {
+	public function __construct( Disposal $disposal, Action $cancel, Action $printAsset, Action $print, Action $confirm = null, Action $decline = null ) {
     	$this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		$form = $this->buildForm('disposal-confirm-form');
 		
@@ -105,9 +106,9 @@ class DisposalConfirmForm extends AbstractForm {
             return '-';
         });
         
-        $modalView = new Modal('disposal-survey-view', new Title('Avaliação do Ativo', 3));
+        $modalView = new Modal('disposal-survey-print', new Title('Avaliação do Ativo', 3));
         
-        $table->buildColumnAction('view', new Icon('icon-check'), new TgWindows($view, 1024, 720));
+        $table->buildColumnAction('print', new Icon('icon-print'), new TgWindows($printAsset, 1024, 720));
         $table->setDataSource(new ArrayDatasource($disposal->getAllAssets(), 'id'));
         
         $foot = new Box(['offset' => 4]);
@@ -158,7 +159,7 @@ class DisposalConfirmForm extends AbstractForm {
 		$tab->addItem(new NavLink('Confirmação'), null, new TabPane(new Box(0, [$general])));
 		
 		$form->append($tab);
-
+        $style = true;
 		if ($decline) {
 			$body = new Box();
 			
@@ -179,11 +180,11 @@ class DisposalConfirmForm extends AbstractForm {
 			
 			$general->append($modalDecline);
 			
-			$form->buildButton('confirm', [new Icon('icon-thumbs-up', true), 'Confirmar Disposição'], new TgFormSubmit($confirmOrPrint, $form, false), Button::Primary);
+			$form->buildButton('confirm', [new Icon('icon-thumbs-up', true), 'Confirmar Disposição'], new TgFormSubmit($confirm, $form, false), Button::Primary);
 			$form->buildButton('decline', [new Icon('icon-thumbs-down', true),'Recusar Disposição'], new TgModalOpen($modalDecline), Button::Danger);
-		} else {
-			$form->buildButton('print', [new Icon('icon-print', true), 'Imprimir Disposição'], new TgWindows($confirmOrPrint, 1024, 762), Button::Primary);
+			$style = false;
 		}
+		$form->buildButton('print', [new Icon('icon-print', $style), 'Imprimir Disposição'], new TgWindows($print, 1024, 762), $style ? Button::Primary : null);
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
