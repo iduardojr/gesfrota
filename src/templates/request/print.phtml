@@ -1,0 +1,268 @@
+<?php
+use Gesfrota\Model\Domain\Request;
+use Gesfrota\Model\Domain\RequestTrip;
+use Gesfrota\View\Widget\Direction;
+
+$request = $this->request;
+$request instanceof Request;
+?>
+<?php if ($this->step) { ?>
+<h2 id="header" class="page-header">
+	Minhas Viagens
+	<small><?php echo $request->getRequestType() . ' #' .$request->getCode();?></small>
+</h2>
+<div id="flash-message"><?php $this->alert ? $this->alert->render() : null; ?></div>
+<?php } ?>
+<div class="page">
+	<?php if (!$this->step) { ?>
+	<div class="page-header">
+		<img src="/images/brasao-go.png" class="pull-left">
+		<h1>Estado de Goiás <br/><?php echo $request->getRequesterUnit()->getAgency()->getName(); ?></h1>
+		<h2><?php echo $request->getRequestType() . ' #' .$request->getCode();?> <small><?php echo Request::getStatusAllowed()[$request->getStatus()] . ' em '.$request->getUpdateAt()->format('d/m/Y H:i'); ?></small></h2>
+	</div>
+	<?php } ?>
+    <fieldset>
+    	<legend>Dados da Requisição</legend>
+    	<table>
+    		<tr>
+    			<?php if ($request->getResultCenter()) {?>
+    			<th colspan="2" class="span5">Unidade Administrativa</th>
+    			<th class="span2">Centro de Resultado</th>
+				<?php } else { ?>
+				<th colspan="2" class="span7">Unidade Administrativa</th>
+				<?php } ?>
+    			<th class="span3">Requisitante</th>
+    			<th class="span2">Data da Requisição</th>
+			</tr>
+			<tr>
+				<td colspan="2"><?php echo $request->getRequesterUnit()->getPartialDescription(); ?></td>
+				<?php if ($request->getResultCenter()) {?>
+				<td><?php echo $request->getResultCenter()->getDescription(); ?></td>
+				<?php } ?>
+				<td><?php echo $request->getOpenedBy()->getName(); ?></td>
+				<td><?php echo $request->getOpenedAt()->format('d/m/Y H:i'); ?></td>
+			</tr>
+			<?php if ($request instanceof RequestTrip) { ?>
+			<tr>
+				<th colspan="3" class="span10">Serviço(s) a Executar</th>
+				<th class="span2">Previsão de Saída</th>
+			</tr>
+			<tr>
+				<td colspan="3"><?php echo nl2br($request->getService()); ?></td>
+				<td><?php echo $request->getSchedule()->format('d/m/Y H:i'); ?></td>
+			</tr>
+			<tr>
+				<th colspan="3" class="span10">Passageiro(s)</th>
+				<th class="span2">Previsão de Retorno</th>
+			</tr>
+			<tr>
+				<td colspan="3"><?php echo implode(', ', $request->getPassengers()); ?></td>
+				<td><?php echo $request->getDuration() > $request->getSchedule() ? $request->getDuration()->format('d/m/Y H:i') : str_repeat('*', 24);?></td>
+			</tr>
+			<?php } else { ?>
+			<tr>
+				<th colspan="4" class="span12">Serviço a Executar</th>
+			</tr>
+			<tr>
+				<td colspan="4"><?php echo '<strong>' . ($request->isFreightToSend() ? 'Entregar encomenda(s)' : 'Receber encomenda(s)') .':</strong><br />'. implode(', ', $request->getItems()); ?></td>
+			</tr>
+			<tr>
+				<th colspan="3" class="span10">Instruções de <?php echo ($request->isFreightToSend() ? 'Entrega' : 'Recebimento'); ?></th>
+				<th class="span2">Previsão de Saída</th>
+			</tr>
+			<tr>
+				<td colspan="3"><?php echo nl2br($request->getService()); ?></td>
+				<td><?php echo $request->getSchedule()->format('d/m/Y H:i'); ?></td>
+			</tr>
+			<?php } ?>
+			<tr>
+				<th colspan="4" class="span12">Itinerário</th>
+			</tr>
+			<tr>
+				<td colspan="4">
+            		<ul class="waypoints">
+                		<li><i class="icon-place-from"></i><?php echo $request->getFrom()->getDescription(); ?></li>
+                		<?php foreach ($request->getWaypoints() as $point) {?>
+                		<li><?php echo $point->getDescription(); ?></li>
+                		<?php } ?>
+                		<li><i class="icon-place-to"></i><?php echo $request->getTo()->getDescription(); ?></li>
+                	</ul>
+                	<div class="no-print">
+                    	<?php 
+                    	$directions = new Direction('directions', '{A}');
+                    	$directions->setOptions([], $request->getOptDiretions());
+                    	$directions->render();
+                    	?>
+                	</div>
+				</td>
+			</tr>
+		</table>
+    </fieldset>
+    <?php if ((! $this->step && $request->getStatus() == Request::OPENED) || $request->getConfirmedAt() ) { ?>
+    <fieldset>
+    	<legend>Dados da Autorização</legend>
+    	<table>
+    		<tr>
+    			<th colspan="3" class="span6">Motorista</th>
+    			<th class="span3">CNH</th>
+    			<th class="span1">Categoria</th>
+    			<th class="span2">Validade</th>
+			</tr>
+			<?php if ($request->getDriverLicense()) { ?>
+			<tr>
+				<td colspan="3"><?php echo $request->getDriver()->getName(); ?></td>
+				<td><?php echo $request->getDriverLicense()->getNumber(); ?></td>
+				<td><?php echo implode('', $request->getDriverLicense()->getCategories()); ?></td>
+				<td><span class="label <?php echo $request->getDriverLicense()->getExpires() > $request->getConfirmedAt() ? 'label-success' : 'label-important'; ?>">
+					<?php echo $request->getDriverLicense()->getExpires()->format('d/m/Y'); ?>
+				</span></td>
+			</tr>
+			<?php } else { ?>
+			<tr>
+				<td colspan="3">&nbsp;</td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<?php } ?>
+    		<tr>
+    			<th class="span2">Placa</th>
+    			<th colspan="5" class="span10">Veículo</th>
+			</tr>
+			<?php  if ($request->getVehicle()) { ?>
+			<tr>
+				<td><?php echo $request->getVehicle()->getPlate(); ?></td>
+				<td colspan="5"><?php echo $request->getVehicle()->getDescription(); ?></td>
+			</tr>
+			<?php } else { ?>
+			<tr>
+				<td>&nbsp;</td>
+				<td colspan="5"></td>
+			</tr>
+			<?php } ?>
+			<tr class="text-center">
+				<th colspan="3" class="span6">GESTOR DA FROTA</th>
+				<th colspan="3" class="span6">AUTORIZAÇÃO PARA VIAGEM INTERMUNICIPAL OU INTERESTADUAL</th>
+			</tr>
+			<tr class="text-center">
+				<td colspan="3" class="sign">
+				<?php  if ($request->getConfirmedBy()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $request->getConfirmedBy()->getName(); ?>, CPF <?php echo $request->getConfirmedBy()->getNif(); ?><br>
+					em <?php echo $request->getConfirmedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+				<td colspan="3" class="sign">
+				<?php  if ($request->getConfirmedBy()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $request->getConfirmedBy()->getName(); ?>, CPF <?php echo $request->getConfirmedBy()->getNif(); ?><br>
+					em <?php echo $request->getConfirmedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+			</tr>
+		</table>
+    </fieldset>
+    <?php } ?>
+    <?php if ($request->getCanceledAt()) { ?>
+    <fieldset>
+    	<legend>Dados <?php echo $request->getStatus() == Request::CANCELED ? 'do Cancelamento' : 'da Recusa'?></legend>
+    	<table>
+    		<tr>
+    			<th class="span7">Motivo <?php echo $request->getStatus() == Request::CANCELED ? 'do Cancelamento' : 'da Recusa'?></th>
+    			<th class="span5"><?php echo Request::getStatusAllowed()[$request->getStatus()] ?> por</th>
+			</tr>
+			<tr>
+    			<td style="white-space: normal"><?php echo nl2br($request->getJustify()); ?></td>
+    			<td class="sign text-center">
+    			<?php  if ($request->getCanceledBy()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $request->getCanceledBy()->getName(); ?>, CPF <?php echo $request->getCanceledBy()->getNif(); ?><br>
+					em <?php echo $request->getCanceledAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+    			</td>
+			</tr>
+    	</table>
+    </fieldset>
+    <?php } else { ?>
+    <?php if (! $this->step || $request->getInitiatedAt() ) { ?>
+    <fieldset>
+    	<legend>Dados da Viagem</legend>
+    	<table class="text-center">
+    		<tr>
+    			<th colspan="2" class="span3">RETIRADA DO VEÍCULO</th>
+    			<th colspan="2" class="span3">INÍCIO DA VIAGEM</th>
+    			<th colspan="2" class="span3">FIM DA VIAGEM</th>
+    			<th colspan="2" class="span3">DEVOLUÇÃO DO VEÍCULO</th>
+			</tr>
+			<tr>
+				<th width="12.5%">Data e Hora</th>
+				<th width="12.5%">Hodometro</th>
+				<th width="12.5%">Data e Hora</th>
+				<th width="12.5%">Hodometro</th>
+				<th width="12.5%">Data e Hora</th>
+				<th width="12.5%">Hodometro</th>
+				<th width="12.5%">Data e Hora</th>
+				<th width="12.5%">Hodometro</th>
+			</tr>
+			<tr>
+				<td><?php echo $request->getInitiatedAt() ? $request->getInitiatedAt()->format('d/m/Y H:i') : '&nbsp;'; ?></td>
+				<td><?php echo $request->getInitiatedAt() ? number_format($request->getOdometerInitial(), 0, '', '.') . ' Km' : ''; ?></td>
+				<td><?php echo $request->getInitiatedAt() ? $request->getInitiatedAt()->format('d/m/Y H:i') : ''; ?></td>
+				<td><?php echo $request->getInitiatedAt() ? number_format($request->getOdometerInitial(), 0, '', '.') . ' Km' : ''; ?></td>
+				<td><?php echo $request->getFinishedAt() ? $request->getFinishedAt()->format('d/m/Y H:i') : ''; ?></td>
+				<td><?php echo $request->getFinishedAt() ? number_format($request->getOdometerFinal(), 0, '', '.') . ' Km' : ''; ?></td>
+				<td><?php echo $request->getFinishedAt() ? $request->getFinishedAt()->format('d/m/Y H:i') : ''; ?></td>
+				<td><?php echo $request->getFinishedAt() ? number_format($request->getOdometerFinal(), 0, '', '.') . ' Km' : ''; ?></td>
+			</tr>
+		</table>
+		<?php if (! $this->step || $request->getFinishedAt()) {?>
+		<table>
+    		<tr>
+    			<th>Informações Adicionais</th>
+			</tr>
+			<tr>
+				<td><div class="textarea"><?php echo nl2br($request->getJustify()); ?></div></td>
+			</tr>
+		</table>
+		<?php } ?>
+    </fieldset>
+    <?php } ?>
+    <?php if (! $this->step ) { ?>
+    <fieldset>
+    	<legend>Termo de Responsabilidade</legend>
+        <p>
+        	 Durante o período supramencionado, 
+        	 declaro que ficarei responsável pelo USO e pela GUARDA do veículo, 
+        	 o qual será conduzido consoante as determinações do Código de Trânsito Brasileiro, 
+        	 e utilizado no exclusivo interesse do serviço público inerente a este Estado.
+        </p>
+        <table class="text-center">
+			<tr>
+				<th class="span4">MOTORISTA</th>
+				<th class="span4"><?php echo $request instanceof RequestTrip ? 'PASSAGEIROS' : ($request->isFreightToSend() ? 'DESTINATÁRIO' : 'REMETENTE'); ?></th>
+			</tr>
+			<tr>
+				<td class="sign">
+				<?php  if ($request->getDriver() && $request->getInitiatedBy() == $request->getDriver() && $request->getFinishedBy() == $request->getDriver()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $request->getInitiatedBy()->getName(); ?>, CPF <?php echo $request->getInitiatedBy()->getNif(); ?><br>
+					em <?php echo $request->getInitiatedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+				<td class="sign">
+				<?php if ($request instanceof RequestTrip) {?>
+					<div class="textarea" style="height: <?php echo (1.92*$request->getAmountPassengers()); ?>em;"></div>
+				<?php } ?>
+				</td>
+			</tr>
+		</table>
+    </fieldset>
+    <?php } ?>
+    <?php } ?>
+</div>
+<?php $this->step ? $this->step->render() : null; ?>
+<?php if (! $this->step ) { ?>
+<script type="text/javascript" src="/vendor/jquery-1.8.2.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_KEY_APP;?>&v=weekly"></script>
+<script type="text/javascript" src="/js/directions.js"></script>
+<?php } ?>

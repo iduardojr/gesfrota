@@ -296,6 +296,14 @@ fieldset > legend {
 #request-list tr td + td + td .cell {
 	height: auto;
 }
+#request-form fieldset {
+	margin-bottom: 20px;
+}
+#request-form #itinerary .control-group,
+#request-form #info .control-group,
+#request-form #auth .control-group {
+	margin-bottom: 0;
+}
 #request-form #itinerary #no-margin,
 #request-form #itinerary #no-margin-last {
 	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png);
@@ -329,6 +337,7 @@ fieldset > legend {
 	margin-bottom: 0 !important;
 }
 #request-form #schedule span,
+#request-form #requester-unit span,
 #request-form #vehicle span,
 #request-form #driver span,
 #request-form #initial span,
@@ -336,6 +345,9 @@ fieldset > legend {
 	margin-right: 30px;
 	display: inline-block;
 	float: left;
+}
+#request-form #requester-unit .administrative-unit {
+	margin-right: 75px;
 }
 #request-form #schedule label {
 	width: 160px;
@@ -353,7 +365,7 @@ fieldset > legend {
 	margin-top: 20px;
 }
 #request-form #directions {
-	margin: 30px 0;
+	margin-top: 30px;
 }
 #audit-log-compare .well .row {
 	margin-bottom: 7px;
@@ -444,11 +456,9 @@ fieldset > legend {
 	margin: 20px 0;
 }
 #signature {
-	margin: 80px auto !important;
-	width: 60%;	
+	margin: 80px 20px !important;
 	border-top: 1px solid #333;
 	padding-top: 10px;
-	margin: 10px;
 	text-align: center;
 }
 #disposal-item-form .uneditable-input.span1 {
@@ -477,6 +487,9 @@ fieldset > legend {
 	margin-bottom: 10px;
 	max-width: 1010px;
 	overflow-x: auto;
+}
+#alert-message {
+	margin: 20px 0;
 }
 .notification {
 	margin-top: -15px;
@@ -663,7 +676,6 @@ fieldset > legend {
 	*{
 		-webkit-print-color-adjust: exact !important;
    		color-adjust: exact !important; 
-   		font-size: 17px !important;
    	}
    	#page-header {
    		margin-top: 10px;
@@ -689,16 +701,6 @@ fieldset > legend {
 	fieldset legend {
 		font-size: 22px !important;
 	}
-	#request-form #itinerary #no-margin,
-	#request-form #itinerary #no-margin-last {
-		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png) !important;
-		background-size: 24px 24px !important;
-		background-repeat: repeat-y !important;
-		background-position: 176px top !important;
-	}
-	#request-form #itinerary #no-margin-last {
-		background-repeat: no-repeat !important;
-	}
 	.icon-place-from {
 		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/start_location_grey800_18dp.png) !important;
 		background-size: 18px 18px !important;
@@ -718,11 +720,5 @@ fieldset > legend {
 	}
 	#disposal-item-page #section-survey .control-group {
 		margin-bottom: 5px !important;
-	}
-	.icon-map-marker {
-	    background-image: url(/vendor/bootstrap/img/glyphicons-halflings.png) !important;
-	    background-position: 14px 14px !important;
-	    background-repeat: no-repeat !important;
-	    background-position: -24px -72px !important;
 	}
 }

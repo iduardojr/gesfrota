@@ -52,30 +52,51 @@ class DisposalController extends AbstractController {
 		$filter = new Action($this);
 		$new = new Action($this, 'new');
 		$remove = new Action($this, 'delete');
-		$print = new Action($this, 'edit');
+		$print = new Action($this, 'print');
 		$do = new Action($this);
 		$doClosure = function( Button $button, Disposal $obj ) use ($isManager) {
-			$button->setDisabled(!$isManager);
-		    switch ($obj->getStatus()) {
-		        case Disposal::DECLINED:
-		        case Disposal::CONFIRMED: 
-		        	$for = 'devolve';
-		        	$button->setTooltip(new Tooltip('Devolver Disposição'));
-		        	$button->setIcon(new Icon('icon-backward'));
-		        	break;
-		            
-		        case Disposal::REQUESTED:
-		            $for = 'confirm';
-		            $button->setTooltip(new Tooltip('Confirmar Disposição'));
-		            $button->setIcon(new Icon('icon-ok'));
-		            break;
-		            
-		        default:
-		        	$for = 'edit';
-		        	$button->setTooltip(new Tooltip('Avaliar Disposição'));
-		        	$button->setIcon(new Icon('icon-pencil'));
-		        	$button->setDisabled(false);
-		        	break;
+		    if (! $isManager ) {
+		        
+		        switch ($obj->getStatus()) {
+		            case Disposal::DRAFTED:
+		                $for = 'edit';
+		                $button->setTooltip(new Tooltip('Avaliar Disposição'));
+		                $button->setIcon(new Icon('icon-pencil'));
+		                break;
+		                
+		            default:
+		                $for = 'view';
+		                $button->setTooltip(new Tooltip('Visualizar Disposição'));
+		                $button->setIcon(new Icon('icon-search'));
+		                break;
+		        }
+		    } else {
+    		    switch ($obj->getStatus()) {
+    		        case Disposal::DECLINED:
+    		        case Disposal::CONFIRMED: 
+    		        	$for = 'devolve';
+    		        	$button->setTooltip(new Tooltip('Devolver Disposição'));
+    		        	$button->setIcon(new Icon('icon-backward'));
+    		        	break;
+    		            
+    		        case Disposal::REQUESTED:
+    		            $for = 'confirm';
+    		            $button->setTooltip(new Tooltip('Confirmar Disposição'));
+    		            $button->setIcon(new Icon('icon-ok'));
+    		            break;
+    		       
+    		        case Disposal::DRAFTED:
+    		            $for = 'edit';
+    		            $button->setTooltip(new Tooltip('Avaliar Disposição'));
+    		            $button->setIcon(new Icon('icon-pencil'));
+    		            break;
+    		            
+    		        default:
+    		        	$for = 'view';
+    		        	$button->setTooltip(new Tooltip('Visualizar Disposição'));
+    		        	$button->setIcon(new Icon('icon-search'));
+    		        	break;
+    		    }
 		    }
 		    $button->getToggle()->getAction()->setMethodName($for);
 		};
@@ -153,14 +174,9 @@ class DisposalController extends AbstractController {
 			if (! $entity instanceof Disposal) {
 				throw new NotFoundEntityException('Não foi possível editar a Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
 			}
-			
-			if ($entity->getStatus() == Disposal::DRAFTED) {
-				$table = new DisposalItemTable(new Action($this, 'survey-asset'), new Action($this, 'remove-asset'));
-				$table->setDataSource(new ArrayDatasource($entity->getAllAssets(), 'id'));
-				$form = new DisposalAppraisalForm($entity, new Action($this, 'edit', ['key' => $id]), new Action($this), $table);
-			} else {
-				$form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'view-asset'), new Action($this, 'print', ['key' => $id]) );
-			}
+		    $table = new DisposalItemTable(new Action($this, 'survey-asset'), new Action($this, 'print-asset'), new Action($this, 'remove-asset'));
+			$table->setDataSource(new ArrayDatasource($entity->getAllAssets(), 'id'));
+			$form = new DisposalAppraisalForm($entity, new Action($this, 'edit', ['key' => $id]), new Action($this, 'print', ['key' => $id]), new Action($this), $table);
 			
 			if ( $this->request->isPost() ) {
 				if ( ! $form->valid() ) {
@@ -175,10 +191,26 @@ class DisposalController extends AbstractController {
 			
 		} catch (InvalidRequestDataException $e) {
 			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
-		} catch (\Exception $e) {
-			$form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		} catch (NotFoundEntityException $e) {
+		    $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+		    $this->forward('/');
 		}
 		return new Layout($form);
+	}
+	
+	public function viewAction() {
+	    try {
+	        $id = (int) $this->request->getQuery('key');
+	        $entity = $this->getEntityManager()->find(Disposal::getClass(), $id);
+	        if (! $entity instanceof Disposal) {
+	            throw new NotFoundEntityException('Não foi possível editar a Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
+	        }
+	        $form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'print-asset'), new Action($this, 'print', ['key' => $id]));
+	    } catch (NotFoundEntityException $e) {
+	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+	        $this->forward('/');
+	    }
+	    return new Layout($form);
 	}
 	
 	public function confirmAction() {
@@ -189,7 +221,7 @@ class DisposalController extends AbstractController {
 	            throw new NotFoundEntityException('Não foi possível confirmar a Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
 	        }
 	        
-	        $form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'view-asset'), new Action($this, 'confirm', ['key' => $id, 'do' => 'confirmed']), new Action($this, 'confirm', ['key' => $id, 'do' => 'declined']));
+	        $form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'print-asset'), new Action($this, 'print', ['key' => $id]), new Action($this, 'confirm', ['key' => $id, 'do' => 'confirmed']), new Action($this, 'confirm', ['key' => $id, 'do' => 'declined']));
 	        
 	        if ( $this->request->isPost() ) {
 	            $do = $this->request->getQuery('do');
@@ -266,32 +298,32 @@ class DisposalController extends AbstractController {
 			if (! $entity instanceof Disposal) {
 				throw new NotFoundEntityException('Não foi possível imprimir Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
 			}
-			$view = new Box();
-			$view->setName('disposal-view');
+			$content = [];
 			foreach($entity->getAllAssets() as $item) {
-				$page = new DisposalItemForm($item);
-				$page->extract($item);
-				$view->append($page->getPanel());
+			    $view = new Layout('disposal/print-asset.phtml', null);
+			    $view->disposalItem = $item;
+			    $content[] = $view->render();
 			}
+			$layout = new Layout(implode('<hr class="no-print">', $content), 'layout/print.phtml');
 		} catch (\Exception $e) {
-			$view = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger);
+		    $layout = new Layout(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger), 'layout/print.phtml');
 		}
-		return new Layout($view, 'layout/print.phtml');
+		return $layout;
 	}
 	
-	public function locationAction() {
-		try {
-			$places = Place::autocomplete($this->request->getQuery('query'));
-			$options = [];
-			foreach( $places as $obj ) {
-				$options[] = ['label' => $obj->getDescription(),
-					'value' => $obj->getPlace()
-				];
-			}
-			return new JsonView($options, false);
-		} catch (\ErrorException $e) {
-			return new JsonView(['error' => $e->getMessage()], false);
-		}
+	public function printAssetAction() {
+	    $layout = new Layout('disposal/print-asset.phtml', 'layout/print.phtml');
+	    try {
+	        $id = (int) $this->request->getQuery('key');
+	        $entity = $this->getEntityManager()->find(DisposalItem::getClass(), $id);
+	        if (! $entity instanceof DisposalItem) {
+	            throw new NotFoundEntityException('Não foi possível imprimir o Ativo. Ativo <em>#' . $id . '</em> não encontrado.');
+	        }
+	        $layout->disposalItem = $entity;
+	    } catch (\Exception $e) {
+	        $layout = new Layout(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger), 'layout/print.phtml');
+	    }
+	    return $layout;
 	}
 	
 	public function surveyAssetAction() {
@@ -356,22 +388,6 @@ class DisposalController extends AbstractController {
 	    return new JsonView($data, false);
 	}
 	
-	public function viewAssetAction() {
-	   try {
-	        $id = (int) $this->request->getQuery('key');
-	        $entity = $this->getEntityManager()->find(DisposalItem::getClass(), $id);
-	        if (! $entity instanceof DisposalItem) {
-	            throw new NotFoundEntityException('Não foi possível visualizar o Ativo. Ativo <em>#' . $id . '</em> não encontrado.');
-	        }
-	        
-	        $view = new DisposalItemForm($entity);
-	        $view->extract($entity);
-	    } catch (\Exception $e) {
-	        $view = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger);
-	    } 
-	    return new Layout($view, 'layout/print.phtml');
-	}
-	
 	public function seekAgencyAction() {
 		try {
 			$data['agency-id'] = null;
@@ -401,6 +417,21 @@ class DisposalController extends AbstractController {
 			$data['flash-message'] = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
 		return new JsonView($data, false);
+	}
+	
+	public function locationAction() {
+	    try {
+	        $places = Place::autocomplete($this->request->getQuery('query'));
+	        $options = [];
+	        foreach( $places as $obj ) {
+	            $options[] = ['label' => $obj->getDescription(),
+	                'value' => $obj->getPlace()
+	            ];
+	        }
+	        return new JsonView($options, false);
+	    } catch (\ErrorException $e) {
+	        return new JsonView(['error' => $e->getMessage()], false);
+	    }
 	}
 	
 	

@@ -1,0 +1,229 @@
+html, body {
+	margin: 0;
+	height: 100%;
+	position: relative;
+	font-size: 13px;
+}
+html > body {
+	height: auto;
+	min-height: 100%;
+}
+footer {
+	position:absolute;
+	left: 0;
+	bottom: 0;
+	padding: 0 !important;
+	margin: 0;
+	width: 100%;
+	text-align: right;
+}
+footer hr {
+	margin-top: 0;
+	margin-bottom: 10px;
+}
+#content-print {
+	position: relative;
+    padding: 56px 0;
+}
+#content-print hr {
+	margin: 70px 0;
+}
+.page {
+    margin-bottom: 40px;
+}
+.page .page-header {
+    border-color: #333;
+    margin: 40px 0 0 0;
+}
+.page .page-header img {
+    margin: 0 20px 0 0;
+}
+.page .page-header h1,
+.page .page-header h2,
+.page .asset-code {
+    font-size: 1.25em !important;
+    line-height: 1.3em !important;
+}
+.page .asset-code {
+	margin: 25px 0 10px 0;
+	text-align: center;
+}
+.page .asset-code + fieldset {
+	margin-top: 0;
+}
+.page .page-header small {
+    font-size: 85%;
+    color: #777;
+}
+.page fieldset {
+    margin: 15px 0;
+}
+.page fieldset legend {
+    font-weight: bold;
+    font-size: 1.1em !important;
+    line-height: 1.7em !important;
+    margin-bottom: 0;
+    border-color: #333;
+}
+.page table {
+    width: 100%;
+}
+.page fieldset table + table {
+    margin-top: -1px;
+}
+.page table th,
+.page table td {
+    border: 1px solid #333;
+    text-align: left;
+    white-space: nowrap;
+}
+.page .text-center th,
+.page .text-center td,
+.page th.text-center,
+.page td.text-center {
+    text-align: center;
+}
+.page th.text-left,
+.page td.text-left {
+    text-align: left;
+}
+.page th.text-right,
+.page td.text-right {
+    text-align: right;
+}
+.page .no-border {
+	border: none;
+}
+.page .no-border-left {
+	border-left: none;
+}
+.page .no-padding {
+	padding: 0;
+}
+.page table th {
+    background: #ddd !important;
+    font-size: 80% !important;
+    padding: 0.15em 5px;
+}
+.page table .vertical {
+	width: 14px;
+}
+.page table .vertical * {
+	transform: rotate(-180deg); 
+	writing-mode: tb-rl;
+}
+.page .row-fluid {
+	margin: 20px 0;
+}
+.page table td  {
+    padding: 7px 5px;
+    vertical-align: top;
+}
+.page .legend {
+	display: block;
+	font-size: 75%;
+	color: #666;
+	line-height: normal;
+}
+.page .small td {
+	font-size: 75%;
+	line-height: normal;
+}
+.page .small td {
+	padding: 5px;
+}
+.page .waypoints {
+    background-image: url(//maps.gstatic.com/consumer/images/icons/1x/route_3dots_grey650_24dp.png) !important;
+    background-size: 24px 24px !important;
+    background-repeat: repeat-y !important;
+    background-position: 0 top !important;
+    list-style: none;
+    margin: 7px 0;
+}
+.page .waypoints li {
+    position: relative; 
+    line-height: 1.3em;
+    padding: 0 0 10px 30px; 
+}
+.page .waypoints .icon-place-from {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/start_location_grey800_18dp.png) !important;
+	background-size: 18px 18px !important;
+    background-position: center 7px !important;
+    background-repeat: no-repeat !important;
+    background-color: #fff !important;
+    position: absolute;
+    width: 24px;
+    height: 25px;
+    top: -9px;
+    left: 0;
+}
+.page .waypoints .icon-place-to {
+	background-image: url(//maps.gstatic.com/consumer/images/icons/1x/place_outline_red600_18dp.png) !important;
+	background-size: 18px 18px !important;
+    background-position: center 0 !important;
+    background-repeat: no-repeat !important;
+    background-color: #fff !important;
+    position: absolute;
+    width: 24px;
+    height: 25px;
+    top: -1px;
+    left: 0; 
+}
+.page .icon-map-marker {
+    background-image: url(/vendor/bootstrap/img/glyphicons-halflings.png) !important;
+    background-position: 14px 14px !important;
+    background-repeat: no-repeat !important;
+    background-position: -24px -72px !important;
+}
+.page .waypoints li:last-child {
+    background: #fff;
+    padding-bottom: 0;
+}
+.page .map {
+    margin-top: 10px;
+    min-height: 400px;
+}
+.page .inline {
+    margin: 0 0 0 -5px;
+}
+.page p {
+    margin: 20px 0;
+}
+.page .textarea {
+    height: 5.5em;
+    white-space: normal;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAyAQMAAACnNSPJAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAAmZmZfvUgAwAAAAJ0Uk5TAP9bkSK1AAAAD0lEQVR4nGNgoDFoYGgAAAJkAQHR6sPTAAAAAElFTkSuQmCC') !important;
+    background-position: 0 -0.3em !important;
+    background-size: 100% 1.92em !important;
+    line-height: 1.92em !important;
+}
+.page .sign {
+    height: 60px;
+    vertical-align: middle;
+}   
+@media print {
+	@page {
+		margin: 1.5cm;
+		size: A4;
+		orphans:3; 
+		widows:3;
+	}
+	* {
+		-webkit-print-color-adjust: exact !important;
+   		color-adjust: exact !important; 
+   	}
+   	.page {
+	   margin: 0;
+	   font-size: 14px !important;
+	   page-break-after: always;
+	}
+	.page .page-header {
+		margin: 0;
+	}
+	.page .small td {
+		font-size: 67%;
+	}
+	.no-print {
+		display: none;
+	}
+}

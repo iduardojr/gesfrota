@@ -58,6 +58,20 @@ class RequestFreight extends Request {
 	public function getFreight() {
 		return $this->freight;
 	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function isFreightToSend() {
+	    return $this->freight == self::TO_SEND;
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function isFreightToReceive() {
+	    return $this->freight == self::TO_RECEIVE;
+	}
 
 	/**
 	 * @param array $items

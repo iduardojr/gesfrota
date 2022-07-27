@@ -22,6 +22,7 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Action\TgWindows;
 
 class DisposalList extends AbstractList {
 	
@@ -123,11 +124,7 @@ class DisposalList extends AbstractList {
 		    }
 		});
 		
-		$table->buildColumnAction('print', new Icon('icon-print'), $print, null, function (Button $btn, Disposal $obj) {
-			if ( $obj->getStatus() == Disposal::DRAFTED) {
-				$btn->setDisabled(true);
-			}
-		});
+	   $table->buildColumnAction('print', new Icon('icon-print'), new TgWindows($print, 1024, 762));
 	}
 	
 }
