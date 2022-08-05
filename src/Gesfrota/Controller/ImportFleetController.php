@@ -9,32 +9,32 @@ use Gesfrota\Controller\Helper\SearchAgency;
 use Gesfrota\Model\Domain\Agency;
 use Gesfrota\Model\Domain\Equipment;
 use Gesfrota\Model\Domain\FleetItem;
-use Gesfrota\Model\Domain\Import;
-use Gesfrota\Model\Domain\ImportItem;
+use Gesfrota\Model\Domain\ImportFleet;
+use Gesfrota\Model\Domain\ImportFleetItem;
 use Gesfrota\Model\Domain\ResultCenter;
 use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Util\Format;
 use Gesfrota\View\FleetEquipmentForm;
 use Gesfrota\View\FleetVehicleForm;
-use Gesfrota\View\ImportList;
-use Gesfrota\View\ImportPreProcessForm;
-use Gesfrota\View\ImportUploadForm;
+use Gesfrota\View\ImportFleetList;
+use Gesfrota\View\ImportFleetPreProcessForm;
+use Gesfrota\View\ImportFleetUploadForm;
 use Gesfrota\View\Layout;
 use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
 
-class ImportController extends AbstractController {
+class ImportFleetController extends AbstractController {
 	
     use SearchAgency;
     
 	public function indexAction() {
 		try {
 		    if ( ! $this->getAgencyActive()->isGovernment() ) {
-		        $rep = $this->getEntityManager()->getRepository(Import::getClass());
+		        $rep = $this->getEntityManager()->getRepository(ImportFleet::getClass());
 		        $import = $rep->findOneBy(['agency' => $this->getAgencyActive(), 'finished' => false], ['id' => 'desc']);
-		        if ($import instanceof Import) {
+		        if ($import instanceof ImportFleet) {
 		            $this->forward('/pre-process/' . $import->getId());
 		        } else {
 		            $this->forward('/new');
@@ -48,11 +48,11 @@ class ImportController extends AbstractController {
 		    
 		    $showAgencies = $this->getShowAgencies();
 		    
-		    $list = new ImportList($filter, $upload, $process, $download, $remove, $showAgencies);
+		    $list = new ImportFleetList($filter, $upload, $process, $download, $remove, $showAgencies);
 		    
 		    
 		    $helper = $this->createHelperCrud();
-		    $query = $this->getEntityManager()->getRepository(Import::getClass())->createQueryBuilder('u');
+		    $query = $this->getEntityManager()->getRepository(ImportFleet::getClass())->createQueryBuilder('u');
 		    
 		    $helper->read($list, $query, ['limit' => 20, 'order' => 'DESC', 'processQuery' => function( QueryBuilder $query, array $data ) {
 		        if (!empty($data['agency'])) {
@@ -90,10 +90,10 @@ class ImportController extends AbstractController {
 	        $search = new Action($this, 'search-agency');
 	        $showAgencies = $this->getAgencyActive()->isGovernment();
 	        
-	        $form = new ImportUploadForm($submit, $cancel, $seek, $search, $showAgencies);
+	        $form = new ImportFleetUploadForm($submit, $cancel, $seek, $search, $showAgencies);
 	        $helper = $this->createHelperCrud();
 	        
-	        if ( $helper->create($form, new Import($agency)) ){
+	        if ( $helper->create($form, new ImportFleet($agency)) ){
 	            $entity = $helper->getEntity();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> realizada com sucesso!', Alert::Success));
 	            $this->forward('/pre-process/' . $entity->id);
@@ -109,8 +109,8 @@ class ImportController extends AbstractController {
 	public function preProcessAction() {
 	    try {
 	        $key = $this->request->getQuery('key');
-	        $entity = $this->getEntityManager()->find(Import::getClass(), $key);
-	        if (! $entity instanceof Import) {
+	        $entity = $this->getEntityManager()->find(ImportFleet::getClass(), $key);
+	        if (! $entity instanceof ImportFleet) {
 	            throw new NotFoundEntityException('Não é possível transformar a Importação. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
 	        $submit = new Action($this, 'pre-process', ['key' => $key]);
@@ -120,9 +120,9 @@ class ImportController extends AbstractController {
 	        $transform = new Action($this, 'transform-item');
 	        $dismiss = new Action($this, 'dismiss-item');
 	        
-	        $form = new ImportPreProcessForm($submit, $remove, $download, $cancel, $transform, $dismiss, $entity);
+	        $form = new ImportFleetPreProcessForm($submit, $remove, $download, $cancel, $transform, $dismiss, $entity);
 	        
-	        $query = $this->getEntityManager()->getRepository(ImportItem::getClass())->createQueryBuilder('u');
+	        $query = $this->getEntityManager()->getRepository(ImportFleetItem::getClass())->createQueryBuilder('u');
 	        $query->where('u.import = :key ');
 	        $query->setParameter('key', $entity);
 	        $query->orderBy('u.status', $entity->getFinished() ? 'DESC' : 'ASC');
@@ -159,8 +159,8 @@ class ImportController extends AbstractController {
 	public function transformItemAction() {
 	    try {
     	    $key = $this->request->getQuery('key');
-    	    $entity = $this->getEntityManager()->find(ImportItem::getClass(), $key);
-    	    if (! $entity instanceof ImportItem) {
+    	    $entity = $this->getEntityManager()->find(ImportFleetItem::getClass(), $key);
+    	    if (! $entity instanceof ImportFleetItem) {
     	        throw new NotFoundEntityException('Não foi possível transformar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
     	    }
     	    $helper = new Crud($this->getEntityManager(), FleetItem::getClass(), $this);
@@ -196,8 +196,8 @@ class ImportController extends AbstractController {
 	public function dismissItemAction() {
 	    try {
 	        $key = $this->request->getQuery('key');
-	        $entity = $this->getEntityManager()->find(ImportItem::getClass(), $key);
-	        if (! $entity instanceof ImportItem) {
+	        $entity = $this->getEntityManager()->find(ImportFleetItem::getClass(), $key);
+	        if (! $entity instanceof ImportFleetItem) {
 	            throw new NotFoundEntityException('Não foi possível rejeitar Item de Importação. Item de Importação <em>#' . $key . '</em> não encontrado.');
 	        }
 	        if ( $entity->toPreProcess($this->getEntityManager())) {
@@ -218,11 +218,11 @@ class ImportController extends AbstractController {
 	public function downloadAction() {
 	    try {
 	        $key = $this->request->getQuery('key');
-	        $entity = $this->getEntityManager()->find(Import::getClass(), $key);
-	        if (! $entity instanceof Import) {
+	        $entity = $this->getEntityManager()->find(ImportFleet::getClass(), $key);
+	        if (! $entity instanceof ImportFleet) {
 	            throw new NotFoundEntityException('Não foi possível baixar o Arquivo Importado. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
-	        $this->redirect(Import::DIR . $entity->getFileName());
+	        $this->redirect(ImportFleet::DIR . $entity->getFileName());
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	        $this->forward('/');
@@ -233,8 +233,8 @@ class ImportController extends AbstractController {
 	    try {
 	        set_time_limit(0);
 	        $id = $this->request->getQuery('key');
-	        $entity = $this->getEntityManager()->find(Import::getClass(), $id);
-	        if (! $entity instanceof Import) {
+	        $entity = $this->getEntityManager()->find(ImportFleet::getClass(), $id);
+	        if (! $entity instanceof ImportFleet) {
 	            throw new NotFoundEntityException('Não foi possível excluir Importação. Importação <em>#' . $id . '</em> não encontrada.');
 	        }
 	        $helper = $this->createHelperCrud();
@@ -292,7 +292,7 @@ class ImportController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-	    return new Crud($this->getEntityManager(), Import::getClass(), $this);
+	    return new Crud($this->getEntityManager(), ImportFleet::getClass(), $this);
 	}
 	
 	/**

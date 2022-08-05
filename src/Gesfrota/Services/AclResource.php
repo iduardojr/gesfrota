@@ -23,7 +23,7 @@ class AclResource implements Plugin {
 	const Dashboard = 'IndexController';
 	
 	const Fleet = 'FleetController';
-	const Import = 'ImportController';
+	const ImportFleet = 'ImportFleetController';
 	const Disposal = 'DisposalController';
 	const Driver = 'DriverController';
 	const Requester = 'RequesterController';
@@ -66,7 +66,7 @@ class AclResource implements Plugin {
 		$resource = [
 			self::Dashboard,
 			self::Fleet, 
-		    self::Import,
+		    self::ImportFleet,
 			self::Disposal, 
 			self::Driver, 
 			self::Requester,
