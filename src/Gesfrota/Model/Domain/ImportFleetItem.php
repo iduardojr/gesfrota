@@ -6,13 +6,13 @@ use Doctrine\ORM\EntityManager;
 use Gesfrota\Util\Format;
 
 /**
- * Item importado
+ * Item de Frota Importado
  * 
  * @Entity
- * @Table(name="import_items")
+ * @Table(name="import_fleet_items")
  * @EntityListeners({"Gesfrota\Model\Listener\ImportItemListener"})
  */
-class ImportItem extends Entity {
+class ImportFleetItem extends Entity {
     
     /**
 	 * @Column(type="json_array")
@@ -21,14 +21,14 @@ class ImportItem extends Entity {
     protected $data;
     
     /**
-     * @ManyToOne(targetEntity="Import", inversedBy="items")
+     * @ManyToOne(targetEntity="ImportFleet", inversedBy="items")
      * @JoinColumn(name="import_id", referencedColumnName="id")
-     * @var Import
+     * @var ImportFleet
      */
     protected $import;
     
     /**
-     * @ManyToOne(targetEntity="Gesfrota\Model\Domain\FleetItem")
+     * @ManyToOne(targetEntity="FleetItem")
      * @JoinColumn(name="fleet_item_id", referencedColumnName="id")
      * @var FleetItem
      */
@@ -41,10 +41,10 @@ class ImportItem extends Entity {
     protected $status;
     
     /**
-     * @param Import $import
+     * @param ImportFleet $import
      * @param array $data
      */
-    public function __construct(Import $import, array $data) {
+    public function __construct(ImportFleet $import, array $data) {
         parent::__construct();
         $this->import = $import;
         $this->data = $data;
