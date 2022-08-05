@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Import;
+use Gesfrota\Model\Domain\ImportFleet;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Format\DateFormat;
@@ -9,6 +9,7 @@ use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgLink;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Form\Controls\ComboBox;
 use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Misc\Icon;
@@ -19,9 +20,8 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
-use PHPBootstrap\Widget\Form\Controls\ComboBox;
 
-class ImportList extends AbstractList {
+class ImportFleetList extends AbstractList {
 	
 	/**
 	 * @param Action $filter
@@ -73,10 +73,10 @@ class ImportList extends AbstractList {
 		if ($showAgencies) {
 		    $table->buildColumnText('agency', 'Órgão', clone $filter, 70);
 		}
-		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
+		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, ImportFleet $import) {
 		    return $value . '/' . $import->getAmountItems();
 		});
-	    $table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, Import $import) {
+		$table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, ImportFleet $import) {
 	        return round($value / $import->getAmountItems()*100, 1) . '%';
 	    });
 		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
@@ -100,7 +100,7 @@ class ImportList extends AbstractList {
 		});
 		
 		$confirm = new Modal('modal-remove-confirm', new Title('Confirme', 3));
-		$confirm->setBody(new Paragraph('Você deseja excluir definitivamente esta Disposição?'));
+		$confirm->setBody(new Paragraph('Você deseja excluir definitivamente esta Importação?'));
 		$confirm->setWidth(350);
 		$confirm->addButton(new Button('Ok', new TgModalConfirm(), Button::Primary));
 		$confirm->addButton(new Button('Cancelar', new TgModalClose()));

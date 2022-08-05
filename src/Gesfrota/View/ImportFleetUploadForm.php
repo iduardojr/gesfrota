@@ -2,8 +2,8 @@
 namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
-use Gesfrota\Model\Domain\Import;
-use Gesfrota\Model\Domain\ImportItem;
+use Gesfrota\Model\Domain\ImportFleet;
+use Gesfrota\Model\Domain\ImportFleetItem;
 use Gesfrota\View\Widget\AbstractForm;
 use PHPBootstrap\Validate\Pattern\Upload;
 use PHPBootstrap\Validate\Required\Required;
@@ -23,7 +23,7 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 
-class ImportUploadForm extends AbstractForm {
+class ImportFleetUploadForm extends AbstractForm {
 	
 	/**
 	 * @param Action $submit
@@ -114,7 +114,7 @@ class ImportUploadForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::extract()
 	 */
-	public function extract( Import $object ) {
+	public function extract( ImportFleet $object ) {
 		$data['desc'] = $object->getDescription();
 		$this->component->setData($data);
 	}
@@ -122,11 +122,11 @@ class ImportUploadForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( Import $object, EntityManager $em ) {
+	public function hydrate( ImportFleet $object, EntityManager $em ) {
 		$data = $this->component->getData();
 		$object->setDescription($data['desc']);
 		$fileName = date('YmdHis') . '-' . uniqid() . '.csv';
-		$dirRoot = DIR_ROOT . str_replace('/', DIRECTORY_SEPARATOR, Import::DIR);
+		$dirRoot = DIR_ROOT . str_replace('/', DIRECTORY_SEPARATOR, ImportFleet::DIR);
 		if ( ! move_uploaded_file($data['file']['tmp_name'], $dirRoot . $fileName) ) {
 		    throw new \ErrorException('Unable to move upload file to target Directory');
 		}
@@ -140,7 +140,7 @@ class ImportUploadForm extends AbstractForm {
 		}
 		$object->getItems()->clear();
 		while ($data = fgetcsv($file, 0, ";")) {
-		    $item = new ImportItem($object, $this->tranform($data));
+		    $item = new ImportFleetItem($object, $this->tranform($data));
 		    $item->toPreProcess($em);
 		    $object->getItems()->add($item);
 		}

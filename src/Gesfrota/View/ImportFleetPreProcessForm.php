@@ -1,8 +1,8 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\Import;
-use Gesfrota\Model\Domain\ImportItem;
+use Gesfrota\Model\Domain\ImportFleet;
+use Gesfrota\Model\Domain\ImportFleetItem;
 use Gesfrota\View\Widget\AbstractForm;
 use Gesfrota\View\Widget\BuilderTable;
 use Gesfrota\View\Widget\EntityDatasource;
@@ -24,7 +24,7 @@ use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 use PHPBootstrap\Widget\Pagination\Pagination;
 
-class ImportPreProcessForm extends AbstractForm {
+class ImportFleetPreProcessForm extends AbstractForm {
     
     /**
      * @var BuilderTable
@@ -41,9 +41,9 @@ class ImportPreProcessForm extends AbstractForm {
 	 * @param Action $cancel
 	 * @param Action $transform
 	 * @param Action $dismiss
-	 * @param Import $import
+	 * @param ImportFleet $import
 	 */
-    public function __construct(Action $submit, Action $remove, Action $download, Action $cancel, Action $transform, Action $dismiss, Import $import ) {
+    public function __construct(Action $submit, Action $remove, Action $download, Action $cancel, Action $transform, Action $dismiss, ImportFleet $import ) {
         $this->buildPanel('Minha Frota', 'Transformar Importação');
 		$form = $this->buildForm('import-preprocess-form');
 		$fieldset = new Fieldset('Dados Pré-processados <small>'. $import->getDescription(). '</small>');
@@ -52,15 +52,15 @@ class ImportPreProcessForm extends AbstractForm {
 		$fieldset->append($this->alert);
 		
 		$this->table = new BuilderTable('import-items-table');
-		$this->table->setContextRow(function(ImportItem $item) {
+		$this->table->setContextRow(function(ImportFleetItem $item) {
 		    return $item->getStatus() === null ? null : ($item->getStatus() ? 'success' : 'error');
 		});
 		    
 	    $header = $import->getHeader();
-	    $this->table->buildColumnAction('transform', new Icon('icon-cog'), $transform, null, function (Button $btn, ImportItem $item) {
+	    $this->table->buildColumnAction('transform', new Icon('icon-cog'), $transform, null, function (Button $btn, ImportFleetItem $item) {
 	        $btn->setDisabled($item->getImport()->getFinished() && $item->getStatus() === false);
 	    });
-        $this->table->buildColumnAction('dismiss', new Icon('icon-remove-sign'), $dismiss, null, function(Button $btn, ImportItem $item) {
+	        $this->table->buildColumnAction('dismiss', new Icon('icon-remove-sign'), $dismiss, null, function(Button $btn, ImportFleetItem $item) {
             $btn->setDisabled($item->getStatus() !== null);
         });
         foreach ($header as $index => $head) {
@@ -108,14 +108,14 @@ class ImportPreProcessForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::extract()
 	 */
-	public function extract( Import $object ) {
+	public function extract( ImportFleet $object ) {
 
 	}
 
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( Import $object ) {
+	public function hydrate( ImportFleetItem $object ) {
 	    foreach ($object->getItems() as $item) {
 	        if ($item->getStatus() === null) {
 	            $item->setReference(null);
