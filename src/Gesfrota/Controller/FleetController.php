@@ -269,17 +269,14 @@ class FleetController extends AbstractController {
 			$params = $this->request->getQuery();
 			$query->andWhere('u.active = true');
 			if ( $params['query'] ) {
-				$query->andWhere('u.name LIKE :query');
-				$query->orWhere('u.nif LIKE :query');
+				$query->andWhere('u.name LIKE :query OR u.nif LIKE :query');
 				$query->setParameter('query', '%' . $params['query'] . '%');
 			}
-			
 			$datasource = new EntityDatasource($query);
 			$datasource->setPage(isset($params['page']) ? $params['page'] : 1);
 			$table = new OwnerTable(new Action($this,'searchOwner', $params));
 			$table->setDataSource($datasource);
-			$modal = $this->createForm(Vehicle::getClass(), new Action($this))->getModalOwner();
-			$widget = new PanelQuery($table, new Action($this,'searchOwner', $params), $params['query'], $modal);
+			$widget = new PanelQuery($table, new Action($this,'searchOwner', $params), $params['query'], 'owner-search');
 		} catch ( \Exception $e ) {
 			$widget = new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error);
 		}
@@ -295,6 +292,11 @@ class FleetController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				$data = $form->getData();
+			    $owner = $this->getEntityManager()->getRepository(Owner::getClass())->findOneBy(['nif' => $data['nif']]);
+			    if ($owner instanceof Owner) {
+			        $type = $owner instanceof OwnerCompany ? 'CNPJ' : 'CPF';
+			        throw new \ErrorException('Este <em>' . $type . ' ' . $owner->getNif() . '</em> já está cadastrado para o Proprietário <em>#' .$owner->getCode() . ' ' . $owner->getName() . '</em>');
+			    }
 				$owner = new OwnerPerson();
 				$owner->setName($data['name']);
 				$owner->setNif($data['nif']);
@@ -320,6 +322,11 @@ class FleetController extends AbstractController {
 					throw new InvalidRequestDataException();
 				}
 				$data = $form->getData();
+				$owner = $this->getEntityManager()->getRepository(Owner::getClass())->findOneBy(['nif' => $data['nif']]);
+				if ($owner instanceof Owner) {
+				    $type = $owner instanceof OwnerCompany ? 'CNPJ' : 'CPF';
+				    throw new \ErrorException('Este <em>' . $type . ' ' . $owner->getNif() . '</em> já está cadastrado para o Proprietário <em>#' .$owner->getCode() . ' ' . $owner->getName() . '</em>');
+				}
 				$owner = new OwnerCompany();
 				$owner->setName($data['name']);
 				$owner->setNif($data['nif']);

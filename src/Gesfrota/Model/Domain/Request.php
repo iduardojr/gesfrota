@@ -216,6 +216,23 @@ abstract class Request extends Entity {
 	public function getItinerary() {
 		return array_merge([$this->from], $this->waypoints, [$this->to]);
 	}
+	
+	/**
+	 * @return array
+	 */
+	public function getOptDiretions() {
+	    $options = [];
+	    if ($this->from) {
+	       $options['origin'] = ['placeId' => $this->from->getPlace()];
+	    }
+	    foreach($this->waypoints as $point) {
+	       $options['waypoints'][] = ['location' => ['placeId' => $point->getPlace()], 'stopover' => true];
+	    }
+	    if ($this->to) {
+	       $options['destination'] = ['placeId' => $this->to->getPlace()];
+	    }
+	    return $options;
+	}
 
 	/**
 	 * @return \DateTime
@@ -601,10 +618,11 @@ abstract class Request extends Entity {
 	/**
 	 * @param User $user
 	 * @param integer $odometer
+	 * @param string $note
 	 * @throws \DomainException
 	 * @throws \InvalidArgumentException
 	 */
-	public function toFinish(User $user, $odometer) {
+	public function toFinish(User $user, $odometer, $note = null) {
 		if ($this->status != self::INITIATED) {
 			throw new \DomainException('request cannot be finished.');
 		}
@@ -614,6 +632,7 @@ abstract class Request extends Entity {
 		$this->status = self::FINISHED;
 		$this->odometerFinal = $odometer;
 		$this->vehicle->setOdometer($odometer);
+		$this->justify = $note;
 		$this->finishedBy = $user;
 		$this->finishedAt = new \DateTime('now');
 	}

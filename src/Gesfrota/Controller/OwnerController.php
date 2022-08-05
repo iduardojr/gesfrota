@@ -13,6 +13,7 @@ use Gesfrota\View\OwnerForm;
 use Gesfrota\View\OwnerList;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use Doctrine\ORM\EntityManager;
 
 class OwnerController extends AbstractController {
 	
@@ -79,13 +80,12 @@ class OwnerController extends AbstractController {
 		try {
 			$id = $this->request->getQuery('key');
 			$entity = $this->getEntityManager()->find(Owner::getClass(), (int) $id);
-			if ( ! $entity ) {
+			if ( ! $entity instanceof Owner ) {
 				throw new NotFoundEntityException('Não foi possível editar o Proprietário. Proprietário <em>#' . $id . '</em> não encontrado.');
 			}
 			if ( $entity instanceof OwnerCompany && $entity->isReadOnly() ) {
 				throw new NotFoundEntityException('Não foi possível editar o Proprietário. Proprietário <em>#' . $entity->code . ' ' . $entity->name .  '</em> é somente de leitura.');
 			}
-			
 			$form = $this->createForm($entity, new Action($this, 'edit', array('key' => $id)));
 			$helper = $this->createHelperCrud();
 			$helper->setException(new NotFoundEntityException('Não foi possível editar o Proprietário. Proprietário <em>#' . $id . '</em> não encontrado.'));
@@ -125,7 +125,15 @@ class OwnerController extends AbstractController {
 	 * @return Crud
 	 */
 	private function createHelperCrud() {
-		return new Crud($this->getEntityManager(), Owner::getClass(), $this);
+		$helper = new Crud($this->getEntityManager(), Owner::getClass(), $this);
+		$helper->attach(Crud::PrePersist, function (Owner $entity, EntityManager $em) {
+		    $owner = $this->getEntityManager()->getRepository(Owner::getClass())->findOneBy(['nif' => $entity->getNif()]);
+		    if ($owner != null && $owner != $entity) {
+		        $type = $owner instanceof OwnerCompany ? 'CNPJ' : 'CPF';
+		        throw new \ErrorException('Este <em>' . $type . ' ' . $owner->getNif() . '</em> já está cadastrado para o Proprietário <em>#' .$owner->getCode() . ' ' . $owner->getName() . '</em>');
+		    }
+		});
+		return $helper;
 	}
 	
 	/**

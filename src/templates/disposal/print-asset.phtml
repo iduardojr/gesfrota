@@ -1,0 +1,562 @@
+<?php
+use Gesfrota\Model\Domain\DisposalItem;
+use Gesfrota\Model\Domain\FleetItem;
+use Gesfrota\Model\Domain\Survey;
+use Gesfrota\Model\Domain\Vehicle;
+
+$object = $this->disposalItem;
+$disposal = $object->getDisposal();
+$asset = $object->getAsset();
+$owner = $asset instanceof Vehicle ? $asset->getOwner() : $asset->getResponsibleUnit();
+$survey = $object->getSurvey();
+?>
+<div class="page">
+	<div class="page-header">
+		<img src="/images/brasao-go.png" class="pull-left">
+		<h1>Estado de Goiás <br/><?php echo $disposal->getRequesterUnit()->getName(); ?></h1>
+		<h2>Disposição #<?php echo $disposal->getCode();?> <small><?php echo $disposal->getDescription(); ?></small></h2>
+	</div>
+	<h3 class="asset-code">CÓDIGO PATRIMONIAL Nº <?php echo $asset->getAssetCode(); ?></h3>
+    <fieldset>
+    	<legend>Dados de Identificação</legend>
+    	<?php if ($asset instanceof Vehicle) {?>
+    	<table>
+    		<tr>
+    			<th class="span1">Placa</th>
+    			<th class="span9">Veículo</th>
+    			<th class="span2">Chassi</th>
+    			<th class="span1">Motor a</th>
+			</tr>
+			<tr>
+				<td><?php echo $asset->getPlate(); ?></td>
+				<td><?php echo $asset->getDescription(); ?></td>
+				<td><?php echo $asset->getVin(); ?></td>
+				<td><?php echo FleetItem::getEnginesAllowed()[$asset->getEngine()];?></td>
+			</tr>
+		</table>
+		<?php } else { ?>
+    	<table>
+    		<tr>
+    			<th class="span8">Equipamento</th>
+    			<th class="span3">Nº de Série</th>
+    			<th class="span1">Motor a</th>
+			</tr>
+			<tr>
+				<td><?php echo $asset->getDescription(); ?></td>
+				<td><?php echo $asset->getSerialNumber(); ?></td>
+				<td><?php echo FleetItem::getEnginesAllowed()[$asset->getEngine()];?></td>
+			</tr>
+		</table>
+		<?php } ?>
+		<table>
+			<tr>
+    			<th>Localização do Pátio</th>
+			</tr>
+			<tr>
+				<td><i class="icon-map-marker"></i> <?php echo $object->getCourtyard(); ?></td>
+			</tr>
+		</table>
+    	<table>
+    		<tr>
+    			<th colspan="2">Proprietário</th>
+			</tr>
+			<tr>
+				<td class="span2">
+					<span class="legend">CNPJ</span>
+					<?php echo $owner->getNif(); ?>
+				</td>
+				<td colspan="3" class="span10">
+					<span class="legend">Razão Social</span>
+					<?php echo $owner->getName(); ?>
+				</td>
+			</tr>
+    	</table>
+    </fieldset>	
+    <fieldset>
+    	<legend>Avaliação do <?php echo ($asset instanceof Vehicle) ? 'Veículo' : 'Equipamento'; ?></legend>
+		<table>
+			<tr>
+    			<th class="span4">Classificação</th>
+    			<th class="span4">Estado de Conservação</th>
+    			<th class="span4">Valor Estimado</th>
+			</tr>
+			<tr>
+				<td><?php echo $object->getClassification() ? DisposalItem::getClassificationAllowed()[$object->getClassification()] : null; ?></td>
+				<td><?php echo $object->getConservation() ? DisposalItem::getConservationAllowed()[$object->getConservation()] : null; ?></td>
+				<td>R$ <?php echo $object->getValue() != null ? number_format($object->getValue(), 2, ',', '.') : null; ?></td>
+			</tr>
+		</table>
+		<?php if ($asset instanceof Vehicle) { ?>
+		<table>
+			<tr>
+				<th colspan="4">Débitos do Veículo</th>
+			<tr>
+    			<td class="span3">
+					<span class="legend">Licenciamento</span>
+					R$ <?php echo $object->getDebitLicense() != null ? number_format($object->getDebitLicense(), 2, ',', '.') : null; ?>
+				</td>
+				<td class="span3">
+					<span class="legend">Multas</span>
+					R$ <?php echo $object->getDebitPenalty() != null ? number_format($object->getDebitPenalty(), 2, ',', '.') : null; ?>
+				</td>
+				<td class="span3">
+					<span class="legend">IPVA</span>
+					R$ <?php echo $object->getDebitTax() != null ? number_format($object->getDebitTax(), 2, ',', '.') : null; ?>
+				</td>
+				<td class="span3">
+					<span class="legend">Seguro DPVA</span>
+					R$ <?php echo $object->getDebitSafe() != null ? number_format($object->getDebitSafe(), 2, ',', '.') : null; ?>
+				</td>
+			</tr>
+		</table>
+		<?php } ?>
+	</fieldset>
+	<fieldset>
+    	<legend>Inspeção Técnica</legend>
+    	<?php if ($asset instanceof Vehicle) { ?>
+    	<div class="row-fluid">
+    		<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<td colspan="2" class="no-border"></td>
+        				<th class="span3">Esquerda</th>
+        				<th class="span3">Direita</th>
+        			</tr>
+        			<tr>
+        				<th rowspan="8" class="vertical"><div>PARTE DIANTEIRA</div></th>
+        				<td class="text-right">Farol</th>
+        				<td><?php echo $survey->getLanternFrontLeft(); ?></td>
+        				<td><?php echo $survey->getLanternFrontRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Seta</th>
+        				<td><?php echo $survey->getLanternArrowFrontLeft(); ?></td>
+        				<td><?php echo $survey->getLanternArrowFrontRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Para-choque</th>
+        				<td colspan="2"><?php echo $survey->getBumperFront(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Capô do Motor</th>
+        				<td colspan="2"><?php echo $survey->getCoverFront(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Parabrisa</th>
+        				<td colspan="2"><?php echo $survey->getWindshieldFront(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Teto</th>
+        				<td colspan="2"><?php echo $survey->getRoof(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<td colspan="2" class="no-border"></td>
+        				<th class="span3">Esquerda</th>
+        				<th class="span3">Direita</th>
+        			</tr>
+        			<tr>
+        				<th rowspan="8" class="vertical"><div>PARTE TRASEIRA</div></th>
+        				<td class="text-right">Luz de Freio/Ré</th>
+        				<td><?php echo $survey->getLanternBackLeft(); ?></td>
+        				<td><?php echo $survey->getLanternBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Seta</th>
+        				<td><?php echo $survey->getLanternArrowBackLeft(); ?></td>
+        				<td><?php echo $survey->getLanternArrowBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Para-choque</th>
+        				<td colspan="2"><?php echo $survey->getBumperBack(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Tampa Traseira</th>
+        				<td colspan="2"><?php echo $survey->getCoverBack(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Parabrisa</th>
+        				<td colspan="2"><?php echo $survey->getWindshieldBack(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Escapamento</th>
+        				<td colspan="2"><?php echo $survey->getExhaust(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<td colspan="2" class="no-border"></td>
+        				<th class="span3">Dianteira</th>
+        				<th class="span3">Traseira</th>
+        			</tr>
+        			<tr>
+        				<th rowspan="8" class="vertical"><div>LATERAL ESQUERDA</div></th>
+        				<td class="text-right">Vidros</th>
+        				<td><?php echo $survey->getWindowFrontLeft(); ?></td>
+        				<td><?php echo $survey->getWindowBackLeft(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Porta</th>
+        				<td><?php echo $survey->getDoorFrontLeft(); ?></td>
+        				<td><?php echo $survey->getDoorBackLeft(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Colunas</th>
+        				<td><?php echo $survey->getColumnFrontLeft(); ?></td>
+        				<td><?php echo $survey->getColumnBackLeft(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Estribos</th>
+        				<td><?php echo $survey->getStirrupFrontLeft(); ?></td>
+        				<td><?php echo $survey->getStirrupBackLeft(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Paralamas</th>
+        				<td><?php echo $survey->getFenderFrontLeft(); ?></td>
+        				<td><?php echo $survey->getFenderBackLeft(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Pneus</th>
+        				<td><?php echo $survey->getTireFrontLeft(); ?></td>
+        				<td><?php echo $survey->getTireBackLeft(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<td colspan="2" class="no-border"></td>
+        				<th class="span3">Dianteira</th>
+        				<th class="span3">Traseira</th>
+        			</tr>
+        			<tr>
+        				<th rowspan="8" class="vertical"><div>LATERAL DIREITA</div></th>
+        				<td class="text-right">Vidros</th>
+        				<td><?php echo $survey->getWindowFrontRight(); ?></td>
+        				<td><?php echo $survey->getWindowBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Porta</th>
+        				<td><?php echo $survey->getDoorFrontRight(); ?></td>
+        				<td><?php echo $survey->getDoorBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Colunas</th>
+        				<td><?php echo $survey->getColumnFrontRight(); ?></td>
+        				<td><?php echo $survey->getColumnBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Estribos</th>
+        				<td><?php echo $survey->getStirrupFrontRight(); ?></td>
+        				<td><?php echo $survey->getStirrupBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Paralamas</th>
+        				<td><?php echo $survey->getFenderFrontRight(); ?></td>
+        				<td><?php echo $survey->getFenderBackRight(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Pneus</th>
+        				<td><?php echo $survey->getTireFrontRight(); ?></td>
+        				<td><?php echo $survey->getTireBackRight(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        </div>
+        <div class="row-fluid">
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<th rowspan="11" class="vertical"><div>MECÂNICA</div></th>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Carburador</th>
+        				<td class="span3"><?php echo $survey->getCarburetor(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Bomba Injetora</th>
+        				<td><?php echo $survey->getInjectionPump(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Câmbio</th>
+        				<td><?php echo $survey->getExchange(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Diferencial</th>
+        				<td><?php echo $survey->getDifferential(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Motor</th>
+        				<td><?php echo $survey->getEngine(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Radiador</th>
+        				<td><?php echo $survey->getRadiator(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Turbina</th>
+        				<td><?php echo $survey->getTurbine(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Suspensão</th>
+        				<td><?php echo $survey->getSuspension(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<th rowspan="11" class="vertical"><div>ELÉTRICA</div></th>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Bomba de Gasolina</th>
+        				<td class="span3"><?php echo $survey->getGasolineBump(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Motor de Arranque</th>
+        				<td><?php echo $survey->getEngineStarter(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Módulo de Ignição</th>
+        				<td><?php echo $survey->getIgnitionModule(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Alternador</th>
+        				<td><?php echo $survey->getAlternator(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Distribuidor</th>
+        				<td><?php echo $survey->getDistributor(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Bateria</th>
+        				<td><?php echo $survey->getBattery(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Bico de Injeção</th>
+        				<td><?php echo $survey->getInjectionNozzle(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Injeção Eletrônica</th>
+        				<td><?php echo $survey->getInjectionElectronic(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<th rowspan="13" class="vertical"><div>PARTE INTERNA</div></th>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Banco do Motorista</th>
+        				<td class="span3"><?php echo $survey->getSeatDriver(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Banco do Passageiro</th>
+        				<td><?php echo $survey->getSeatPassenger(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Banco Traseiro</th>
+        				<td><?php echo $survey->getSeatRear(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Painel de Instrumentos</th>
+        				<td><?php echo $survey->getDashboard(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Volante</th>
+        				<td><?php echo $survey->getSteeringWheel(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Buzina</th>
+        				<td><?php echo $survey->getHorn(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Console Central</th>
+        				<td><?php echo $survey->getCentralConsole(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Tapeçaria do Teto</th>
+        				<td><?php echo $survey->getRoofTapestry(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Tampão do Porta-malas</th>
+        				<td><?php echo $survey->getTrunkCap(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Forro das Portas</th>
+        				<td><?php echo $survey->getDoorLining(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span3">
+            	<table class="small text-center">
+        			<tr>
+        				<th rowspan="11" class="vertical"><div>ACESSÓRIOS</div></th>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Ar Condicionado</th>
+        				<td class="span3"><?php echo $survey->getAirConditioning(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Alarme</th>
+        				<td><?php echo $survey->getAlarm(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Direção Hidraúlica</th>
+        				<td><?php echo $survey->getSteeringHydraulic(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Aparelho de Som</th>
+        				<td><?php echo $survey->getDeviceSound(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Vidro Elétrico</th>
+        				<td><?php echo $survey->getElectricGlass(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Trava Elétrica</th>
+        				<td><?php echo $survey->getElectricLock(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Tapetes</th>
+        				<td><?php echo $survey->getCarpet(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Roda de Ferro</th>
+        				<td><?php echo $survey->getWheelIron(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Roda de Liga Leve</th>
+        				<td><?php echo $survey->getWheelAlloy(); ?></td>
+        			</tr>
+        			<tr>
+        				<td class="text-right">Faróis de Neblina</th>
+        				<td><?php echo $survey->getLanternFog(); ?></td>
+        			</tr>
+        		</table>
+        	</div>
+        </div>
+        <div class="row-fluid">
+    		<div class="span6" style="margin-top: -45px;">
+                <table class="text-center">
+                	<tr>
+                		<td colspan="2" class="no-border no-padding"> 
+                    		<table class="text-center">
+                            	<tr>
+                            		<th style="border-bottom: none;">SEGURANÇA</th>
+                            	</tr>
+                    		</table>
+                    	</td>
+                	</tr>
+        			<tr>
+        				<td class="span6 no-border no-padding"> 
+                    		<table class="small">
+                    			<tr>
+                    				<td class="text-right">Cintos de Segurança</th>
+                    				<td class="span3"><?php echo $survey->getSafetyBelts(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="text-right">Air Bag</th>
+                    				<td><?php echo $survey->getAirbag(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="text-right">Retrovisor Interno</th>
+                    				<td><?php echo $survey->getRearviewInternal(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="text-right">Retrovisor Esquerdo</th>
+                    				<td><?php echo $survey->getRearviewLeft(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="text-right">Retrovisor Direito</th>
+                    				<td><?php echo $survey->getRearviewRight(); ?></td>
+                    			</tr>
+                    		</table>
+        				</td>
+        				<td class="span6 no-border no-padding">
+        					<table class="small">
+                    			<tr>
+                    				<td class="no-border-left text-right">Triângulo de Segurança</th>
+                    				<td class="span3"><?php echo $survey->getSafetyTriangle(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="no-border-left text-right">Macaco</th>
+                    				<td><?php echo $survey->getMonkey(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="no-border-left text-right">Chave de Roda</th>
+                    				<td><?php echo $survey->getWheelWrench(); ?></td>
+                    			</tr>
+                    			<tr>
+                    				<td class="no-border-left text-right">Estepe</th>
+                    				<td><?php echo $survey->getWheelSpare(); ?></td>
+                    			</tr>
+                    		</table>
+        				</td>
+        			</tr>
+        		</table>
+        	</div>
+        	<div class="span5 offset1" style="margin-top: 37px;">
+            	<table class="text-center">
+        			<tr>
+        				<th rowspan="2" class="vertical"><div>Legenda</div></th>
+        				<td class="span4"><span class="legend">[<?php echo Survey::UNVALUED; ?>] Não Avaliado</span></td>
+        				<td class="span4"><span class="legend">[<?php echo Survey::SCRATCHED; ?>] Riscado</span></td>
+        				<td class="span4"><span class="legend">[<?php echo Survey::KNEADED; ?>] Amassado</span></td>
+        			</tr>
+        			<tr>
+        				<td><span class="legend">[<?php echo Survey::BROKEN; ?>] Quebrado</span></td>
+        				<td><span class="legend">[<?php echo Survey::MISSING; ?>] Faltante</span></td>
+        				<td><span class="legend">[<?php echo Survey::GOOD; ?>] Bom</span></td>
+        			</tr>
+                </table>
+        	</div>
+        </div>
+        <table>
+        	<tr>
+				<th>Observação</th>
+			</tr>
+			<tr>
+				<td><div class="textarea" style="height: <?php echo 4*1.92?>em;"><?php echo nl2br($survey->getNote()); ?></div></td>
+			</tr>
+		</table>
+    	<?php } else { ?>
+		<table>
+			<tr>
+				<th>Laudo</th>
+			</tr>
+			<tr>
+				<td><div class="textarea" style="height: <?php echo 27*1.92?>em;"><?php echo nl2br($object->getReport()); ?></div></td>
+			</tr>
+		</table>
+		<?php } ?>
+		<table>
+			<tr class="text-center">
+				<th class="span6">AVALIADOR RESPONSÁVEL</th>
+				<th class="span6">AUTORIZAÇÃO PARA ALIENAÇÃO</th>
+			</tr>
+			<tr class="text-center">
+				<td class="sign">
+				<?php  if ($disposal->getRequestedBy()) { ?>
+					<em><small>Assinado eletronicamente por</small></em><br>
+					<?php echo $disposal->getRequestedBy()->getName(); ?>, CPF <?php echo $disposal->getRequestedBy()->getNif(); ?><br>
+					em <?php echo $disposal->getRequestedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+				<td class="sign">
+				<?php  if ($disposal->getConfirmedAt()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $disposal->getConfirmedBy()->getName(); ?>, CPF <?php echo $disposal->getConfirmedBy()->getNif(); ?><br>
+					em <?php echo $disposal->getConfirmedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+			</tr>
+		</table>
+    </fieldset>
+</div>

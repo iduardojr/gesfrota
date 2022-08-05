@@ -373,6 +373,17 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
+    public function getOptDiretions()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getOptDiretions', []);
+
+        return parent::getOptDiretions();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getSchedule()
     {
 
@@ -693,12 +704,12 @@ class RequestTrip extends \Gesfrota\Model\Domain\RequestTrip implements \Doctrin
     /**
      * {@inheritDoc}
      */
-    public function toFinish(\Gesfrota\Model\Domain\User $user, $odometer)
+    public function toFinish(\Gesfrota\Model\Domain\User $user, $odometer, $note = NULL)
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'toFinish', [$user, $odometer]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'toFinish', [$user, $odometer, $note]);
 
-        return parent::toFinish($user, $odometer);
+        return parent::toFinish($user, $odometer, $note);
     }
 
     /**

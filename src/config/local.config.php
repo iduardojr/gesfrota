@@ -9,6 +9,5 @@ return [
 			'password' => 'root',
 			'dbname' => 'gesfrota']
 	]
-    
 ];
 ?>

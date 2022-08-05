@@ -340,7 +340,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setYearModel(int $year)
+    public function setYearModel($year)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setYearModel', [$year]);
@@ -351,7 +351,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setYearManufacture(int $year)
+    public function setYearManufacture($year)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setYearManufacture', [$year]);
@@ -362,7 +362,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setYear(int $manufacture, int $model = NULL)
+    public function setYear($manufacture, $model = NULL)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setYear', [$manufacture, $model]);
@@ -373,7 +373,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function getYear(bool $simple = true)
+    public function getYear($simple = true)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getYear', [$simple]);
@@ -395,7 +395,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setRenavam(int $renavam)
+    public function setRenavam($renavam)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setRenavam', [$renavam]);
@@ -516,7 +516,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setFleet(int $fleet)
+    public function setFleet($fleet)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setFleet', [$fleet]);
@@ -527,7 +527,7 @@ class Vehicle extends \Gesfrota\Model\Domain\Vehicle implements \Doctrine\ORM\Pr
     /**
      * {@inheritDoc}
      */
-    public function setEngine(int $engine)
+    public function setEngine($engine)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setEngine', [$engine]);

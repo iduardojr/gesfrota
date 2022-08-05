@@ -7,18 +7,22 @@ use Gesfrota\Model\Domain\DisposalItem;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgAjax;
+use PHPBootstrap\Widget\Modal\Modal;
+use PHPBootstrap\Widget\Misc\Title;
+use PHPBootstrap\Widget\Action\TgWindows;
 
 class DisposalItemTable extends BuilderTable {
 	
 	/**
 	 * @param Action $survey
+	 * @param Action $print
 	 * @param Action $remove
 	 */
-    public function __construct(Action $survey, Action $remove) {
+    public function __construct(Action $survey, Action $print, Action $remove) {
 		parent::__construct('disposal-items-table');
 
 		$this->buildColumnText('code', '#', null, 80);
-		$this->buildColumnText('description', 'Ativo', null, 500, ColumnText::Left);
+		$this->buildColumnText('description', 'Ativo', null, 450, ColumnText::Left);
 		$this->buildColumnText('classification', 'Classificação', null, 75, null, function ( $value ) {
 			if ($value > 0) {
 				return DisposalItem::getClassificationAllowed()[$value];
@@ -44,6 +48,7 @@ class DisposalItemTable extends BuilderTable {
 		
 		$this->buildColumnAction('survey', new Icon('icon-list-alt'), $survey);
 		$this->buildColumnAction('remove', new Icon('icon-remove'), new TgAjax($remove, 'flash-message', TgAjax::Json));
+		$this->buildColumnAction('print', new Icon('icon-print'), new TgWindows($print, 1024, 720));
 	}
 	
 }
