@@ -34,7 +34,7 @@ class ImportFleetUploadForm extends AbstractForm {
 	 */
     public function __construct( Action $submit, Action $cancel, Action $seekAgency, Action $searchAgency, $showAgencies = false) {
 	    $this->buildPanel('Minha Frota', 'Nova Importação');
-		$form = $this->buildForm('import-upload-form');
+		$form = $this->buildForm('import-fleet-upload-form');
 		
 		$fieldset = new Fieldset('Enviar Arquivo para Importação');
 		

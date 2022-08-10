@@ -1,7 +1,7 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\Model\Domain\ImportFleet;
+use Gesfrota\Model\Domain\Import;
 use Gesfrota\View\Widget\AbstractList;
 use Gesfrota\View\Widget\BuilderForm;
 use PHPBootstrap\Format\DateFormat;
@@ -65,7 +65,7 @@ class ImportFleetList extends AbstractList {
 		$this->buildToolbar(new Button('Nova', new TgLink($upload), Button::Primary),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
-		$table = $this->buildTable('import-list');
+		$table = $this->buildTable('import-fleet-list');
 		$table->buildPagination(clone $filter);
 		
 		$table->buildColumnTextId(null, clone $filter);
@@ -73,10 +73,10 @@ class ImportFleetList extends AbstractList {
 		if ($showAgencies) {
 		    $table->buildColumnText('agency', 'Órgão', clone $filter, 70);
 		}
-		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, ImportFleet $import) {
+		$table->buildColumnText('amountImported', 'Itens Importados', null, 50, null, function ($value, Import $import) {
 		    return $value . '/' . $import->getAmountItems();
 		});
-		$table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, ImportFleet $import) {
+		$table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, Import $import) {
 	        return round($value / $import->getAmountItems()*100, 1) . '%';
 	    });
 		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {

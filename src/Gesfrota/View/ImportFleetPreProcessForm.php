@@ -45,7 +45,7 @@ class ImportFleetPreProcessForm extends AbstractForm {
 	 */
     public function __construct(Action $submit, Action $remove, Action $download, Action $cancel, Action $transform, Action $dismiss, ImportFleet $import ) {
         $this->buildPanel('Minha Frota', 'Transformar Importação');
-		$form = $this->buildForm('import-preprocess-form');
+		$form = $this->buildForm('import-fleet-preprocess-form');
 		$fieldset = new Fieldset('Dados Pré-processados <small>'. $import->getDescription(). '</small>');
 		
 		$this->panel->remove($this->alert);
@@ -71,7 +71,7 @@ class ImportFleetPreProcessForm extends AbstractForm {
 		$this->pagination = $this->table->buildPagination(clone $submit);
 		$this->table->setPagination(null);
 		
-		$fieldset->append(new Row(true, [new Box(12, new Panel($this->table, 'import-preprocess-container'))]));
+		$fieldset->append(new Row(true, [new Box(12, new Panel($this->table, 'import-items-table-container'))]));
 		$fieldset->append($this->pagination);
 		
 		$tab = new Tabbable('import-tabs');
