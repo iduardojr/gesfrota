@@ -1,15 +1,13 @@
 <?php
 namespace Gesfrota\View;
 
-use Gesfrota\View\Widget\BuilderTable;
-use PHPBootstrap\Widget\Table\ColumnText;
 use Gesfrota\Model\Domain\DisposalItem;
-use PHPBootstrap\Widget\Misc\Icon;
+use Gesfrota\View\Widget\BuilderTable;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Action\TgAjax;
-use PHPBootstrap\Widget\Modal\Modal;
-use PHPBootstrap\Widget\Misc\Title;
 use PHPBootstrap\Widget\Action\TgWindows;
+use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Table\ColumnText;
 
 class DisposalItemTable extends BuilderTable {
 	

@@ -55,6 +55,7 @@ class ServiceProviderList extends AbstractList {
 		$this->buildToolbar(new Button('Novo', new TgLink($new), Button::Primary), 
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
+		
 		$table = $this->buildTable('service-providers-list');
 		$table->buildPagination(clone $filter);
 		
