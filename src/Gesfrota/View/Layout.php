@@ -141,7 +141,8 @@ class Layout extends View {
 		
 		$resource1 = 'Gesfrota\\Controller\\OwnerController';
 		$resource2 = 'Gesfrota\\Controller\\ServiceProviderController';
-		if ($acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) ) {
+		$resource3 = 'Gesfrota\\Controller\\ImportTransactionController';
+		if ($acl->isAllowed($role, $resource1) || $acl->isAllowed($role, $resource2) || $acl->isAllowed($role, $resource3)) {
 			if ($isDivider) {
 				$drop->addItem(new DropdownDivider());
 			}
@@ -151,6 +152,9 @@ class Layout extends View {
 			}
 			if ($acl->isAllowed($role, $resource2)) {
 				$drop->addItem(new DropdownLink('Gerenciar Prestadores de Serviço', new TgLink(new Action($resource2))));
+			}
+			if ($acl->isAllowed($role, $resource3)) {
+			    $drop->addItem(new DropdownLink('Importar Transações de Serviço', new TgLink(new Action($resource3))));
 			}
 			$isDivider = true;
 			$isAdministrator = true;
