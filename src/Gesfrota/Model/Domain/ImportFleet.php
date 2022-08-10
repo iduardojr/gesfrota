@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\Criteria;
 class ImportFleet extends Import {
 
     /**
-     * @OneToMany(targetEntity="ImportFleetItem", mappedBy="import", cascade={"persist"})
+     * @OneToMany(targetEntity="ImportFleetItem", mappedBy="import", fetch="EXTRA_LAZY", cascade={"persist"})
      * @var ArrayCollection
      */
     protected $items;
@@ -48,7 +48,7 @@ class ImportFleet extends Import {
     
 
     /**
-     * @return integer
+     * @see Import::getAmountImported()
      */
     public function getAmountImported() {
         $criteria = Criteria::create();
@@ -57,7 +57,8 @@ class ImportFleet extends Import {
     }
     
     /**
-     * @return integer
+     * 
+     * @see Import::getAmountAppraised()
      */
     public function getAmountAppraised() {
         $criteria = Criteria::create();

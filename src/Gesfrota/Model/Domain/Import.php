@@ -12,7 +12,7 @@ use Gesfrota\Model\Entity;
  * @EntityListeners({"Gesfrota\Model\Listener\ImportListener"})
  * @InheritanceType("SINGLE_TABLE")
  * @DiscriminatorColumn(name="type", type="string")
- * @DiscriminatorMap({"F" = "ImportFleet"})
+ * @DiscriminatorMap({"F" = "ImportFleet", "S" = "ImportSupply"})
  */
 abstract class Import extends Entity {
 
@@ -179,6 +179,15 @@ abstract class Import extends Entity {
         return $this->items->count();
     }
     
-
+    /**
+     * @return integer
+     */
+    abstract public function getAmountImported();
+    
+    /**
+     * @return integer
+     */
+    abstract public function getAmountAppraised();
+     
 }
 ?>
