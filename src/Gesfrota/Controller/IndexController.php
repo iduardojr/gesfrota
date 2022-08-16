@@ -74,9 +74,9 @@ class IndexController extends AbstractController {
 		
 		$layout->KPIs+= $this->getFuelKPIs($initial, $final, $agency);
 		$layout->fuel_x_distance = $this->getFuelXDistance(clone $initial, clone $final, $agency);
-// 		$layout->fuel_outlier_g = $this->getFuelOutlier('G', clone $initial, clone $final, $agency);
-// 		$layout->fuel_outlier_e = $this->getFuelOutlier('E', clone $initial, clone $final, $agency);
-// 		$layout->fuel_outlier_d = $this->getFuelOutlier('D', clone $initial, clone $final, $agency);
+		$layout->fuel_outlier_g = $this->getFuelOutlier('G', clone $initial, clone $final, $agency);
+		$layout->fuel_outlier_e = $this->getFuelOutlier('E', clone $initial, clone $final, $agency);
+		$layout->fuel_outlier_d = $this->getFuelOutlier('D', clone $initial, clone $final, $agency);
 		$layout->fuel_per_type = $this->getFuelPerType($initial, $final, $agency);
 		$layout->fuel_per_agency = $this->getFuelPerAgency($initial, $final);
 		
@@ -636,60 +636,49 @@ class IndexController extends AbstractController {
 	
 	
 	private function getFuelOutlier($fuel, \DateTime $initial, \DateTime $final, Agency $agency = null) {
-	    $sql = 'SELECT ROUND(i0_.vehicle_efficiency) AS efficiency, COUNT(i0_.transaction_id) AS score,  LEFT(item_description, 1) AS fuel';
+	    $initial = $initial->format('Y-m-d H:i:s');
+	    $final = $final->format('Y-m-d H:i:s');
+	    $sql = 'SELECT ROUND(i0_.vehicle_efficiency) AS efficiency, COUNT(i0_.transaction_id) AS score ';
 	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql.= 'WHERE  = ? AND i0_.vehicle_efficiency between 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
+	    $sql.= 'WHERE LEFT(item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
+	    $sql.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1';
 	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
-	    $sql.= 'GROUP BY fuel, efficiency';
+	    $sql.= 'GROUP BY efficiency';
 	    
 	    $rsm = new ResultSetMapping();
 	    $rsm->addScalarResult('efficiency', 'x');
 	    $rsm->addScalarResult('score', 'y');
 	    
-	    $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
-	    $query->setParameter(1, $fuel);
-	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
-	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
+	    $result['data'] = $this->getEntityManager()->createNativeQuery($sql, $rsm)->getArrayResult();
 	    
-	    $result['data'] = $query->getArrayResult();
+	    $sql1 = 'SELECT i0_.vehicle_efficiency AS efficiency ';
+	    $sql1.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql1.= 'WHERE LEFT(item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
+	    $sql1.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1';
+	    $sql1.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
 	    
-	    $sql = 'SELECT i0_.vehicle_efficiency AS efficiency ';
-	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql.= 'WHERE LEFT(i0_.item_description, 1) = ? AND i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
-	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
+	    $sql2 = 'SELECT ROUND(STD(t1.efficiency)) AS std, 
+                        ROUND(AVG(t1.efficiency)) AS avg, 
+                        (ROUND(AVG(t1.efficiency))-ROUND(STD(t1.efficiency))) AS min, 
+                        (ROUND(AVG(t1.efficiency))+ROUND(STD(t1.efficiency))) AS max
+                        FROM (' . $sql1 . ') t1';
 	    
 	    $rsm = new ResultSetMapping();
-	    $rsm->addScalarResult('scalar', 'scalar');
+	    $rsm->addScalarResult('std', 'std');
+	    $rsm->addScalarResult('avg', 'avg');
+	    $rsm->addScalarResult('min', 'min');
+	    $rsm->addScalarResult('max', 'max');
+	    $result+= $this->getEntityManager()->createNativeQuery($sql2, $rsm)->getSingleResult();
 	    
-	    $query = $this->getEntityManager()->createNativeQuery('SELECT ROUND(STD(t.efficiency)) AS scalar FROM ('. $sql . ') t', $rsm);
-	    $query->setParameter(1, $fuel);
-	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
-	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
-	    $result['std'] = $query->getSingleScalarResult();
-	    
-	    $query = $this->getEntityManager()->createNativeQuery('SELECT ROUND(AVG(t.efficiency)) AS scalar FROM ( ' . $sql . ') t', $rsm);
-	    $query->setParameter(1, $fuel);
-	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
-	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
-	    $result['avg'] = $query->getSingleScalarResult();
-	    $result['min'] = $result['avg'] - $result['std'];
-	    $result['max'] = $result['avg'] + $result['std'];
-	    
-	    $sql = 'SELECT COUNT(i0_.transaction_id) AS score ';
-	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql.= 'WHERE LEFT(i0_.item_description, 1) = ? AND i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
-	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
-	    
-	    $query = $this->getEntityManager()->createNativeQuery('SELECT (( ' . $sql . 'AND i0_.vehicle_efficiency BETWEEN ? AND ?) / (' . $sql . ')*100) AS scalar', $rsm);
-	    $query->setParameter(1, $fuel);
-	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
-	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
-	    $query->setParameter(4, (int) $result['min']);
-	    $query->setParameter(5, (int) $result['max']);
-	    $query->setParameter(6, $fuel);
-	    $query->setParameter(7, $initial->format('Y-m-d H:i:s'));
-	    $query->setParameter(8, $final->format('Y-m-d H:i:s'));
-	    $result['percent'] = $query->getSingleScalarResult();
+	    $total   = 0;
+	    $quartil = 0;
+	    foreach($result['data'] as $item) {
+	        $total+= $item['y'];
+	        if ($item['x'] >= $result['min'] && $item['x'] <= $result['max'] ) {
+	            $quartil+= $item['y'];
+	        }
+	    }
+	    $result['percent'] = $quartil/$total*100;
 	    
 	    return $result;
 	}
