@@ -3,7 +3,6 @@ namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\Request;
-use Gesfrota\Model\Domain\RequestTrip;
 use Gesfrota\Model\Domain\User;
 use PHPBootstrap\Validate\Measure\Max;
 use PHPBootstrap\Validate\Measure\Ruler\RulerLength;
@@ -11,8 +10,6 @@ use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Button\Button;
 use PHPBootstrap\Widget\Form\TgFormSubmit;
-use PHPBootstrap\Widget\Form\Controls\CheckBox;
-use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Form\Controls\TextArea;
 use PHPBootstrap\Widget\Misc\Icon;
 

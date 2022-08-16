@@ -2,7 +2,6 @@
 namespace Gesfrota\Model\Domain;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 use Gesfrota\Model\Entity;
 
 /**
@@ -11,8 +10,11 @@ use Gesfrota\Model\Entity;
  * @Entity
  * @Table(name="imports")
  * @EntityListeners({"Gesfrota\Model\Listener\ImportListener"})
+ * @InheritanceType("SINGLE_TABLE")
+ * @DiscriminatorColumn(name="type", type="string")
+ * @DiscriminatorMap({"F" = "ImportFleet", "S" = "ImportSupply"})
  */
-class Import extends Entity {
+abstract class Import extends Entity {
 
     /**
      * Diretório relativo ao link
@@ -51,17 +53,9 @@ class Import extends Entity {
     protected $finished;
     
     /**
-     * @OneToMany(targetEntity="ImportItem", mappedBy="import", cascade={"persist"})
      * @var ArrayCollection
      */
     protected $items;
-    
-    /**
-     * @ManyToOne(targetEntity="Agency")
-     * @JoinColumn(name="agency_id", referencedColumnName="id")
-     * @var Agency
-     */
-    protected $agency;
     
     /**
      * @Column(name="created_at", type="datetime")
@@ -75,12 +69,8 @@ class Import extends Entity {
      */
     protected $finishedAt;
     
-    /**
-     * @param Agency $agency
-     */
-    public function __construct(Agency $agency = null) {
+    public function __construct() {
         parent::__construct();
-        $this->agency = $agency;
         $this->items = new ArrayCollection();
         $this->finished = false;
         $this->createdAt = new \DateTime();
@@ -129,13 +119,6 @@ class Import extends Entity {
         return $this->header;
     }
     
-    /**
-     * @return Agency
-     */
-    public function getAgency() {
-        return $this->agency;
-    }
-
     /**
      * @return ArrayCollection
      */
@@ -190,14 +173,6 @@ class Import extends Entity {
     }
     
     /**
-     * @param Agency $agency
-     */
-    public function setAgency(Agency $agency) {
-        $this->agency = $agency;
-    }
-    
-
-    /**
      * @return integer
      */
     public function getAmountItems() {
@@ -207,21 +182,12 @@ class Import extends Entity {
     /**
      * @return integer
      */
-    public function getAmountImported() {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->neq('reference', null));
-        return $this->items->matching($criteria)->count();
-    }
+    abstract public function getAmountImported();
     
     /**
      * @return integer
      */
-    public function getAmountAppraised() {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->neq('status', null));
-        return $this->items->matching($criteria)->count();
-    }
-    
-
+    abstract public function getAmountAppraised();
+     
 }
 ?>
