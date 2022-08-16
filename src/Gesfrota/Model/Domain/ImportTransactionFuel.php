@@ -1,6 +1,8 @@
 <?php
 namespace Gesfrota\Model\Domain;
 
+use Gesfrota\Util\Format;
+
 /**
  * Transação de Abastecimento
  * 
@@ -9,12 +11,6 @@ namespace Gesfrota\Model\Domain;
  * @EntityListeners({"Gesfrota\Model\Listener\ImportItemListener"})
  */
 class ImportTransactionFuel extends ImportTransactionItem {
-    
-    /**
-     * @Column(name="vehicle_odometer", type="integer")
-     * @var integer
-     */
-    protected $vehicleOdometer;
     
     /**
      * @Column(name="vehicle_distance", type="integer")
@@ -88,14 +84,6 @@ class ImportTransactionFuel extends ImportTransactionItem {
      */
     protected $itemTotal;
     
-
-    /**
-     * @return number
-     */
-    public function getVehicleOdometer()
-    {
-        return $this->vehicleOdometer;
-    }
 
     /**
      * @return number
@@ -183,14 +171,6 @@ class ImportTransactionFuel extends ImportTransactionItem {
     public function getItemTotal()
     {
         return $this->itemTotal;
-    }
-
-    /**
-     * @param number $odometer
-     */
-    public function setVehicleOdometer($odometer)
-    {
-        $this->vehicleOdometer = $odometer;
     }
 
     /**
@@ -289,20 +269,19 @@ class ImportTransactionFuel extends ImportTransactionItem {
     public function toTransform(array $data)
     {
         parent::toTransform($data);
-        $short = 18-count($this->transactionImport->getHeader());
+        $short = 16-count($this->transactionImport->getHeader());
         $expanded = ! $short > 0; 
-        $this->setDriverNif($expanded ? $data[5] : '');
-        $this->setDriverName( $data[6-($expanded ? 0 : 1)] );
-        $this->setSupplierNif($expanded ? $data[7-($expanded ? 0 : 1)] : '');
-        $this->setSupplierName($data[8-$short]);
-        $this->setSupplierPlace($data[9-$short], $data[10-$short]);
-        $this->setItemDescription(ucwords(strtolower(str_ireplace(' comum', '', $data[11-$short]))));
-        $this->setItemQuantity((float) str_replace(',', '.', $data[12-$short]));
-        $this->setItemPrice((float) str_replace(',', '.', $data[13-$short]));
-        $this->setItemTotal((float) str_replace(',', '.', $data[14-$short]));
-        $this->setVehicleOdometer((int) $data[15-$short]);
-        $this->setVehicleDistance((int) $data[16-$short]);
-        $this->setVehicleEfficiency((float) str_replace(',', '.', $data[17-$short]));
+        $this->setDriverNif($expanded ? Format::CPF($data[4]) : '');
+        $this->setDriverName( $data[5-($expanded ? 0 : 1)] );
+        $this->setSupplierNif($expanded ? Format::CNPJ($data[6-($expanded ? 0 : 1)]) : '');
+        $this->setSupplierName($data[7-$short]);
+        $this->setSupplierPlace($data[8-$short], $data[9-$short]);
+        $this->setItemDescription(ucwords(strtolower(str_ireplace(' comum', '', $data[10-$short]))));
+        $this->setItemQuantity((float) str_replace(',', '.', $data[11-$short]));
+        $this->setItemPrice((float) str_replace(',', '.', $data[12-$short]));
+        $this->setItemTotal((float) str_replace(',', '.', $data[13-$short]));
+        $this->setVehicleDistance((int) $data[14-$short]);
+        $this->setVehicleEfficiency((float) str_replace(',', '.', $data[15-$short]));
         
     }
     
@@ -312,23 +291,22 @@ class ImportTransactionFuel extends ImportTransactionItem {
     public function getData() 
     {
         $data = parent::getData();
-        $short = 18-count($this->transactionImport->getHeader());
+        $short = 16-count($this->transactionImport->getHeader());
         $expanded = ! $short > 0; 
         if ($expanded) {
-            $data[5] = $this->getDriverNif();
+            $data[4] = $this->getDriverNif();
         }
-        $data[6-($expanded ? 0 : 1)] = $this->getDriverName();
-        $data[7-($expanded ? 0 : 1)] = $this->getSupplierNif();
-        $data[8-$short] = $this->getSupplierName();
-        $data[9-$short] = $this->supplierCity;
-        $data[10-$short]= $this->supplierUF;
-        $data[11-$short]= $this->getItemDescription();
-        $data[12-$short]= number_format($this->getItemQuantity(), 2, ',', '.');
-        $data[13-$short]= 'R$ ' . number_format($this->getItemPrice(), 3, ',', '.');
-        $data[14-$short]= 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
-        $data[15-$short]= $this->getVehicleOdometer();
-        $data[16-$short]= $this->getVehicleDistance();
-        $data[17-$short]= number_format($this->getVehicleEfficiency(), 2, ',', '.');
+        $data[5-($expanded ? 0 : 1)] = $this->getDriverName();
+        $data[6-($expanded ? 0 : 1)] = $this->getSupplierNif();
+        $data[7-$short] = $this->getSupplierName();
+        $data[8-$short] = $this->supplierCity;
+        $data[9-$short]= $this->supplierUF;
+        $data[10-$short]= $this->getItemDescription();
+        $data[11-$short]= number_format($this->getItemQuantity(), 2, ',', '.');
+        $data[12-$short]= 'R$ ' . number_format($this->getItemPrice(), 3, ',', '.');
+        $data[13-$short]= 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
+        $data[15-$short]= number_format($this->getVehicleDistance(), 0, '', '.');
+        $data[16-$short]= number_format($this->getVehicleEfficiency(), 2, ',', '.');
         return $data;
     }
 

@@ -204,11 +204,10 @@ abstract class ImportTransactionItem {
      */
     public function toTransform(array $data) 
     {
-        $this->setTransactionId((int) $data[0]);
-        $this->setTransactionCostCenter($data[1]);
-        $this->setTransactionDate(new \DateTime($data[2]));
-        $this->setVehiclePlate($data[3]);
-        $this->setVehicleDescription($data[4]);
+        $this->setTransactionCostCenter($data[0]);
+        $this->setTransactionDate(new \DateTime($data[1]));
+        $this->setVehiclePlate($data[2]);
+        $this->setVehicleDescription($data[3]);
     }
     
     /**
@@ -217,11 +216,10 @@ abstract class ImportTransactionItem {
     public function getData()
     {
         $data = [];
-        $data[0] = $this->getTransactionId();
-        $data[1] = $this->getTransactionAgency() . '<' . $this->getTransactionCostCenter() . '>';
-        $data[2] = $this->getTransactionDate()->format('d/m/Y H:i:s');
-        $data[3] = $this->getVehiclePlate();
-        $data[4] = $this->getTransactionVehicle() ? $this->getTransactionVehicle()->getDescription() : $this->getVehicleDescription();
+        $data[0] = $this->getTransactionAgency() . '<' . $this->getTransactionCostCenter() . '>';
+        $data[1] = $this->getTransactionDate()->format('d/m/Y H:i:s');
+        $data[2] = $this->getVehiclePlate();
+        $data[3] = $this->getTransactionVehicle() ? $this->getTransactionVehicle()->getDescription() : $this->getVehicleDescription();
         return $data;
     }
 }
