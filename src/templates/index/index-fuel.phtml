@@ -29,7 +29,7 @@ use Gesfrota\Util\Format;
 	  	</div>
 	</div>
 	<div class="span8">
-		<h3><span class="header">Gasto de Abastecimento x Distância Percorrida<small>Comparativo entre o gasto de abastecimento e a distância percorrida</small></span></h3>
+		<h3><span class="header">Gasto de Abastecimento x Distância Percorrida<small>Comparativo entre o gasto de abastecimento e a distância percorrida<?php if (! $this->isDashboardFleetManager) { ?> somente da Administração Direta, Autarquica e Fundacional <?php } ?></small></span></h3>
 		<div id="fuel-x-distance"></div>
 		<script>
 			var options = {
@@ -117,7 +117,6 @@ use Gesfrota\Util\Format;
 	</div>
 </div>
 <hr>
-<?php /*
 <div class="row-fluid">
 	<div class="span4">
 		<h3><span class="header">Rendimento da Gasolina<small>Histograma do rendimento dos veículos abastecidos com Gasolina</small></span></h3>
@@ -140,21 +139,14 @@ use Gesfrota\Util\Format;
 					xaxis: [
     					{
                             x: "<?php echo $this->fuel_outlier_g['min']; ?>",
-                            borderColor: '#008FFB',
-                            label: {
-                            	text: 'Mín'
-                            }
+                            x2: "<?php echo $this->fuel_outlier_g['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
                         },
                         {
                             x: "<?php echo $this->fuel_outlier_g['avg']; ?>",
-                            borderColor: '#666',
-                        },
-                        {
-                            x: "<?php echo $this->fuel_outlier_g['max']; ?>",
-                            borderColor: '#008FFB',
-                            label: {
-                            	text: 'Máx'
-                            }
+                            borderColor: '#aaa',
                         },
                     ],
                      texts: [{
@@ -220,21 +212,14 @@ use Gesfrota\Util\Format;
 					xaxis: [
 						{
                             x: "<?php echo $this->fuel_outlier_e['min']; ?>",
-                            borderColor: '#00E396',
-                            label: {
-                            	text: 'Mín'
-                            }
+                            x2: "<?php echo $this->fuel_outlier_e['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
                         },
                         {
                             x: "<?php echo $this->fuel_outlier_e['avg']; ?>",
                             borderColor: '#666',
-                        },
-                        {
-                            x: "<?php echo $this->fuel_outlier_e['max']; ?>",
-                            borderColor: '#00E396',
-                            label: {
-                            	text: 'Máx'
-                            }
                         },
                     ],
                     texts: [{
@@ -300,21 +285,14 @@ use Gesfrota\Util\Format;
 					xaxis: [
 						{
                             x: "<?php echo $this->fuel_outlier_d['min']; ?>",
-                            borderColor: '#FEB019',
-                            label: {
-                            	text: 'Mín'
-                            }
+                            x2: "<?php echo $this->fuel_outlier_d['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
                         },
                         {
                             x: "<?php echo $this->fuel_outlier_d['avg']; ?>",
                             borderColor: '#666',
-                        },
-                        {
-                            x: "<?php echo $this->fuel_outlier_d['max']; ?>",
-                            borderColor: '#FEB019',
-                            label: {
-                            	text: 'Máx'
-                            }
                         },
                     ],
                     texts: [{
@@ -361,7 +339,6 @@ use Gesfrota\Util\Format;
 	</div>
 </div>
 <hr>
- */ ?>
 <div class="row-fluid">
 	<div class="span6">
 		<h3><span class="header">Distribuição de Gasto por Combustível<small>Distribuição de Gastos com Abastecimento por Combustível</small></span></h3>
