@@ -1,0 +1,243 @@
+<?php
+use Gesfrota\Util\Format;
+?>
+<div class="row-fluid">
+	<div class="span3">
+		<div class="card">
+  			<div class="header">
+  				<strong><?php echo Format::numeric($this->KPIs['request_total'], 0); ?></strong>
+  				<small>Requisições Abertas</small>
+  			</div>
+  		</div>
+	</div>
+	<div class="span3">
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo Format::numeric($this->KPIs['request_declined'], 0); ?></strong>
+				<small>Requisições Recusadas</small>
+	  		</div>
+	  	</div>
+	</div>
+	<div class="span3">
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo Format::numeric($this->KPIs['request_finished'], 0); ?></strong>
+				<small>Requisições Atendidas</small>
+	  		</div>
+	  	</div>
+	</div>
+	<div class="span3">
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo number_format(round($this->KPIs['request_distance'], 0), 0, '', '.'); ?> Km</strong>
+				<small>Percorridos</small>
+	  		</div>
+	  	</div>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span3">
+		<h3><span class="header">Índice de Atendimento<small>Percentual das requisições disponibilizadas</small></span></h3>
+		<div id="request-availability"></div>
+  		<script>
+			var options = {
+				series: [<?php echo number_format($this->KPIs['request_availability']*100, 1); ?>],
+				chart: {
+					type: 'radialBar',
+					height: 300,
+				},
+				plotOptions: {
+					radialBar: {
+            			track: { background: '#d3d3d3' },
+						dataLabels: {
+							name: { show: false },
+							value: { fontSize: '42px',  fontWeight: 600,  color: '#999'},
+						},
+						hollow: { size: '70%' }
+					},
+	        	},
+	        	grid : {
+	        		padding: { top: -15 },
+	        	},
+	        	stroke: { lineCap: "round" },
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#request-availability"), options);
+	        chart.render();
+		</script>
+	</div>
+	<div class="span3">
+		<h3><span class="header">Viagens x Entregas<small>Distribuição das requisições por classe</small></span></h3>
+		<div id="trips-x-freight"></div>
+		<script>
+			var options = {
+          		series: <?php echo json_encode(array_values($this->trips_x_freight));?>,
+          		labels: <?php echo json_encode(array_keys($this->trips_x_freight));?>,
+          		chart: {
+          			type: 'donut',
+          			height: 300,
+        		},
+        		plotOptions: {
+				    pie: {
+					    dataLabels : { offset: -15 },
+				      	donut: { 
+				      		size: '80%',
+				      		labels: {
+        						show: true,
+					        	name: {
+					          		show: true,
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					        	},
+					        	value: {
+					          		show: true,
+					          		fontSize: '18px',
+					          		offsetY: 0,
+					          		color: '#777',
+					        	},
+					        	total: {
+					          		show: true,
+					          		label: 'Total',
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					          		color: '#777',
+					        	}
+					      	}, 
+				      	}
+					}
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '16px',
+				      	fontWeight: 'bold',
+				  	},
+				},
+				tooltip: { enabled: false },
+				legend: {
+			      	show: true,
+			      	position: 'bottom',
+			      	horizontalAlign: 'center', 
+      			},
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#trips-x-freight"), options);
+        	chart.render();
+		</script>
+	</div>
+	<div class="span6">
+		<h3><span class="header">Requisições Finalizadas x Distância Percorrida<small>Comparativo entre a quantidade de requisições finalizadas e a distância percorrida</small></span></h3>
+		<div id="request-x-distance"></div>
+		<script>
+			var options = {
+				series: [{
+					name: 'Quant. de Requisições',
+					data: <?php echo json_encode(array_values($this->request_x_distance['request']));?>
+				}, {
+					name: 'Distância percorrida',
+					data: <?php echo json_encode(array_values($this->request_x_distance['distance']));?>
+        		}],
+				chart: {
+					type: 'bar',
+					height: 300,
+				},
+				dataLabels: { enabled: false },
+				xaxis: { 
+					categories: <?php echo json_encode($this->request_x_distance['label']);?>,
+			    },
+			    yaxis: [
+		          {
+		            seriesName: 'Quant. de Requisições',
+		            axisTicks: { show: true },
+		            title: { text: "Número de Requisições" },
+		          },
+		          {
+		            seriesName: 'Distância percorrida',
+		            opposite: true,
+		            axisTicks: { show: true },
+		            title: { text: "Km Rodados" }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#request-x-distance"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+	<?php if (! $this->isDashboardFleetManager) { ?>
+		<h3><span class="header">Distribuição das Requisições por Órgão<small>Distribuição quantitativa das requisições por órgão</small></span></h3>
+		<div id="request-per-agency"></div>
+		<script>
+			var options = {
+          		series: [
+          		<?php if ( count($this->request_per_agency) == 0) { ?>
+          		<?php $data = ['']; ?>
+          		 { data: [] },
+          		<?php } ?>
+          		<?php foreach ($this->request_per_agency as $serie => $data) { ?>
+          		{
+          			name: '<?php echo $serie; ?>',
+          			data: <?php echo json_encode(array_values($data));?>,
+          		},
+          		<?php } ?>
+          		],
+          		chart: {
+          			type: 'bar',
+          			height: 500,
+          			stacked: true,
+        		},
+		        yaxis: { reversed: true },
+				tooltip: { enabled: false },
+				dataLabels : {
+				 	style: {
+				      	fontSize: '12px',
+				  	},
+				},
+				noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			},
+ 	 			legend: {
+                    position: 'top',
+                    offsetX: 750
+                }
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#request-per-agency"), options);
+        	chart.render();
+		</script>
+	<?php } else { ?>
+		<h3><span class="header">Ranking de Motoristas <small>Posição dos motoristas de acordo com a quantidade de viagens realizadas</small></span></h3>
+		<br>
+		<div class="row-fluid">
+			<?php for($i=0; $i<3; $i++) { ?>
+			<div class="span4">
+				<div class="card clearfix">
+					<h1><?php echo $i+1;?>º<small>Lugar</small></h1>
+					<?php if (isset($this->request_x_driver[$i])) { ?>
+					<p style="text-overflow: ellipsis; overflow: hidden;"><strong style="white-space: nowrap;"><?php echo $this->request_x_driver[$i]['driver']?></strong></p>
+					<p><span class="label"><?php echo number_format($this->request_x_driver[$i]['request'], 0, '', '.'); ?> Requisições</span> <span class="label"><?php echo number_format($this->request_x_driver[$i]['distance'], 0, '', '.'); ?> Km</span></p>
+					<?php } else { ?>
+					<p><em class="muted">Não identificado</em></p>
+					<p>&nbsp;</p>
+					<?php } ?>
+				</div>
+			</div>
+			<?php } ?>
+		</div>
+	<?php } ?>
+		</div>
+</div>
+<p></p>
