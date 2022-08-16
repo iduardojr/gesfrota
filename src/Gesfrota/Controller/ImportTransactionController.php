@@ -43,7 +43,6 @@ class ImportTransactionController extends AbstractController {
 		    
 		    $list = new ImportTransactionList($filter, $upload, $preProcess, $listItems, $download, $remove, $providers);
 		    
-		    
 		    $helper = $this->createHelperCrud();
 		    $query = $this->getEntityManager()->getRepository(ImportTransaction::getClass())->createQueryBuilder('u');
 		    
@@ -82,15 +81,23 @@ class ImportTransactionController extends AbstractController {
 	        $providers = $this->getOptionsProviders(false);
 	        
 	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
-	        $helper = $this->createHelperCrud();
-	        if ( $helper->create($form, new ImportSupply()) ){
-	            $entity = $helper->getEntity();
+	        $entity = new ImportSupply();
+	        $form->extract($entity);
+	        $this->getEntityManager()->beginTransaction();
+	        if ( $this->request->isPost() ) {
+	            $form->bind($this->request->getPost());
+	            if ( ! $form->valid() ) {
+	                throw new InvalidRequestDataException();
+	            }
+	            $form->hydrate($entity, $this->getEntityManager());
+	            $this->getEntityManager()->commit();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> realizada com sucesso!', Alert::Success));
 	            $this->forward('/pre-process/' . $entity->id);
 	        }
 	    } catch ( InvalidRequestDataException $e ){
 	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	    } catch ( \Exception $e ) {
+	        $this->getEntityManager()->rollback();
 	        $form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 	    }
 	    return new Layout($form);

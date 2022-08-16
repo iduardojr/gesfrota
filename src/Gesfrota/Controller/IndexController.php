@@ -16,48 +16,69 @@ use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Model\Domain\Notice;
 use Gesfrota\Services\Log;
 use Gesfrota\View\Layout;
+use Gesfrota\Model\Domain\ImportTransactionFuel;
 
 class IndexController extends AbstractController {
 	
 	public function indexAction() {
 		$layout = new Layout('index/index.phtml');
 		
-		$initial = new \DateTime('first day of Jan ' .date('Y') .' today');
-		$final = new \DateTime("now");
 		if ($this->request->isPost()) {
-			$date = $this->request->getPost();
-			if (! empty($date['initial'])) {
-				$initial = new \DateTime('first day of ' . \DateTime::createFromFormat('m/Y', $date['initial'])->format('M Y'));
+			$data = $this->request->getPost();
+			if (! empty($data['initial'])) {
+				$initial = new \DateTime('first day of ' . \DateTime::createFromFormat('m/Y', $data['initial'])->format('M Y'));
 				$initial->setTime(00, 00, 00);
 			}
-			if (! empty($date['final'])) {
-				$final = new \DateTime('last day of ' . \DateTime::createFromFormat('m/Y', $date['final'])->format('M Y'));
+			if (! empty($data['final'])) {
+				$final = new \DateTime('last day of ' . \DateTime::createFromFormat('m/Y', $data['final'])->format('M Y'));
 				$final->setTime(23, 59, 59);
 			}
+			$tab = $data['tab-active'];
+		} elseif ( $this->session->period ) {
+	        $initial = $this->session->period[0];
+	        $final = $this->session->period[1];
+	        $tab = $this->session->tab_active;
+	    } else {
+	        $initial = new \DateTime('first day of Jan ' .date('Y') .' today');
+	        $final = new \DateTime("now");
+	        $tab = 'request';
 		}
+		$this->session->period = [$initial, $final];
+		$this->session->tab_active = $tab;
+		
 		$layout->initial = $initial;
 		$layout->final = $final;
+		$layout->tab_active = $tab;
 		
 		$layout->isDashboardFleetManager = false;
 		$agency = $this->getAgencyActive();
 		if ( ! $agency->isGovernment() ) {
-			$layout->isDashboardFleetManager = true;
-			$layout->request_x_driver = $this->getRequestsPerDriver($initial, $final, $agency);
-			$layout->activities = $this->getActivitiesRecent($agency);
+		    $layout->isDashboardFleetManager = true;
+		    $layout->request_x_driver = $this->getRequestsPerDriver($initial, $final, $agency);
+		    $layout->activities = $this->getActivitiesRecent($agency);
 		} else {
-			$agency = null;
-			$layout->request_per_agency = $this->getRequestPerAgency($initial, $final);
-			$layout->fleet_per_agency = $this->getFleetPerAgency($initial, $final);
+		    $agency = null;
+		    $layout->request_per_agency = $this->getRequestPerAgency($initial, $final);
+		    $layout->fleet_per_agency = $this->getFleetPerAgency();
+		    $layout->fleet_current_x_expected = $this->getFleetCurrentXExpected($initial, $final);
 		}
 		
 		$layout->KPIs = $this->getRequestKPIs($initial, $final, $agency);
-		$layout->request_x_distance = $this->getRequestsXDistance($initial, $final, $agency);
+		$layout->request_x_distance = $this->getRequestsXDistance(clone $initial, clone $final, $agency);
 		$layout->trips_x_freight = $this->getTripsXFreight($initial, $final, $agency);
 		
 		$layout->fleet_per_type = $this->getFleetPerType($agency);
-		
 		$layout->fleet_per_family = $this->getFleetPerFamily($agency);
+		$layout->fleet_per_age = $this->getFleetPerAge($agency);
 		$layout->vehicle_x_equipament = $this->getVehicleXEquipament($agency);
+		
+		$layout->KPIs+= $this->getFuelKPIs($initial, $final, $agency);
+		$layout->fuel_x_distance = $this->getFuelXDistance(clone $initial, clone $final, $agency);
+// 		$layout->fuel_outlier_g = $this->getFuelOutlier('G', clone $initial, clone $final, $agency);
+// 		$layout->fuel_outlier_e = $this->getFuelOutlier('E', clone $initial, clone $final, $agency);
+// 		$layout->fuel_outlier_d = $this->getFuelOutlier('D', clone $initial, clone $final, $agency);
+		$layout->fuel_per_type = $this->getFuelPerType($initial, $final, $agency);
+		$layout->fuel_per_agency = $this->getFuelPerAgency($initial, $final);
 		
 		$layout->notice = $this->getLastNotification();
 		return $layout;
@@ -202,14 +223,6 @@ class IndexController extends AbstractController {
 	}
 	
 	private function getRequestsXDistance(\DateTime $initial, \DateTime $final, Agency $agency = null) {
-		$initial = clone $initial;
-		$final = clone $final;
-		
-		$rsm = new ResultSetMapping();
-		$rsm->addScalarResult('opened', 'opened');
-		$rsm->addScalarResult('request', 'request');
-		$rsm->addScalarResult('distance', 'distance');
-		
 		$sql = 'SELECT CONCAT(YEAR(r0_.opened_at), MONTH(r0_.opened_at)) AS opened, COUNT(r0_.id) AS request, SUM(r0_.odometer_final - r0_.odometer_initial) AS distance ';
 		$sql.= 'FROM requests r0_ ';
 		if ($agency) {
@@ -217,6 +230,11 @@ class IndexController extends AbstractController {
 		}
 		$sql.= 'WHERE (r0_.opened_at BETWEEN ? AND ? AND r0_.status = ?) ';
 		$sql.= 'GROUP BY opened';
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('opened', 'opened');
+		$rsm->addScalarResult('request', 'request');
+		$rsm->addScalarResult('distance', 'distance');
 		
 		$query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
 		$query->setParameter(1, $initial->format('Y-m-d H:i:s'));
@@ -294,10 +312,8 @@ class IndexController extends AbstractController {
 		$builder1->andWhere('a2.id = a.id AND u2.openedAt BETWEEN :initial AND :final AND u2.status = :status');
 		$builder->addSelect('( ' . $builder1->getDQL() . ' ) as '. RequestFreight::REQUEST_TYPE);
 		
-		$builder->from(Request::getClass(), 'u');
-		$builder->join('u.requesterUnit', 'un');
-		$builder->join('un.agency', 'a');
-		$builder->where('u.openedAt BETWEEN :initial AND :final AND u.status = :status');
+		$builder->from(Agency::getClass(), 'a');
+		$builder->where('a.id > 0');
 		$builder->setParameter('initial', $initial);
 		$builder->setParameter('final', $final);
 		$builder->setParameter('status', Request::FINISHED);
@@ -355,8 +371,8 @@ class IndexController extends AbstractController {
 		$builder1->where('u6.responsibleUnit = a.id');
 		$builder->addSelect('( ' . $builder1->getDQL() . ' ) AS HIDDEN total');
 		
-		$builder->from(FleetItem::getClass(), 'u');
-		$builder->join('u.responsibleUnit', 'a');
+		$builder->from(Agency::getClass(), 'a');
+		$builder->where('a.id > 0');
 		$builder->groupBy('a.id');
 		$builder->addOrderBy('total', 'desc');
 		
@@ -365,10 +381,53 @@ class IndexController extends AbstractController {
 		$allowed = FleetItem::getFleetAllowed() + [0 => 'Inativa'];
 		foreach ($result as $item) {
 		    foreach ($allowed as $key => $serie) {
-		        $data[$serie][] = ['x' => $item['label'], 'y' => (int) $item['score'.$key]];
+		        $value = ['x' => $item['label'], 'y' => (int) $item['score'.$key]];
+		        $data[$serie][] = $value;
 		    }
 		}
 		return $data;
+	}
+	
+	private function getFleetCurrentXExpected(\DateTime $initial, \DateTime $final) {
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('a.id', 'a.acronym AS label');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('COUNT(u1.id)');
+	    $builder1->from(FleetItem::getClass(), 'u1');
+	    $builder1->where('u1.responsibleUnit = a.id');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) AS current');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('COUNT(DISTINCT u2.vehiclePlate)');
+	    $builder1->from(ImportTransactionFuel::class, 'u2');
+	    $builder1->join('u2.transactionImport', 'i2');
+	    $builder1->where('u2.transactionDate BETWEEN :initial AND :final AND u2.transactionAgency = a.id AND i2.finished = true');
+	    $builder->setParameter('initial',  $initial);
+	    $builder->setParameter('final', $final);
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) AS expected');
+	    
+	    $builder->from(Agency::getClass(), 'a');
+	    $builder->where('a.id > 0');
+	    $builder->groupBy('a.id');
+	    $builder->addOrderBy('current', 'desc');
+	    
+	    $result = $builder->getQuery()->getResult();
+	    $data = [];
+	    foreach ($result as $item) {
+	        $data[] = ['x' => $item['label'],
+        	           'y' => (int) $item['current'],
+        	           'goals' => [[
+        	                'name' => 'Expectativa',
+        	                'value'=> (int) $item['expected'],
+        	                'strokeHeight' => 2,
+        	                'strokeDashArray' => 2,
+        	                'strokeColor' => '#775DD0'
+        	            ]]
+	                  ];
+	    }
+	    return $data;
 	}
 	
 	private function getFleetPerType(Agency $agency = null) {
@@ -417,6 +476,29 @@ class IndexController extends AbstractController {
 		return $data;
 	}
 	
+	private function getFleetPerAge(Agency $agency = null) {
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('u.yearManufacture AS label, COUNT(u.id) AS score');
+	    $builder->from(Vehicle::getClass(), 'u');
+	    $builder->join('u.model', 'v');
+	    $builder->join('v.family', 'f');
+	    $builder->where('u.active = true');
+	    $builder->groupBy('u.yearManufacture');
+	    $builder->orderBy('label', 'desc');
+	    
+	    if ( $agency ) {
+	        $builder->andWhere('u.responsibleUnit = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    $result = $builder->getQuery()->getResult();
+	    $data = [];
+	    foreach ($result as $item) {
+	        $data[$item['label']] = $item['score'];
+	    }
+	    return $data;
+	}
+	
 	private function getVehicleXEquipament(Agency $agency = null) {
 		
 		$builder = $this->getEntityManager()->createQueryBuilder();
@@ -444,6 +526,261 @@ class IndexController extends AbstractController {
 		return $data;
 	}
 	
+	
+	private function getFuelKPIs(\DateTime $initial, \DateTime $final, Agency $agency = null) {
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('SUM(u.itemTotal) AS score');
+	    $builder->from(ImportTransactionFuel::class, 'u');
+	    $builder->join('u.transactionImport', 'i');
+	    $builder->where('u.transactionDate BETWEEN :initial AND :final AND i.finished = true');
+	    $builder->setParameter('initial',  $initial);
+	    $builder->setParameter('final', $final);
+	    
+	    if ( $agency ) {
+	        $builder->andWhere('u.transactionAgency = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    
+	    $KPI['fuel_total'] = (float) $builder->getQuery()->getSingleScalarResult();
+	    
+        $sql = 'SELECT COUNT(DISTINCT CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date))) AS total ';
+        $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+        $sql.= 'WHERE i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
+        
+        $rsm = new ResultSetMapping();
+        $rsm->addScalarResult('total', 'total');
+        
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        $query->setParameter(1, $initial->format('Y-m-d H:i:s'));
+        $query->setParameter(2, $final->format('Y-m-d H:i:s'));
+        
+        $amountMonth = $query->getSingleScalarResult();
+        
+        $KPI['fuel_avg'] = $amountMonth > 0 ? $KPI['fuel_total'] / $amountMonth : $KPI['fuel_total'];
+        
+        $builder = $this->getEntityManager()->createQueryBuilder();
+        $builder->select('COUNT(DISTINCT u.vehiclePlate) AS score');
+        $builder->from(ImportTransactionFuel::class, 'u');
+        $builder->join('u.transactionImport', 'i');
+        $builder->where('u.transactionDate BETWEEN :initial AND :final AND i.finished = true');
+        $builder->setParameter('initial',  $initial);
+        $builder->setParameter('final', $final);
+        
+        if ( $agency ) {
+            $builder->andWhere('u.transactionAgency = :agency');
+            $builder->setParameter('agency', $agency->getId());
+        }
+        
+        $KPI['fuel_amount'] = $builder->getQuery()->getSingleScalarResult();
+        
+        $builder = $this->getEntityManager()->createQueryBuilder();
+        $builder->select('SUM(u.vehicleDistance) AS score');
+        $builder->from(ImportTransactionFuel::class, 'u');
+        $builder->join('u.transactionImport', 'i');
+        $builder->where('u.vehicleEfficiency BETWEEN 0 AND 20 AND u.transactionDate BETWEEN :initial AND :final AND i.finished = true');
+        $builder->setParameter('initial',  $initial);
+        $builder->setParameter('final', $final);
+        
+        if ( $agency ) {
+            $builder->andWhere('u.transactionAgency = :agency');
+            $builder->setParameter('agency', $agency->getId());
+        }
+        
+        $KPI['fuel_distance'] = $builder->getQuery()->getSingleScalarResult();
+	    
+	    return $KPI;
+	}
+	
+	private function getFuelXDistance(\DateTime $initial, \DateTime $final, Agency $agency = null) {
+	    $initial->setTime(0, 0, 0);
+	    $final->setTime(23, 59, 59);
+	    
+	    $sql = 'SELECT SUM(i0_.item_total) AS fuel, SUM(i0_.vehicle_distance) AS distance, CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date)) AS period ';
+	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
+	    $sql.= 'GROUP BY period';
+	    
+	    $rsm = new ResultSetMapping();
+	    $rsm->addScalarResult('period', 'period');
+	    $rsm->addScalarResult('fuel', 'fuel');
+	    $rsm->addScalarResult('distance', 'distance');
+	    
+	    $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+	    $query->setParameter(1, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(2, $final->format('Y-m-d H:i:s'));
+	    
+	    $data = [];
+	    $result = $query->getResult();
+	    
+	    if ($initial->format('Y') == $final->format('Y')) {
+	        while($initial < $final) {
+	            $data['label'][] = ucfirst(strftime('%b', $initial->getTimestamp()));
+	            $data['fuel'][$initial->format('Yn')] = null;
+	            $data['distance'][$initial->format('Yn')] = null;
+	            $initial->add(new \DateInterval('P1M'));
+	        }
+	    } else {
+	        while($initial < $final) {
+	            $data['label'][] = ucfirst(strftime('%b/%y', $initial->getTimestamp()));
+	            $data['fuel'][$initial->format('Yn')] = null;
+	            $data['distance'][$initial->format('Yn')] = null;
+	            $initial->add(new \DateInterval('P1M'));
+	        }
+	    }
+	    foreach ($result as $item ) {
+	        $data['fuel'][$item['period']] = $item['fuel'];
+	        $data['distance'][$item['period']] = $item['distance'];
+	    }
+	    return $data;
+	}
+	
+	
+	private function getFuelOutlier($fuel, \DateTime $initial, \DateTime $final, Agency $agency = null) {
+	    $sql = 'SELECT ROUND(i0_.vehicle_efficiency) AS efficiency, COUNT(i0_.transaction_id) AS score,  LEFT(item_description, 1) AS fuel';
+	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE  = ? AND i0_.vehicle_efficiency between 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
+	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
+	    $sql.= 'GROUP BY fuel, efficiency';
+	    
+	    $rsm = new ResultSetMapping();
+	    $rsm->addScalarResult('efficiency', 'x');
+	    $rsm->addScalarResult('score', 'y');
+	    
+	    $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+	    $query->setParameter(1, $fuel);
+	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
+	    
+	    $result['data'] = $query->getArrayResult();
+	    
+	    $sql = 'SELECT i0_.vehicle_efficiency AS efficiency ';
+	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE LEFT(i0_.item_description, 1) = ? AND i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
+	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
+	    
+	    $rsm = new ResultSetMapping();
+	    $rsm->addScalarResult('scalar', 'scalar');
+	    
+	    $query = $this->getEntityManager()->createNativeQuery('SELECT ROUND(STD(t.efficiency)) AS scalar FROM ('. $sql . ') t', $rsm);
+	    $query->setParameter(1, $fuel);
+	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
+	    $result['std'] = $query->getSingleScalarResult();
+	    
+	    $query = $this->getEntityManager()->createNativeQuery('SELECT ROUND(AVG(t.efficiency)) AS scalar FROM ( ' . $sql . ') t', $rsm);
+	    $query->setParameter(1, $fuel);
+	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
+	    $result['avg'] = $query->getSingleScalarResult();
+	    $result['min'] = $result['avg'] - $result['std'];
+	    $result['max'] = $result['avg'] + $result['std'];
+	    
+	    $sql = 'SELECT COUNT(i0_.transaction_id) AS score ';
+	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE LEFT(i0_.item_description, 1) = ? AND i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1';
+	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
+	    
+	    $query = $this->getEntityManager()->createNativeQuery('SELECT (( ' . $sql . 'AND i0_.vehicle_efficiency BETWEEN ? AND ?) / (' . $sql . ')*100) AS scalar', $rsm);
+	    $query->setParameter(1, $fuel);
+	    $query->setParameter(2, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(3, $final->format('Y-m-d H:i:s'));
+	    $query->setParameter(4, (int) $result['min']);
+	    $query->setParameter(5, (int) $result['max']);
+	    $query->setParameter(6, $fuel);
+	    $query->setParameter(7, $initial->format('Y-m-d H:i:s'));
+	    $query->setParameter(8, $final->format('Y-m-d H:i:s'));
+	    $result['percent'] = $query->getSingleScalarResult();
+	    
+	    return $result;
+	}
+	
+	private function getFuelPerType(\DateTime $initial, \DateTime $final, Agency $agency = null) {
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('SUM(u.itemTotal) AS finance, SUM(u.itemQuantity) AS consume, SUBSTRING(u.itemDescription, 1, 1) AS label');
+	    $builder->from(ImportTransactionFuel::class, 'u');
+	    $builder->join('u.transactionImport', 'i');
+	    $builder->where('u.transactionDate BETWEEN :initial AND :final AND i.finished = true');
+	    $builder->setParameter('initial',  $initial);
+	    $builder->setParameter('final', $final);
+	    $builder->groupBy('label');
+	    
+	    if ( $agency ) {
+	        $builder->andWhere('u.transactionAgency = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    $result = $builder->getQuery()->getResult();
+	    $allowed['A'] = 'Arla-32';
+	    $allowed['D'] = 'Diesel';
+	    $allowed['E'] = 'Etanol';
+	    $allowed['G'] = 'Gasolina';
+	    $data = [];
+	    foreach ($result as $item) {
+	        $data['finance'][$allowed[$item['label']]] = $item['finance'];
+	        $data['consume'][$allowed[$item['label']]] = $item['consume'];
+	    }
+	    return $data;
+	}
+	
+	private function getFuelPerAgency(\DateTime $initial, \DateTime $final) {
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('a.id', 'a.acronym AS label');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('SUM(u1.itemTotal)');
+	    $builder1->from(ImportTransactionFuel::class, 'u1');
+	    $builder1->join('u1.transactionImport', 'i1');
+	    $builder1->where('u1.transactionAgency = a.id AND u1.transactionDate BETWEEN :initial AND :final AND i1.finished = true AND u1.itemDescription Like \'A%\'');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) as scoreA');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('SUM(u2.itemTotal)');
+	    $builder1->from(ImportTransactionFuel::class, 'u2');
+	    $builder1->join('u2.transactionImport', 'i2');
+	    $builder1->where('u2.transactionAgency = a.id AND u2.transactionDate BETWEEN :initial AND :final AND i2.finished = true AND u2.itemDescription Like \'D%\'');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) as scoreD');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('SUM(u3.itemTotal)');
+	    $builder1->from(ImportTransactionFuel::class, 'u3');
+	    $builder1->join('u3.transactionImport', 'i3');
+	    $builder1->where('u3.transactionAgency = a.id AND u3.transactionDate BETWEEN :initial AND :final AND i3.finished = true AND u3.itemDescription Like \'E%\'');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) as scoreE');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('SUM(u4.itemTotal)');
+	    $builder1->from(ImportTransactionFuel::class, 'u4');
+	    $builder1->join('u4.transactionImport', 'i4');
+	    $builder1->where('u4.transactionAgency = a.id AND u4.transactionDate BETWEEN :initial AND :final AND i4.finished = true AND u4.itemDescription Like \'G%\'');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) as scoreG');
+	    
+	    $builder1 = $this->getEntityManager()->createQueryBuilder();
+	    $builder1->select('SUM(u5.itemTotal)');
+	    $builder1->from(ImportTransactionFuel::class, 'u5');
+	    $builder1->join('u5.transactionImport', 'i5');
+	    $builder1->where('u5.transactionAgency = a.id AND u5.transactionDate BETWEEN :initial AND :final AND i5.finished = true');
+	    $builder->addSelect('( ' . $builder1->getDQL() . ' ) AS HIDDEN total');
+	    
+	    $builder->from(Agency::getClass(), 'a');
+	    $builder->where('a.id > 0');
+	    $builder->setParameter('initial',  $initial);
+	    $builder->setParameter('final', $final);
+	    $builder->groupBy('a.id');
+	    $builder->addOrderBy('total', 'desc');
+	    
+	    $result = $builder->getQuery()->getResult();
+	    $data = [];
+	    $allowed['A'] = 'Arla-32';
+	    $allowed['D'] = 'Diesel';
+	    $allowed['E'] = 'Etanol';
+	    $allowed['G'] = 'Gasolina';;
+	    foreach ($result as $item) {
+	        foreach ($allowed as $key => $serie) {
+	            $data[$serie][] = ['x' => $item['label'], 'y' => (int) $item['score'.$key]];
+	        }
+	    }
+	    return $data;
+	}
 	
 }
 ?>
