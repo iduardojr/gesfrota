@@ -42,6 +42,7 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		$input = new ComboBox('provider');
 		$input->setSpan(2);
 		$input->setOptions($providers);
+		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Prestador de Serviço', $input, null, $fieldset);
 		
 		$input = new TextBox('desc');
@@ -75,14 +76,13 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		$text[]= '<p>A primeira linha é o cabeçalho do arquivo correspondendo ao nome dos campos 
                      e as demais linhas é um registro com os seus respectivos valores formatados da seguinte forma e sequência:</p>';
 		$text[]= '<dl class="dl-horizontal">
-                     <dt>Cod. Transação</dt>            <dd><i>numérico</i></dd>     
-                     <dt>Órgão</dt>                     <dd><i>alfanúmerico</i></dd>
+                     <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
                      <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>   
                      <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
                      <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
-                     <dt>[CPF do Motorista]</dt>        <dd>999.999.999-99</dd>
+                     <dt>[CPF do Motorista]</dt>        <dd><i>numérico</i></dd>
                      <dt>Nome do Motorista</dt>         <dd><i>alfanumérico</i></dd>
-                     <dt>[CNPJ do Estabelecimento]</dt> <dd>99.999.999/9999-99</dd>
+                     <dt>[CNPJ do Estabelecimento]</dt> <dd><i>numérico</i></dd>
                      <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
                      <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
                      <dt>UF</dt>                        <dd>AA</dd>
@@ -90,13 +90,12 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
                      <dt>Quant. do Item</dt>            <dd>999,99</dd>
                      <dt>Preço do Item</dt>             <dd>999,999</dd>
                      <dt>Valor do Item</dt>             <dd>999,99</dd>
-                     <dt>Hodômetro do Veículo</dt>      <dd><i>numérico</i></dd>
                      <dt>Distância Percorrida</dt>      <dd><i>numérico</i></dd>
                      <dt>Rendimento do Veículo</dt>     <dd>999,99</dd>
                   </dl>';
 		$text[]= '<p>As seguintes definições representam um caractere 
                      alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>. 
-                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 16 ou 18 colunas (arquivo reduzido ou expandido).</p>';
+                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 14 ou 16 colunas (arquivo reduzido ou expandido).</p>';
 
 		$form->buildField(null, new Well('info', new Panel(implode('', $text))), null, $fieldset);
 		
@@ -156,13 +155,19 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		    $object->setHeader($this->transform($header));
 		}
 		$object->getItems()->clear();
+		if ($object->getId() == 0) {
+		    $em->persist($object);
+		}
+		$em->flush($object);
 		while ($data = fgetcsv($file, 0, ";")) {
 		    $item = new ImportTransactionFuel($object, $this->transform($data));
 		    $vehicle = $em->getRepository(Vehicle::getClass())->findOneBy(['plate' => $item->getVehiclePlate()]);
 		    if ($vehicle instanceof Vehicle) {
 		          $item->setTransactionVehicle($vehicle);
 		    }
-		    $object->getItems()->add($item);
+		    $em->persist($item);
+		    $em->flush($item);
+		    $em->detach($item);
 		}
 	}
 	

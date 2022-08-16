@@ -20,6 +20,7 @@ use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use Gesfrota\Model\Domain\ImportTransaction;
+use Gesfrota\Util\Format;
 
 class ImportTransactionList extends AbstractList {
 	
@@ -76,24 +77,8 @@ class ImportTransactionList extends AbstractList {
 		});
 		$table->buildColumnText('serviceProvider', 'Prestador de Serviço', clone $filter, 80);
 		$table->buildColumnText('amountItems', 'Transações Importadas', null, 50);
-		$table->buildColumnText('fileSize', null, null, 70, null, function( $bytes ) {
-		        $bytes = floatval($bytes);
-		        $multiples = [
-		            ["UNIT" => "TB", "VALUE" => pow(1024, 4)],
-		            ["UNIT" => "GB", "VALUE" => pow(1024, 3)],
-		            ["UNIT" => "MB", "VALUE" => pow(1024, 2)],
-		            ["UNIT" => "KB", "VALUE" => 1024],
-		            ["UNIT" => "B ", "VALUE" => 1],
-		        ];
-		        
-		        foreach($multiples as $multiple) {
-		            if($bytes >= $multiple["VALUE"]) {
-		                $result = $bytes / $multiple["VALUE"];
-		                $result = strval(round($result, 1))." ".$multiple["UNIT"];
-		                break;
-		            }
-		        }
-		        return $result;
+		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
+		    return Format::byte($bytes);
 		});
 		
 		$confirm = new Modal('modal-remove-confirm', new Title('Confirme', 3));

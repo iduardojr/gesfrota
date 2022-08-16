@@ -4,15 +4,13 @@ namespace Gesfrota\View;
 use Gesfrota\Model\Domain\ImportFleet;
 use Gesfrota\Model\Domain\ImportFleetItem;
 use Gesfrota\Model\Domain\ImportTransaction;
+use Gesfrota\Model\Domain\ImportTransactionItem;
 use Gesfrota\View\Widget\AbstractForm;
 use Gesfrota\View\Widget\BuilderTable;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Layout\Panel;
-use PHPBootstrap\Widget\Layout\Row;
 use PHPBootstrap\Widget\Pagination\Pagination;
-use Gesfrota\Model\Domain\ImportTransactionItem;
 
 class ImportTransactionItemsList extends AbstractForm {
     
