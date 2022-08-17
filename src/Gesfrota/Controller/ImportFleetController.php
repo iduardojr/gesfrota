@@ -90,17 +90,25 @@ class ImportFleetController extends AbstractController {
 	        $search = new Action($this, 'search-agency');
 	        $showAgencies = $this->getAgencyActive()->isGovernment();
 	        
-	        $form = new ImportFleetUploadForm($submit, $cancel, $seek, $search, $showAgencies);
-	        $helper = $this->createHelperCrud();
 	        
-	        if ( $helper->create($form, new ImportFleet($agency)) ){
-	            $entity = $helper->getEntity();
+	        $entity = new ImportFleet($agency);
+	        $form = new ImportFleetUploadForm($submit, $cancel, $seek, $search, $showAgencies);
+	        $form->extract($entity);
+	        $this->getEntityManager()->beginTransaction();
+	        if ( $this->request->isPost() ) {
+	            $form->bind($this->request->getPost());
+	            if ( ! $form->valid() ) {
+	                throw new InvalidRequestDataException();
+	            }
+	            $form->hydrate($entity, $this->getEntityManager());
+	            $this->getEntityManager()->commit();
 	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> realizada com sucesso!', Alert::Success));
 	            $this->forward('/pre-process/' . $entity->id);
 	        }
 	    } catch ( InvalidRequestDataException $e ){
 	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	    } catch ( \Exception $e ) {
+	        $this->getEntityManager()->rollback();
 	        $form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 	    }
 	    return new Layout($form);

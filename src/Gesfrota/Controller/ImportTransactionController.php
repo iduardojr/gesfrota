@@ -80,8 +80,8 @@ class ImportTransactionController extends AbstractController {
 	        $cancel = new Action($this);
 	        $providers = $this->getOptionsProviders(false);
 	        
-	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
 	        $entity = new ImportSupply();
+	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
 	        $form->extract($entity);
 	        $this->getEntityManager()->beginTransaction();
 	        if ( $this->request->isPost() ) {
