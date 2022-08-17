@@ -22,6 +22,8 @@ use PHPBootstrap\Widget\Modal\TgModalClose;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
+use PHPBootstrap\Widget\Form\Controls\CheckBox;
+use Gesfrota\Model\Domain\Vehicle;
 
 class ImportFleetUploadForm extends AbstractForm {
 	
@@ -69,6 +71,9 @@ class ImportFleetUploadForm extends AbstractForm {
 		$input->setSpan(7);
 		$input->setRequired(new Required(null, 'Por favor, preencha esse campo'));
 		$form->buildField('Arquivo', $input, null, $fieldset);
+		
+		$input = new CheckBox('auto', 'Importar automaticamente os veículos, se os dados estiverem completos');
+		$form->buildField(null, $input, null, $fieldset);
 		
 		$text[]= '<p>O arquivo deve ter o tamanho máximo de <code>'. ini_get('upload_max_filesize') . 'B</code>
                      e os seus valores devem ser separados por <code>;</code> e delimitados por <code>"</code>.</p>';
@@ -135,14 +140,41 @@ class ImportFleetUploadForm extends AbstractForm {
 		
 		$file = fopen($dirRoot . $fileName, 'r', true);
 		
-		if ( $header = fgetcsv($file, 0, ";") ) {
-		    $object->setHeader($this->tranform($header));
+		if ( $line = fgetcsv($file, 0, ";") ) {
+		    $object->setHeader($this->transform($line));
 		}
 		$object->getItems()->clear();
-		while ($data = fgetcsv($file, 0, ";")) {
-		    $item = new ImportFleetItem($object, $this->tranform($data));
-		    $item->toPreProcess($em);
-		    $object->getItems()->add($item);
+		if ($object->getId() == 0) {
+		    $em->persist($object);
+		}
+		$em->flush($object);
+		if ($data['auto']) {
+    		while ($line = fgetcsv($file, 0, ";")) {
+    		    $item = new ImportFleetItem($object, $this->transform($line));
+    		    if (! $item->toPreProcess($em) && $item->isVehicle() ) {
+    		        $vehicle = $item->toTransform($em);
+    		        if ($this->vehicleValid($vehicle)) {
+    		            $em->persist($vehicle);
+    		            $em->flush($vehicle);
+    		            $item->setReference($vehicle);
+    		        }
+    		    }
+    		    $em->persist($item);
+    		    $em->flush($item);
+    		    $em->detach($item);
+    		    if ($vehicle) {
+    		        $em->detach($vehicle);
+    		    }
+    		}
+		} else {
+		    while ($line = fgetcsv($file, 0, ";")) {
+		        $item = new ImportFleetItem($object, $this->transform($line));
+		        $item->toPreProcess($em);
+		        
+		        $em->persist($item);
+		        $em->flush($item);
+		        $em->detach($item);
+		    }
 		}
 	}
 	
@@ -150,11 +182,52 @@ class ImportFleetUploadForm extends AbstractForm {
 	 * @param array $data
 	 * @return array
 	 */
-	private function tranform(array $data) {
+	private function transform(array $data) {
 	    foreach($data as $i => $val) {
 	        $data[$i] = utf8_encode($val);
 	    }
 	    return $data;
+	}
+	
+	/**
+	 * @param Vehicle $vehicle
+	 * @return boolean
+	 */
+	private function vehicleValid(Vehicle $vehicle) {
+	    if ( empty($vehicle->getPlate()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getModel()->getId()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getAssetCode()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getFleet()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getRenavam()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getVin()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getEngine()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getYearManufacture()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getYearModel()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getOwner()) ) {
+	        return false;
+	    }
+	    if ( empty($vehicle->getResponsibleUnit()) ) {
+	        return false;
+	    }
+	    return true;
 	}
 
 }

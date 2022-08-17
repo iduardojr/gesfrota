@@ -151,16 +151,16 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		}
 		$file = fopen($dirRoot . $fileName, 'r', true);
 		
-		if ( $header = fgetcsv($file, 0, ";") ) {
-		    $object->setHeader($this->transform($header));
+		if ( $line = fgetcsv($file, 0, ";") ) {
+		    $object->setHeader($this->transform($line));
 		}
 		$object->getItems()->clear();
 		if ($object->getId() == 0) {
 		    $em->persist($object);
 		}
 		$em->flush($object);
-		while ($data = fgetcsv($file, 0, ";")) {
-		    $item = new ImportTransactionFuel($object, $this->transform($data));
+		while ($line = fgetcsv($file, 0, ";")) {
+		    $item = new ImportTransactionFuel($object, $this->transform($line));
 		    $vehicle = $em->getRepository(Vehicle::getClass())->findOneBy(['plate' => $item->getVehiclePlate()]);
 		    if ($vehicle instanceof Vehicle) {
 		          $item->setTransactionVehicle($vehicle);
