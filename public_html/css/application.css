@@ -455,6 +455,13 @@ fieldset > legend {
 	line-height: 20px;
 	margin: 20px 0;
 }
+.page-header h1 {
+	display: inline-block;
+}
+.page-header .nav {
+	display: inline-block;
+	margin: 0 0 -3px 25px;
+}
 #signature {
 	margin: 80px 20px !important;
 	border-top: 1px solid #333;
@@ -480,16 +487,38 @@ fieldset > legend {
 #fleet-vehicle-form #results_center_chosen {
 	width: 630px;
 }
-#import-preprocess-form #flash-message {
+#import-fleet-preprocess-form #flash-message {
 	min-height: 38px;
-}
-#import-preprocess-form #import-preprocess-container {
+} 
+#import-items-table-container {
 	margin-bottom: 10px;
 	max-width: 1010px;
 	overflow-x: auto;
 }
+#import-transaction-items-list #import-items-table-container {
+	max-width: none;
+}
+#import-transaction-preprocess-form .control-label {
+	width: 400px;
+}
+#import-transaction-preprocess-form .controls {
+	margin-left: 420px;
+}
+#import-items-table .cell {
+	white-space: nowrap;
+}
+#import-items-table small {
+	font: 75%;
+	color: #999;
+}
 #alert-message {
 	margin: 20px 0;
+}
+.dl-horizontal dt {
+	width: 180px;
+}
+.dl-horizontal dd {
+	margin-left: 200px;
 }
 .notification {
 	margin-top: -15px;
@@ -532,6 +561,9 @@ fieldset > legend {
 .card-inverse * {
 	color: #fff !important;
 	text-shadow: 2px 2px 2px rgba(50, 50, 50, 0.5);
+}
+.card + .card {
+	margin: 20px 0;
 } 
 .card p {
 	font-size: 0.6em;
@@ -665,60 +697,4 @@ fieldset > legend {
 	height: auto;
 	margin-bottom: 25px;
 	padding: 7px 9px;
-}
-@media print {
-	@page {
-		margin: 1.5cm;
-		size: A4;
-		orphans:3; 
-		widows:3;
-	}
-	*{
-		-webkit-print-color-adjust: exact !important;
-   		color-adjust: exact !important; 
-   	}
-   	#page-header {
-   		margin-top: 10px;
-   	}
-   	h2 {
-		font-size: 31.5px !important;
-	}
-	.no-print {
-		display: none;
-	}
-	.form-horizontal .control-group {
-    	margin-bottom: 10px !important;
-	}
-	.form-horizontal .control-label {
-		width: 200px;
-	}
-	.form-horizontal .controls {
-		margin-left: 220px;
-	}
-	fieldset {
-		margin-bottom: 30px;
-	}
-	fieldset legend {
-		font-size: 22px !important;
-	}
-	.icon-place-from {
-		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/start_location_grey800_18dp.png) !important;
-		background-size: 18px 18px !important;
-	    background-position: center 7px !important;
-	    background-repeat: no-repeat !important;
-	    background-color: #fff !important;
-	}
-	.icon-place-to {
-		background-image: url(//maps.gstatic.com/consumer/images/icons/1x/place_outline_red600_18dp.png) !important;
-		background-size: 18px 18px !important;
-	    background-position: center center !important;
-	    background-repeat: no-repeat !important;
-	    background-color: #fff !important;
-	}
-	#disposal-item-page {
-		page-break-after: always;
-	}
-	#disposal-item-page #section-survey .control-group {
-		margin-bottom: 5px !important;
-	}
 }

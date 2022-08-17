@@ -1,0 +1,343 @@
+<div class="row-fluid">
+	<div class="span4">
+		<h3><span class="header">Distribuição da Frota por Tipo<small>Distribuição percentual e quantitiva da frota por tipo <span class="label">Real Time</span></small></span></h3>
+		<div id="fleet-per-type"></div>
+		<script>
+			var options = {
+          		series: <?php echo json_encode(array_values($this->fleet_per_type));?>,
+          		labels: <?php echo json_encode(array_keys($this->fleet_per_type));?>,
+          		chart: {
+          			type: 'donut',
+          			height: 300,
+        		},
+        		plotOptions: {
+				    pie: {
+					    dataLabels : { offset: -15 },
+				      	donut: { 
+				      		size: '75%',
+				      		labels: {
+        						show: true,
+					        	name: {
+					          		show: true,
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					        	},
+					        	value: {
+					          		show: true,
+					          		fontSize: '18px',
+					          		offsetY: 0,
+					          		color: '#777',
+					        	},
+					        	total: {
+					          		show: true,
+					          		label: 'Total',
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					          		color: '#777',
+					        	}
+					      	},
+					    }
+					}
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '16px',
+				      	fontWeight: 'bold',
+				  	},
+				},
+				tooltip: { enabled: false },
+				legend: {
+			      	show: true,
+			      	position: 'bottom',
+			      	horizontalAlign: 'center', 
+      			}
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fleet-per-type"), options);
+        	chart.render();
+		</script>
+	</div>
+	<div class="span4">
+		<h3><span class="header">Veículos X Equipamentos<small>Distribuição percentual e quantitiva da frota por classe <span class="label">Real Time</span></small></span></h3>
+		<div id="vehicle-x-equipament"></div>
+		<script>
+			var options = {
+          		series: <?php echo json_encode(array_values($this->vehicle_x_equipament));?>,
+          		labels: <?php echo json_encode(array_keys($this->vehicle_x_equipament));?>,
+          		chart: {
+          			type: 'donut',
+          			height: 300,
+        		},
+        		plotOptions: {
+				    pie: {
+					    dataLabels : { offset: -15 },
+				      	donut: { 
+				      		size: '75%',
+				      		labels: {
+        						show: true,
+					        	name: {
+					          		show: true,
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					        	},
+					        	value: {
+					          		show: true,
+					          		fontSize: '18px',
+					          		offsetY: 0,
+					          		color: '#777',
+					        	},
+					        	total: {
+					          		show: true,
+					          		label: 'Total',
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					          		color: '#777',
+					        	}
+					      	},
+					    }
+					}
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '16px',
+				      	fontWeight: 'bold',
+				  	},
+				},
+				tooltip: { enabled: false },
+				legend: {
+			      	show: true,
+			      	position: 'bottom',
+			      	horizontalAlign: 'center', 
+      			}
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#vehicle-x-equipament"), options);
+        	chart.render();
+		</script>
+	</div>
+	<div class="span4">
+		<h3><span class="header">Distribuição da Frota por Família <small>Distribuição perc. e quant. dos veículos por família <span class="label">Real Time</span></small></span></h3>
+		<div id="fleet-per-family"></div>
+		<script>
+			var options = {
+          		series: <?php echo json_encode(array_values($this->fleet_per_family));?>,
+          		labels: <?php echo json_encode(array_keys($this->fleet_per_family));?>,
+          		chart: {
+          			type: 'donut',
+          			height: 300,
+        		},
+        		plotOptions: {
+				    pie: {
+					    dataLabels : { offset: -15 },
+				      	donut: { 
+				      		size: '75%',
+				      		labels: {
+        						show: true,
+					        	name: {
+					          		show: true,
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					        	},
+					        	value: {
+					          		show: true,
+					          		fontSize: '18px',
+					          		offsetY: 0,
+					          		color: '#777',
+					        	},
+					        	total: {
+					          		show: true,
+					          		label: 'Total',
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					          		color: '#777',
+					        	}
+					      	},
+					    }
+					}
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '16px',
+				      	fontWeight: 'bold',
+				  	},
+				},
+				tooltip: { enabled: false },
+				legend: {
+			      	show: true,
+			      	position: 'bottom',
+			      	horizontalAlign: 'center', 
+      			}
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fleet-per-family"), options);
+        	chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+		<h3><span class="header">Distribuição da Frota por Idade<small>Distribuição quantitiva da frota por idade <span class="label">Real Time</span></small></span></h3>
+		<div id="fleet-per-age"></div>
+		<script>
+			var options = {
+				series: [{
+					name: 'Quant. de Veículos',
+					data: <?php echo json_encode(array_values($this->fleet_per_age));?>
+				}],
+				chart: {
+					type: 'bar',
+					height: 450,
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '12px',
+				  	},
+				},
+				xaxis: { 
+					categories: <?php echo json_encode(array_keys($this->fleet_per_age));?>,
+			    },
+			    yaxis: [
+		          {
+		            seriesName: 'Quant. de Veículos',
+		            axisTicks: { show: true },
+		            title: { text: "Número de Veículos" },
+		          }
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+        	var chart = new ApexCharts(document.querySelector("#fleet-per-age"), options);
+        	chart.render();
+		</script>
+	</div>
+</div>
+<?php if (! $this->isDashboardFleetManager) { ?>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+		<h3><span class="header">Distribuição da Frota por Órgão<small>Distribuição quantitivo da frota por órgão <span class="label">Real Time</span></small></span></h3>
+		<div id="fleet-per-agency"></div>
+		<script type="text/javascript">
+			var options = {
+          		series: [
+          		<?php foreach ($this->fleet_per_agency as $serie => $data) { ?>
+          		{
+          			name: '<?php echo $serie; ?>',
+          			data: <?php echo json_encode(array_values($data));?>,
+          		},
+          		<?php } ?>
+          		],
+          		chart: {
+          			type: 'bar',
+          			height: 500,
+          			stacked: true,
+        		},
+				tooltip: {
+					enabled: true,
+					shared: true,
+        			intersect: false,
+					y: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				      		return (value > 0 ) ? value : null;
+				    	}
+  					},
+  					x: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				    		var total = 0;
+				    		series.forEach(function(data, index) {
+				    			total+= data[dataPointIndex];
+				    		});
+				      		return value + ': <strong>' + total + '</strong>';
+				    	}
+  					},
+		        },
+				dataLabels : {
+				 	style: {
+				      	fontSize: '12px',
+				  	},
+				},
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			},
+ 	 			legend: {
+                    position: 'top',
+                    offsetX: 750
+                }
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fleet-per-agency"), options);
+        	chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+		<h3><span class="header">Frota Atual x Frota Esperada por Órgão<small>Compara o quantitivo da frota cadastrada atualmente e a expectativa baseada na frota abastecida por órgão <span class="label">Real Time</span></small></span></h3>
+		<div id="fleet-current-x-expected"></div>
+		<script type="text/javascript">
+			var options = {
+          		series: [
+          			{
+          				name: 'Atual',
+          				data: <?php echo json_encode($this->fleet_current_x_expected);?>,
+          			},
+          		],
+          		chart: {
+          			type: 'bar',
+          			height: 500,
+        		},
+				tooltip: {
+					enabled: true,
+					shared: true,
+        			intersect: false,
+        			marker: {
+        				show: false
+        			},
+  					x: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				    		var el = w.config.series[0].data[dataPointIndex],
+				    			current, expected;
+				    		current = el.y;
+				    		expected= el.goals[0].value;
+				      			return value + (expected > 0 ? ': <strong>' + ((current/expected)*100).toFixed(2) + '%</strong>' : '');
+				    	}
+  					},
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			},
+ 	 			dataLabels: {
+                  enabled: false
+                },
+                colors: ['#00E396'],
+ 	 			legend: {
+ 	 			  position: 'top',
+                  offsetX: 850,
+                  show: true,
+                  showForSingleSeries: true,
+                  customLegendItems: ['Atual', 'Expectativa'],
+                  markers: {
+                    fillColors: ['#00E396', '#775DD0']
+                  }
+                }
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fleet-current-x-expected"), options);
+        	chart.render();
+		</script>
+		<style>#fleet-current-x-expected .apexcharts-tooltip-marker { display: none; }</style>
+	</div>
+</div>
+<?php } ?>
+<p></p>

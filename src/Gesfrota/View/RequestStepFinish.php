@@ -3,18 +3,16 @@ namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\Request;
-use PHPBootstrap\Validate\Required\Required;
-use PHPBootstrap\Widget\Form\Controls\ControlGroup;
-use PHPBootstrap\Widget\Form\Controls\Label;
-use PHPBootstrap\Widget\Form\Controls\NumberBox;
-use PHPBootstrap\Validate\Pattern\Number;
-use PHPBootstrap\Format\NumberFormat;
 use Gesfrota\Model\Domain\User;
-use PHPBootstrap\Widget\Form\Controls\TextArea;
+use PHPBootstrap\Format\NumberFormat;
+use PHPBootstrap\Validate\Pattern\Number;
+use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
-use PHPBootstrap\Widget\Misc\Icon;
-use PHPBootstrap\Widget\Form\TgFormSubmit;
 use PHPBootstrap\Widget\Button\Button;
+use PHPBootstrap\Widget\Form\TgFormSubmit;
+use PHPBootstrap\Widget\Form\Controls\NumberBox;
+use PHPBootstrap\Widget\Form\Controls\TextArea;
+use PHPBootstrap\Widget\Misc\Icon;
 
 class RequestStepFinish extends RequestStepForm {
     

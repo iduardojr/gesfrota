@@ -1,0 +1,571 @@
+<?php
+use Gesfrota\Util\Format;
+?>
+<div class="row-fluid">
+	<div class="span4">
+		<div class="card">
+  			<div class="header">
+  				<strong><?php echo Format::financial($this->KPIs['fuel_total']); ?></strong>
+  				<small>Total de Gastos de Abastecimento</small>
+  			</div>
+  		</div>
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo Format::financial($this->KPIs['fuel_avg']); ?>/mês</strong>
+				<small>Média de Gastos de Abastecimento</small>
+	  		</div>
+	  	</div>
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo number_format($this->KPIs['fuel_amount'], 0, '', '.'); ?></strong>
+				<small>Veículos Abastecidos</small>
+	  		</div>
+	  	</div>
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo number_format(round($this->KPIs['fuel_distance'], 0), 0, '', '.'); ?> Km</strong>
+				<small>Percorridos</small>
+	  		</div>
+	  	</div>
+	</div>
+	<div class="span8">
+		<h3><span class="header">Gasto de Abastecimento x Distância Percorrida<small>Comparativo entre o gasto de abastecimento e a distância percorrida<?php if (! $this->isDashboardFleetManager) { ?> somente da Administração Direta, Autarquica e Fundacional <?php } ?></small></span></h3>
+		<div id="fuel-x-distance"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Gasto de Abastecimento',
+						data: <?php echo json_encode(array_values($this->fuel_x_distance['fuel']));?>
+					}, 
+					{
+						name: 'Distância Percorrida',
+						data: <?php echo json_encode(array_values($this->fuel_x_distance['distance']));?>
+        			}
+        		],
+				chart: {
+					type: 'bar',
+					height: 450,
+				},
+				dataLabels: { enabled: false },
+				xaxis: { 
+					categories: <?php echo json_encode($this->fuel_x_distance['label']);?>,
+			    },
+			    yaxis: [
+		          {
+		            seriesName: 'Gasto de Abastecimento',
+		            axisTicks: { show: true },
+		            title: { text: "Gasto de Abastecimento (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		          {
+		            seriesName: 'Distância Percorrida',
+		            opposite: true,
+		            axisTicks: { show: true },
+		            title: { text: "Km Rodados" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return result;
+                      	}
+		            }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel-x-distance"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span4">
+		<h3><span class="header">Rendimento da Gasolina<small>Histograma do rendimento dos veículos abastecidos com Gasolina</small></span></h3>
+		<div id="fuel-outlier-g"></div>
+		<script>
+			var options = {
+				series: [
+					{
+						name: "Gasolina",
+						data: <?php echo json_encode(array_values($this->fuel_outlier_g['data']));?>
+					},
+        		],
+				chart: {
+					type: 'line',
+					height: 350,
+				},
+                colors: ['#008FFB'],
+				annotations: {
+					position: 'back',
+					xaxis: [
+    					{
+                            x: "<?php echo $this->fuel_outlier_g['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier_g['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
+                        },
+                        {
+                            x: "<?php echo $this->fuel_outlier_g['avg']; ?>",
+                            borderColor: '#aaa',
+                        },
+                    ],
+                     texts: [{
+                        x: "<?php echo (($this->fuel_outlier_g['avg']+1)/20*100)+4; ?>%",
+                        y: 280,
+                        text: '<?php echo number_format($this->fuel_outlier_g['percent'], 1, ',', ''); ?>%',
+                        textAnchor: 'middle',
+                        backgroundColor: '#dedede',
+                        borderRadius: 5,
+                        paddingLeft: 7,
+                        paddingRight: 7,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                    }]
+				},
+				dataLabels: { enabled: false },
+				xaxis: { 
+					type: 'category',
+					title: {
+                      text: 'Rendimento (Km/L)',
+                      style: {
+  						fontSize: '11px',
+  					  }
+                    }
+			    },
+			    yaxis: { 
+					title: {
+                      text: 'Frequência',
+                    }
+			    },
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel-outlier-g"), options);
+	        chart.render();
+		</script>
+	</div>
+	<div class="span4">
+		<h3><span class="header">Rendimento do Etanol<small>Histograma do rendimento dos veículos abastecidos com Etanol</small></span></h3>
+		<div id="fuel-outlier-e"></div>
+		<script>
+			var options = {
+				series: [
+					{
+						name: "Etanol",
+						data: <?php echo json_encode(array_values($this->fuel_outlier_e['data']));?>
+					}, 
+        		],
+				chart: {
+					type: 'line',
+					height: 350,
+				},
+                colors: ['#00E396'],
+				annotations: {
+					position: 'back',
+					xaxis: [
+						{
+                            x: "<?php echo $this->fuel_outlier_e['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier_e['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
+                        },
+                        {
+                            x: "<?php echo $this->fuel_outlier_e['avg']; ?>",
+                            borderColor: '#666',
+                        },
+                    ],
+                    texts: [{
+                        x: "<?php echo (($this->fuel_outlier_e['avg']+1)/20*100)+4; ?>%",
+                        y: 280,
+                        text: '<?php echo number_format($this->fuel_outlier_e['percent'], 1, ',', ''); ?>%',
+                        textAnchor: 'middle',
+                        backgroundColor: '#dedede',
+                        borderRadius: 5,
+                        paddingLeft: 7,
+                        paddingRight: 7,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                    }]
+				},
+				dataLabels: { enabled: false },
+				xaxis: { 
+					type: 'category',
+					title: {
+                      text: 'Rendimento (Km/L)',
+                      style: {
+  						fontSize: '11px',
+  					  }
+                    }
+			    },
+			    yaxis: { 
+					title: {
+                      text: 'Frequência',
+                    }
+			    },
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel-outlier-e"), options);
+	        chart.render();
+		</script>
+	</div>
+	<div class="span4">
+		<h3><span class="header">Rendimento do Diesel<small>Histograma do rendimento dos veículos abastecidos com Diesel</small></span></h3>
+		<div id="fuel-outlier-d"></div>
+		<script>
+			var options = {
+				series: [
+					{
+						name: "Diesel",
+						data: <?php echo json_encode(array_values($this->fuel_outlier_d['data']));?>
+					}, 
+        		],
+				chart: {
+					type: 'line',
+					height: 350,
+				},
+                colors: ['#FEB019'],
+				annotations: {
+					position: 'back',
+					xaxis: [
+						{
+                            x: "<?php echo $this->fuel_outlier_d['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier_d['max']; ?>",
+                            fillColor: '#dedede',
+                            strokeDashArray: 1,
+      						borderColor: '#c2c2c2',
+                        },
+                        {
+                            x: "<?php echo $this->fuel_outlier_d['avg']; ?>",
+                            borderColor: '#666',
+                        },
+                    ],
+                    texts: [{
+                        x: "<?php echo (($this->fuel_outlier_d['avg']+1)/20*100)+4; ?>%",
+                        y: 280,
+                        text: '<?php echo number_format($this->fuel_outlier_d['percent'], 1, ',', ''); ?>%',
+                        textAnchor: 'middle',
+                        backgroundColor: '#dedede',
+                        borderRadius: 5,
+                        paddingLeft: 7,
+                        paddingRight: 7,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                    }]
+				},
+				dataLabels: { enabled: false },
+				xaxis: { 
+					type: 'category',
+					title: {
+                      text: 'Rendimento (Km/L)',
+                      style: {
+  						fontSize: '11px',
+  					  }
+                    }
+			    },
+			    yaxis: { 
+					title: {
+                      text: 'Frequência',
+                    }
+			    },
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel-outlier-d"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span6">
+		<h3><span class="header">Distribuição de Gasto por Combustível<small>Distribuição de Gastos com Abastecimento por Combustível</small></span></h3>
+		<div id="fuel_per_type"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Gasto',
+						data: <?php echo json_encode(array_values($this->fuel_per_type['finance']));?>
+					}, 
+        		],
+				chart: {
+					type: 'bar',
+					height: 300,
+				},
+				xaxis: { 
+					categories: <?php echo json_encode(array_keys($this->fuel_per_type['finance']));?>,
+			    },
+			    dataLabels: { enabled: false },
+			    yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Gasto de Abastecimento (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel_per_type"), options);
+	        chart.render();
+		</script>
+	</div>
+	<div class="span6">
+		<h3><span class="header">Distribuição de Consumo por Combustível<small>Distribuição de Consumo com Abastecimento por Combustível</small></span></h3>
+		<div id="fuel_per_consume"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Consumo',
+						data: <?php echo json_encode(array_values($this->fuel_per_type['consume']));?>
+					}, 
+        		],
+				chart: {
+					type: 'bar',
+					height: 300,
+				},
+				xaxis: { 
+					categories: <?php echo json_encode(array_keys($this->fuel_per_type['consume']));?>,
+			    },
+			    dataLabels: { enabled: false },
+			    yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Consumo (L)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return result;
+                      	}
+		            }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fuel_per_consume"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<?php if (! $this->isDashboardFleetManager) { ?>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+		<h3><span class="header">Distribuição de Gastos de Abastecimento por Órgão<small>Distribuição de gastos de abastecimento por órgão</small></span></h3>
+		<div id="fuel-per-agency"></div>
+		<script type="text/javascript">
+			var options = {
+          		series: [
+          		<?php foreach ($this->fuel_per_agency as $serie => $data) { ?>
+          		{
+          			name: '<?php echo $serie; ?>',
+          			data: <?php echo json_encode(array_values($data));?>,
+          		},
+          		<?php } ?>
+          		],
+          		chart: {
+          			type: 'bar',
+          			height: 500,
+          			stacked: true,
+        		},
+				tooltip: {
+					enabled: true,
+					shared: true,
+        			intersect: false,
+					y: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				      		if (value > 0 ) {
+				      			var multiples = [
+                        	        ["Tri", Math.pow(1000, 4)],
+                        	        ["Bi",  Math.pow(1000, 3)],
+                        	        ["Mi",  Math.pow(1000, 2)],
+                        	        ["Mil", Math.pow(1000, 1)],
+                        	    ];
+								var result = value.toFixed(2);
+								for (var i = 0; i < multiples.length; ++i) {
+                        	        if(value >= multiples[i][1]) {
+                        	            result = value / multiples[i][1];
+                        	            result = result.toFixed(2) + " " + multiples[i][0];
+                        	            break;
+                        	        }
+                        	    };
+                        	    return result;
+				      		}
+				      		return null;
+				    	}
+  					},
+  					x: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				    		var total = 0;
+				    		series.forEach(function(data, index) {
+				    			total+= data[dataPointIndex];
+				    		});
+				    		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = total.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(total >= multiples[i][1]) {
+                    	            result = total / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+				      		return value + ': <strong>' + result + '</strong>';
+				    	}
+  					},
+		        },
+		        yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Gasto de Abastecimento (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		        ],
+				dataLabels : {  enabled: false }, 
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			},
+ 	 			legend: {
+                    position: 'top',
+                    offsetX: 750
+                }
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fuel-per-agency"), options);
+        	chart.render();
+		</script>
+	</div>
+</div>
+<?php } ?>
+<p></p>

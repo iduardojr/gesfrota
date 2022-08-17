@@ -49,7 +49,7 @@ class FleetController extends AbstractController {
 			$edit 	= new Action($this, 'edit');
 			$active = new Action($this, 'active');
 			$search = new Action($this, 'searchVehiclePlate');
-			$import = new Action(ImportController::getClass());
+			$import = new Action(ImportFleetController::getClass());
 			$transfer = new Action($this, 'transferVehicle');
 			
 			$showAgencies = $this->getShowAgencies();
