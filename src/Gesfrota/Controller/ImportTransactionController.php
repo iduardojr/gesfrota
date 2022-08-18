@@ -27,6 +27,8 @@ use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use PHPBootstrap\Mvc\View\FileView;
+use PHPBootstrap\Common\Mimetype;
 
 class ImportTransactionController extends AbstractController {
 	
@@ -80,8 +82,8 @@ class ImportTransactionController extends AbstractController {
 	        $cancel = new Action($this);
 	        $providers = $this->getOptionsProviders(false);
 	        
-	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
 	        $entity = new ImportSupply();
+	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
 	        $form->extract($entity);
 	        $this->getEntityManager()->beginTransaction();
 	        if ( $this->request->isPost() ) {
@@ -193,7 +195,7 @@ class ImportTransactionController extends AbstractController {
 	        if (! $entity instanceof ImportTransaction) {
 	            throw new NotFoundEntityException('Não foi possível baixar o Arquivo Importado. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
-	        $this->redirect(ImportFleet::DIR . $entity->getFileName());
+	        return new FileView(DIR_ROOT . ImportFleet::DIR . $entity->getFileName());
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	        $this->forward('/');

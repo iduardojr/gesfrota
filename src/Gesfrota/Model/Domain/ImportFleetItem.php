@@ -228,7 +228,7 @@ class ImportFleetItem extends Entity {
     /**
      * @return boolean
      */
-    private function isVehicle() {
+    public function isVehicle() {
         $short = 15-count($this->import->getHeader());
         return stripos($this->data[4-$short], 'EQUIPAMENTO') === false;
     }
