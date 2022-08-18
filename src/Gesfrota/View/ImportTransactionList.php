@@ -77,7 +77,7 @@ class ImportTransactionList extends AbstractList {
 		});
 		$table->buildColumnText('serviceProvider', 'Prestador de Serviço', clone $filter, 80);
 		$table->buildColumnText('amountItems', 'Transações Importadas', null, 50);
-		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
+		$table->buildColumnText('fileSize', null, null, 70, null, function( $bytes ) {
 		    return Format::byte($bytes);
 		});
 		
