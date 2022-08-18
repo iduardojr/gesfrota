@@ -592,10 +592,7 @@ class IndexController extends AbstractController {
 	}
 	
 	private function getFuelXDistance(\DateTime $initial, \DateTime $final, Agency $agency = null) {
-	    $initial->setTime(0, 0, 0);
-	    $final->setTime(23, 59, 59);
-	    
-	    $sql = 'SELECT SUM(i0_.item_total) AS fuel, SUM(i0_.vehicle_distance) AS distance, CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date)) AS period ';
+	    $sql = 'SELECT COUNT(DISTINCT i0_.vehicle_plate) AS vehicles, SUM(i0_.item_total) AS fuel, SUM(i0_.vehicle_distance) AS distance, CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date)) AS period ';
 	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
 	    $sql.= 'WHERE i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
 	    $sql.= 'GROUP BY period';
@@ -603,6 +600,7 @@ class IndexController extends AbstractController {
 	    $rsm = new ResultSetMapping();
 	    $rsm->addScalarResult('period', 'period');
 	    $rsm->addScalarResult('fuel', 'fuel');
+	    $rsm->addScalarResult('vehicles', 'vehicles');
 	    $rsm->addScalarResult('distance', 'distance');
 	    
 	    $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
@@ -617,6 +615,7 @@ class IndexController extends AbstractController {
 	            $data['label'][] = ucfirst(strftime('%b', $initial->getTimestamp()));
 	            $data['fuel'][$initial->format('Yn')] = null;
 	            $data['distance'][$initial->format('Yn')] = null;
+	            $data['vehicles'][$initial->format('Yn')] = null;
 	            $initial->add(new \DateInterval('P1M'));
 	        }
 	    } else {
@@ -624,12 +623,14 @@ class IndexController extends AbstractController {
 	            $data['label'][] = ucfirst(strftime('%b/%y', $initial->getTimestamp()));
 	            $data['fuel'][$initial->format('Yn')] = null;
 	            $data['distance'][$initial->format('Yn')] = null;
+	            $data['vehicles'][$initial->format('Yn')] = null;
 	            $initial->add(new \DateInterval('P1M'));
 	        }
 	    }
 	    foreach ($result as $item ) {
 	        $data['fuel'][$item['period']] = $item['fuel'];
 	        $data['distance'][$item['period']] = $item['distance'];
+	        $data['vehicles'][$item['period']] = $item['vehicles'];
 	    }
 	    return $data;
 	}
