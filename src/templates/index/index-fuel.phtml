@@ -40,12 +40,20 @@ use Gesfrota\Util\Format;
 					{
 						name: 'Distância Percorrida',
 						data: <?php echo json_encode(array_values($this->fuel_x_distance['distance']));?>
+        			}, 
+					{
+						name: 'Veículos Abastecidos',
+						data: <?php echo json_encode(array_values($this->fuel_x_distance['vehicles']));?>
         			}
         		],
 				chart: {
 					type: 'bar',
 					height: 450,
 				},
+                tooltip: {
+                	shared: true,
+                	intersect: false,
+                },
 				dataLabels: { enabled: false },
 				xaxis: { 
 					categories: <?php echo json_encode($this->fuel_x_distance['label']);?>,
@@ -54,9 +62,24 @@ use Gesfrota\Util\Format;
 		          {
 		            seriesName: 'Gasto de Abastecimento',
 		            axisTicks: { show: true },
-		            title: { text: "Gasto de Abastecimento (R$)" },
+		            axisBorder: {
+              			show: true,
+              			color: '#008FFB'
+            		},
+		            title: { 
+		            	text: "Gasto de Abastecimento (R$)",
+		            	style: {
+                			color: '#008FFB',
+              			}
+		            },
 		            labels: {
+		            	style: {
+                        	colors: '#008FFB',
+                        },
 		            	formatter: function(val, index) {
+		            		if (val == null ) {
+		            			return null;
+		            		} 
 		            		var multiples = [
                     	        ["Tri", Math.pow(1000, 4)],
                     	        ["Bi",  Math.pow(1000, 3)],
@@ -79,9 +102,24 @@ use Gesfrota\Util\Format;
 		            seriesName: 'Distância Percorrida',
 		            opposite: true,
 		            axisTicks: { show: true },
-		            title: { text: "Km Rodados" },
+		            axisBorder: {
+              			show: true,
+              			color: '#00E396'
+            		},
+		            title: { 
+		            	text: "Km Rodados",
+		            	style: {
+                			color: '#00E396',
+              			}
+		            },
 		            labels: {
+		            	style: {
+                        	colors: '#00E396',
+                        },
 		            	formatter: function(val, index) {
+		            		if (val == null ) {
+		            			return null;
+		            		} 
 		            		var multiples = [
                     	        ["Tri", Math.pow(1000, 4)],
                     	        ["Bi",  Math.pow(1000, 3)],
@@ -100,11 +138,30 @@ use Gesfrota\Util\Format;
                       	}
 		            }
 		          },
+		          {
+		            seriesName: 'Veículos Abastecidos',
+		            opposite: true,
+		            axisTicks: { show: true },
+		            axisBorder: {
+              			show: true,
+              			color: '#FEB019'
+            		},
+		            title: { 
+		            	text: "Quantidade de Veículos",
+		            	style: {
+                			color: '#FEB019',
+              			}
+		            },
+		            labels: {
+		            	style: {
+                        	colors: '#FEB019',
+                        },
+		            	formatter: function(val, index) {
+							return (val == null ) ? null : val.toFixed(0);
+                      	}
+                    }
+		          },
 		        ],
-				tooltip: {
-		          	shared: true,
-		          	intersect: false
-		        },
 		        noData: {
  	 				text: 'Não há dados disponíveis para o período informado.',
  	 				verticalAlign: 'top'
