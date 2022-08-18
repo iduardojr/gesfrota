@@ -24,6 +24,7 @@ use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
+use PHPBootstrap\Mvc\View\FileView;
 
 class ImportFleetController extends AbstractController {
 	
@@ -230,7 +231,7 @@ class ImportFleetController extends AbstractController {
 	        if (! $entity instanceof ImportFleet) {
 	            throw new NotFoundEntityException('Não foi possível baixar o Arquivo Importado. Importação <em>#' . $key . '</em> não encontrada.');
 	        }
-	        $this->redirect(ImportFleet::DIR . $entity->getFileName());
+	        return new FileView(DIR_ROOT . ImportFleet::DIR . $entity->getFileName());
 	    } catch ( NotFoundEntityException $e ) {
 	        $this->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 	        $this->forward('/');
