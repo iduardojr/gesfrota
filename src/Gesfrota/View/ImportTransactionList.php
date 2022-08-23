@@ -21,19 +21,25 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use Gesfrota\Model\Domain\ImportTransaction;
 use Gesfrota\Util\Format;
+use PHPBootstrap\Widget\Dropdown\Dropdown;
+use PHPBootstrap\Widget\Dropdown\DropdownLink;
+use Gesfrota\Model\Domain\ImportSupply;
+use Gesfrota\Model\Domain\ImportMaintenance;
+use PHPBootstrap\Widget\Dropdown\TgDropdown;
 
 class ImportTransactionList extends AbstractList {
 	
 	/**
 	 * @param Action $filter
-	 * @param Action $upload
+	 * @param Action $uploadSupply
+	 * @param Action $uploadMaintenance
 	 * @param Action $preProcess
 	 * @param Action $listItems
 	 * @param Action $download
 	 * @param Action $remove
 	 * @param array $providers
 	 */
-	public function __construct( Action $filter, Action $upload, Action $preProcess, Action $listItems, Action $download, Action $remove, array $providers) {
+	public function __construct( Action $filter, Action $uploadSupply, Action $uploadMaintenance, Action $preProcess, Action $listItems, Action $download, Action $remove, array $providers) {
 		$this->buildPanel('Entidades Externas', 'Importar Transações de Serviço');
 		
 		$reset = clone $filter;
@@ -63,7 +69,11 @@ class ImportTransactionList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar(new Button('Importar', new TgLink($upload), Button::Primary),
+		$drop = new Dropdown();
+		$drop->addItem(new DropdownLink(ImportSupply::SERVICE_TYPE, new TgLink($uploadSupply)));
+		$drop->addItem(new DropdownLink(ImportMaintenance::SERVICE_TYPE, new TgLink($uploadMaintenance)));
+		
+		$this->buildToolbar(array(new Button('Importar', null, Button::Primary), new Button('', new TgDropdown($drop), Button::Primary)),
 							array(new Button(array('Filtrar', new Icon('icon-filter')), new TgModalOpen($modalFilter), array(Button::Link, Button::Mini)), $btnFilter));
 		
 		$table = $this->buildTable('import-transaction-list');
@@ -76,7 +86,9 @@ class ImportTransactionList extends AbstractList {
 		    return $value[0]->format('d/m/Y') . ' a ' . $value[1]->format('d/m/Y');
 		});
 		$table->buildColumnText('serviceProvider', 'Prestador de Serviço', clone $filter, 80);
-		$table->buildColumnText('amountItems', 'Transações Importadas', null, 50);
+		$table->buildColumnText('amountItems', 'Transações Importadas', null, 50, null, function($value) {
+		    return number_format($value, 0, ',', '.');
+		});
 		$table->buildColumnText('fileSize', null, null, 70, null, function( $bytes ) {
 		    return Format::byte($bytes);
 		});

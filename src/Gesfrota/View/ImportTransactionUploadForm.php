@@ -3,13 +3,18 @@ namespace Gesfrota\View;
 
 use Doctrine\ORM\EntityManager;
 use Gesfrota\Model\Domain\ImportFleet;
-use Gesfrota\Model\Domain\ImportFleetItem;
 use Gesfrota\Model\Domain\ImportTransaction;
+use Gesfrota\Model\Domain\ServiceProvider;
+use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\View\Widget\AbstractForm;
+use PHPBootstrap\Format\DateFormat;
+use PHPBootstrap\Format\DateTimeParser;
+use PHPBootstrap\Validate\Pattern\Date;
 use PHPBootstrap\Validate\Pattern\Upload;
 use PHPBootstrap\Validate\Required\Required;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Form\Controls\ComboBox;
+use PHPBootstrap\Widget\Form\Controls\DateBox;
 use PHPBootstrap\Widget\Form\Controls\Fieldset;
 use PHPBootstrap\Widget\Form\Controls\TextBox;
 use PHPBootstrap\Widget\Form\Controls\XFileBox;
@@ -18,23 +23,19 @@ use PHPBootstrap\Widget\Misc\Well;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use Gesfrota\Model\Domain\ServiceProvider;
-use Gesfrota\Model\Domain\ImportTransactionFuel;
-use Gesfrota\Model\Domain\Vehicle;
-use PHPBootstrap\Widget\Form\Controls\DateBox;
-use PHPBootstrap\Validate\Pattern\Date;
-use PHPBootstrap\Format\DateFormat;
-use PHPBootstrap\Format\DateTimeParser;
+use Gesfrota\Model\Domain\ImportSupply;
+use Gesfrota\Model\Domain\ImportTransactionFix;
 
-class ImportTransactionFuelUploadForm extends AbstractForm {
+class ImportTransactionUploadForm extends AbstractForm {
 	
 	/**
+	 * @param ImportTransaction $import
 	 * @param Action $submit
 	 * @param Action $cancel
 	 * @param array $providers
 	 */
-    public function __construct( Action $submit, Action $cancel, array $providers) {
-        $this->buildPanel('Entidades Externas', 'Importação de Transações de Abastecimento');
+    public function __construct(ImportTransaction $import, Action $submit, Action $cancel, array $providers) {
+        $this->buildPanel('Entidades Externas', 'Importação de Transações de ' . $import->getTransactionType());
 		$form = $this->buildForm('import-transaction-upload-form');
 		
 		$fieldset = new Fieldset('Enviar Arquivo para Importação');
@@ -70,32 +71,51 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		$input[1]->setPlaceholder('Data Final');
 		$form->buildField('Período', $input, null, $fieldset);
 		
-		
 		$text[]= '<p>O arquivo deve ter o tamanho máximo de <code>'. ini_get('upload_max_filesize') . 'B</code>
                      e os seus valores devem ser separados por <code>;</code> e delimitados por <code>"</code>.</p>';
 		$text[]= '<p>A primeira linha é o cabeçalho do arquivo correspondendo ao nome dos campos 
                      e as demais linhas é um registro com os seus respectivos valores formatados da seguinte forma e sequência:</p>';
-		$text[]= '<dl class="dl-horizontal">
-                     <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
-                     <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>   
-                     <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
-                     <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
-                     <dt>[CPF do Motorista]</dt>        <dd><i>numérico</i></dd>
-                     <dt>Nome do Motorista</dt>         <dd><i>alfanumérico</i></dd>
-                     <dt>[CNPJ do Estabelecimento]</dt> <dd><i>numérico</i></dd>
-                     <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
-                     <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
-                     <dt>UF</dt>                        <dd>AA</dd>
-                     <dt>Descrição do Item</dt>         <dd>ARLA-32 | [GASOLINA|ETANOL|DIESEL|DIESEL S-10] [COMUM|ADITIVAD*|PREMIUM]</dd>
-                     <dt>Quant. do Item</dt>            <dd>999,99</dd>
-                     <dt>Preço do Item</dt>             <dd>999,999</dd>
-                     <dt>Valor do Item</dt>             <dd>999,99</dd>
-                     <dt>Distância Percorrida</dt>      <dd><i>numérico</i></dd>
-                     <dt>Rendimento do Veículo</dt>     <dd>999,99</dd>
-                  </dl>';
+		if ($import instanceof ImportSupply) {
+    		$text[]= '<dl class="dl-horizontal">
+                         <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
+                         <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>   
+                         <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
+                         <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
+                         <dt>[CPF do Motorista]</dt>        <dd><i>numérico</i></dd>
+                         <dt>Nome do Motorista</dt>         <dd><i>alfanumérico</i></dd>
+                         <dt>[CNPJ do Estabelecimento]</dt> <dd><i>numérico</i></dd>
+                         <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+                         <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
+                         <dt>UF</dt>                        <dd>AA</dd>
+                         <dt>Descrição do Item</dt>         <dd>ARLA-32 | [GASOLINA|ETANOL|DIESEL|DIESEL S-10] [COMUM|ADITIVAD*|PREMIUM]</dd>
+                         <dt>Quant. do Item</dt>            <dd>999,99</dd>
+                         <dt>Valor Unitário</dt>            <dd>999,999</dd>
+                         <dt>Valor Total</dt>               <dd>999,99</dd>
+                         <dt>Distância Percorrida</dt>      <dd><i>numérico</i></dd>
+                         <dt>Rendimento do Veículo</dt>     <dd>999,99</dd>
+                      </dl>';
+		} else {
+		    $text[]= '<dl class="dl-horizontal">
+                         <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
+                         <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>
+                         <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
+                         <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
+                         <dt>CNPJ do Estabelecimento</dt>   <dd><i>99.999.999/9999-99</i></dd>
+                         <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+                         <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
+                         <dt>UF</dt>                        <dd>AA</dd>
+                         <dt>Tipo da Manutenção</dt>      <dd>CORRETIVA | PREVENTIVA | EMERGENCIAL | GUINCHO | LAVAGEM</dd>
+                         <dt>[Tipo do Item]</dt>            <dd>PRODUTO | SERVIÇO</dd>
+                         <dt>Descrição do Item</dt>         <dd><i>alfanumérico</i></dd>
+                         <dt>Quant. do Item</dt>            <dd>999,99</dd>
+                         <dt>Valor Unitário</dt>            <dd>999,99</dd>
+                         <dt>Valor Mão de Obra</dt>         <dd>999,99</dd>
+                         <dt>Valor Total</dt>               <dd>999,99</dd>
+                      </dl>';
+		}
 		$text[]= '<p>As seguintes definições representam um caractere 
                      alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>. 
-                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 14 ou 16 colunas (arquivo reduzido ou expandido).</p>';
+                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 14 ou ' . ($import instanceof ImportSupply ? 16 : 15 ) . ' colunas (arquivo reduzido ou expandido).</p>';
 
 		$form->buildField(null, new Well('info', new Panel(implode('', $text))), null, $fieldset);
 		
@@ -138,7 +158,7 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		
 		$object->setDatePeriod($data['date-initial'], $data['date-final']);
 		
-		$qb = $em->getRepository(ImportTransaction::class)->createQueryBuilder('u');
+		$qb = $em->getRepository(get_class($object))->createQueryBuilder('u');
 		$qb->select('COUNT(u)');
 		$qb->where('u.serviceProvider = :provider');
 		$qb->setParameter('provider', $object->getServiceProvider());
@@ -160,14 +180,15 @@ class ImportTransactionFuelUploadForm extends AbstractForm {
 		}
 		$em->flush($object);
 		while ($line = fgetcsv($file, 0, ";")) {
-		    $item = new ImportTransactionFuel($object, $this->transform($line));
+		    $item = $object->create($this->transform($line));
 		    $vehicle = $em->getRepository(Vehicle::getClass())->findOneBy(['plate' => $item->getVehiclePlate()]);
-		    if ($vehicle instanceof Vehicle) {
-		          $item->setTransactionVehicle($vehicle);
-		    }
-		    $em->persist($item);
-		    $em->flush($item);
-		    $em->detach($item);
+	        if ($vehicle instanceof Vehicle) {
+	            $item->setTransactionVehicle($vehicle);
+	        }
+	        $em->persist($item);
+	        $em->flush($item);
+	        $em->detach($item);
+		    
 		}
 	}
 	

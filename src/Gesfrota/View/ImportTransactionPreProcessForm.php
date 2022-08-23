@@ -18,20 +18,20 @@ use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
 
-class ImportTransactionFuelPreProcessForm extends AbstractForm {
+class ImportTransactionPreProcessForm extends AbstractForm {
     
 	
 	/**
+	 * @param ImportTransaction $import
 	 * @param Action $submit
 	 * @param Action $remove
 	 * @param Action $download
 	 * @param Action $cancel
-	 * @param ImportTransaction $import
 	 * @param array $costCenters
 	 * @param array $optAgencies
 	 */
-    public function __construct(Action $submit, Action $remove, Action $download, Action $cancel, ImportTransaction $import, array $costCenters, array $optAgencies ) {
-        $this->buildPanel('Entidades Externas', 'Importação de Transações de Abastecimento');
+    public function __construct(ImportTransaction $import, Action $submit, Action $remove, Action $download, Action $cancel, array $costCenters, array $optAgencies ) {
+        $this->buildPanel('Entidades Externas', 'Importação de Transações de ' . $import->getTransactionType());
 		$form = $this->buildForm('import-transaction-preprocess-form');
 		$fieldset = new Fieldset('Dados Pré-processados <small>'. $import->getDescription(). '</small>');
 		
