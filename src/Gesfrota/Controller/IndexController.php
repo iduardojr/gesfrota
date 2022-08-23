@@ -544,7 +544,7 @@ class IndexController extends AbstractController {
 	    $KPI['fuel_total'] = (float) $builder->getQuery()->getSingleScalarResult();
 	    
         $sql = 'SELECT COUNT(DISTINCT CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date))) AS total ';
-        $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+        $sql.= 'FROM import_transaction_items i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
         $sql.= 'WHERE i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
         
         $rsm = new ResultSetMapping();
@@ -593,8 +593,8 @@ class IndexController extends AbstractController {
 	
 	private function getFuelXDistance(\DateTime $initial, \DateTime $final, Agency $agency = null) {
 	    $sql = 'SELECT COUNT(DISTINCT i0_.vehicle_plate) AS vehicles, SUM(i0_.item_total) AS fuel, SUM(i0_.vehicle_distance) AS distance, CONCAT(YEAR(i0_.transaction_date), MONTH(i0_.transaction_date)) AS period ';
-	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql.= 'WHERE i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
+	    $sql.= 'FROM import_transaction_items i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE i0_.transaction_service = \'S\' AND i0_.vehicle_efficiency BETWEEN 0 AND 20 AND i0_.transaction_date BETWEEN ? AND ? AND i1_.finished = 1 ' . ($agency ? 'AND i0_.transaction_agency_id = ' . $agency->getId() . ' ' : '');
 	    $sql.= 'GROUP BY period';
 	    
 	    $rsm = new ResultSetMapping();
@@ -640,9 +640,10 @@ class IndexController extends AbstractController {
 	    $initial = $initial->format('Y-m-d H:i:s');
 	    $final = $final->format('Y-m-d H:i:s');
 	    $sql = 'SELECT ROUND(i0_.vehicle_efficiency) AS efficiency, COUNT(i0_.transaction_id) AS score ';
-	    $sql.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql.= 'WHERE LEFT(item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
-	    $sql.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1';
+	    $sql.= 'FROM import_transaction_items i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql.= 'WHERE LEFT(i0_.item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
+	    $sql.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1 ';
+	    $sql.= 'AND i0_.transaction_service = \'S\'';
 	    $sql.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
 	    $sql.= 'GROUP BY efficiency';
 	    
@@ -653,9 +654,10 @@ class IndexController extends AbstractController {
 	    $result['data'] = $this->getEntityManager()->createNativeQuery($sql, $rsm)->getArrayResult();
 	    
 	    $sql1 = 'SELECT i0_.vehicle_efficiency AS efficiency ';
-	    $sql1.= 'FROM import_transactions_fuel i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
-	    $sql1.= 'WHERE LEFT(item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
-	    $sql1.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1';
+	    $sql1.= 'FROM import_transaction_items i0_ INNER JOIN imports i1_ ON i0_.transaction_import_id = i1_.id ';
+	    $sql1.= 'WHERE LEFT(i0_.item_description, 1) =  \'' . $fuel . '\' AND i0_.vehicle_efficiency between 0 AND 20 ';
+	    $sql1.= 'AND i0_.transaction_date BETWEEN \'' . $initial . '\'  AND \'' . $final . '\' AND i1_.finished = 1 ';
+	    $sql1.= 'AND i0_.transaction_service = \'S\'';
 	    $sql1.= ($agency ? ' AND i0_.transaction_agency_id = ' . $agency->getId()  : '') . ' ';
 	    
 	    $sql2 = 'SELECT ROUND(STD(t1.efficiency)) AS std, 
