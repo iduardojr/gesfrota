@@ -81,12 +81,15 @@ class ImportTransactionList extends AbstractList {
 		
 		$table->buildColumnTextId(null, clone $filter);
 		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		$table->buildColumnText('transactionType', null, null, 95, null, function($value, ImportTransaction $import) {
+		    return '<span class="label label-' . ($import instanceof ImportSupply ? 'success' : 'warning') . '">' . $value . '</span>';
+		});
 		$table->buildColumnText('dateInitial', 'Período', clone $filter, 150, null, function($value, ImportTransaction $import) {
 		    $value = $import->getDatePeriod();
 		    return $value[0]->format('d/m/Y') . ' a ' . $value[1]->format('d/m/Y');
 		});
-		$table->buildColumnText('serviceProvider', 'Prestador de Serviço', clone $filter, 80);
-		$table->buildColumnText('amountItems', 'Transações Importadas', null, 50, null, function($value) {
+	    $table->buildColumnText('serviceProvider', 'Prestador', clone $filter, 80, null);
+		$table->buildColumnText('amountItems', 'Trans. Importadas', null, 50, null, function($value) {
 		    return number_format($value, 0, ',', '.');
 		});
 		$table->buildColumnText('fileSize', null, null, 70, null, function( $bytes ) {
