@@ -11,10 +11,16 @@ use Gesfrota\Util\Format;
 class ImportTransactionFix extends ImportTransactionItem {
     
     /**
-     * @Column(name="transaction_fixtype")
+     * Produto
      * @var string
      */
-    protected $transactionFixtype; 
+    const TYPE_PRODUCT = 'P';
+    
+    /**
+     * Serviço
+     * @var string
+     */
+    const TYPE_SERVICE = 'S';
     
     /**
      * @ManyToOne(targetEntity="ImportTransactionFix", cascade={"persist", "detach"})
@@ -24,19 +30,64 @@ class ImportTransactionFix extends ImportTransactionItem {
     protected $transactionParent;
     
     /**
-     * @return string
+     * @Column(name="transaction_fixtype")
+     * @var string
      */
-    public function getTransactionFixtype()
-    {
-        return $this->transactionFixtype;
-    }
-
+    protected $transactionFixtype; 
+    
+    /**
+     * @Column(name="supplier_type")
+     * @var string
+     */
+    protected $supplierType;
+    
+    /**
+     * @Column(name="item_type")
+     * @var string
+     */
+    protected $itemType;
+    
     /**
      * @return ImportTransactionFix
      */
     public function getTransactionParent()
     {
         return $this->transactionParent;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getTransactionFixtype()
+    {
+        return $this->transactionFixtype;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getSupplierType()
+    {
+        return $this->supplierType;
+    }
+
+    /**
+     * @return string
+     */
+    public function getItemType()
+    {
+        return $this->itemType;
+    }
+    
+    /**
+     * @see ImportTransactionItem::setTransactionVehicle()
+     */
+    public function setTransactionVehicle(Vehicle $vehicle)
+    {
+        parent::setTransactionVehicle($vehicle);
+        if ($this->transactionParent) {
+            $this->transactionParent->setTransactionVehicle($vehicle);
+        }
     }
 
     /**
@@ -45,44 +96,51 @@ class ImportTransactionFix extends ImportTransactionItem {
     public function setTransactionParent(ImportTransactionFix $parent)
     {
         $this->transactionParent = $parent;
-        if ($this->itemTotal > ($this->getItemQuantity() * $this->getItemPrice()) ) {
-            $this->itemTotal = $this->itemTotal - $this->getItemPriceLabor();
-        }
     }
 
     /**
-     * @param string $transactionFixtype
+     * @param string $type
      */
-    public function setTransactionFixtype($transactionFixtype)
+    public function setTransactionFixtype($type)
     {
-        $this->transactionFixtype = $transactionFixtype;
-    }
-    
-    public function setTransactionVehicle(Vehicle $vehicle) 
-    {
-        parent::setTransactionVehicle($vehicle);
-        if ($this->transactionParent) {
-            $this->transactionParent->setTransactionVehicle($vehicle);
-        }
+        $this->transactionFixtype = $type;
     }
     
     /**
-     * @see ImportTransactionItem::setItemTotal()
+     * @param string $type
      */
-    public function setItemTotal($total) 
+    public function setSupplierType($type)
     {
-        $this->itemTotal = $total == ($this->getItemQuantity() * $this->getItemPrice()) ? $total : $total - $this->getItemPriceLabor();
+        $this->supplierType = $type;
     }
+    
+    /**
+     * @param string $type
+     * @throws \InvalidArgumentException
+     */
+    public function setItemType($type)
+    {
+        if ($type !== null  && ! in_array($type, [self::TYPE_PRODUCT, self::TYPE_SERVICE]) ) {
+            throw new \InvalidArgumentException('Item type [' . $type . '] not is allowed');
+        }
+        $this->itemType = $type;
+    }
+    
     
     /**
      * @return float
      */
     public function getItemPriceLabor() 
     {
-        if ($this->itemType == self::TYPE_SERVICE && $this->transactionParent == null) {
-            return $this->getItemPrice();
-        }
-        return $this->transactionParent ? $this->transactionParent->getItemPrice() : 0;
+        return $this->transactionParent ? $this->transactionParent->getItemTotal() : 0;
+    }
+    
+    /**
+     * @return float
+     */
+    public function getItemPriceParts() 
+    {
+        return $this->itemTotal;
     }
     
     /**
@@ -90,9 +148,6 @@ class ImportTransactionFix extends ImportTransactionItem {
      */
     public function getItemTotal() 
     {
-        if ($this->itemType == self::TYPE_SERVICE && $this->transactionParent == null) {
-            return $this->itemTotal;
-        }
         return $this->itemTotal + $this->getItemPriceLabor();    
     }
 
@@ -101,29 +156,35 @@ class ImportTransactionFix extends ImportTransactionItem {
      */
     public function toTransform(array $data)
     {
-        $short = 15-count($this->transactionImport->getHeader());
         $this->setTransactionCostCenter($data[0]);
         $this->setTransactionDate(new \DateTime($data[1]));
-        $this->setVehiclePlate(str_replace('-', '', $data[2]));
-        $this->setVehicleDescription($data[3]);
-        $this->setSupplierNif(Format::CNPJ($data[4]));
-        $this->setSupplierName($data[5]);
-        $this->setSupplierPlace($data[6], $data[7]);
-        $this->setTransactionFixtype(ucwords(strtolower($data[8])));
-        $this->setItemType($short ? ImportTransactionFix::TYPE_PRODUCT : strtoupper(substr($data[9], 0, 1)));
-        $this->setItemDescription($data[10-$short]);
-        $this->setItemQuantity((float) str_replace(',', '.', $data[11-$short]));
-        $this->setItemPrice((float) str_replace(',', '.', $data[12-$short]));
-        if ( $short ) {
+        $this->setTransactionFixtype(ucwords(strtolower($data[2])));
+        $this->setVehiclePlate(str_replace('-', '', $data[3]));
+        $this->setVehicleDescription($data[4]);
+        $this->setSupplierNif(Format::CNPJ($data[5]));
+        $this->setSupplierName($data[6]);
+        $this->setSupplierType($data[7]);
+        $this->setSupplierPlace($data[8], $data[9]);
+        if ($this->isModelDetailed()) {
+            $this->setItemType(strtoupper(substr($data[10], 0, 1)));
+            $this->setItemDescription($data[11]);
+            $this->setItemQuantity((float) str_replace(',', '.', $data[12]));
+            $this->setItemPrice((float) str_replace(',', '.', $data[13]));
+            $this->setItemTotal((float) str_replace(',', '.', $data[14]));
+        } elseif($this->isModelDiscriminated()) {
             $parent = clone $this;
+            
+            $this->setItemType(ImportTransactionFix::TYPE_PRODUCT);
+            $this->setItemTotal((float) str_replace(',', '.', $data[10]));
+            
             $parent->setItemType(ImportTransactionFix::TYPE_SERVICE);
-            $parent->setItemPrice((float) str_replace(',', '.', $data[13-$short]));
-            $parent->setItemTotal($parent->getItemQuantity()*$parent->getItemPrice());
-            if ( $parent->getItemPrice() > 0 ) {
+            $parent->setItemTotal((float) str_replace(',', '.', $data[11]));
+            if ( $parent->getItemTotal() > 0 ) {
                 $this->setTransactionParent($parent);
             }
+        } else {
+            $this->setItemTotal((float) str_replace(',', '.', $data[10]));
         }
-        $this->setItemTotal(((float) str_replace(',', '.', $data[14-$short])));
     }
     
     /**
@@ -132,28 +193,54 @@ class ImportTransactionFix extends ImportTransactionItem {
     public function getData() 
     {
         $data = [];
-        $short = 15-count($this->transactionImport->getHeader());
+        $data[] = $this->getTransactionAgency() . '<' . $this->getTransactionCostCenter() . '>';
+        $data[] = $this->getTransactionDate()->format('d/m/Y H:i:s');
+        $data[]= $this->getTransactionFixtype();
+        $data[] = $this->getVehiclePlate();
+        $data[] = $this->getTransactionVehicle() ? $this->getTransactionVehicle()->getDescription() : $this->getVehicleDescription();
+        $data[] = $this->getSupplierNif();
+        $data[] = $this->getSupplierName();
+        $data[] = $this->getSupplierType();
+        $data[] = $this->supplierCity;
+        $data[]= $this->supplierUF;
         
-        $data[0] = $this->getTransactionAgency() . '<' . $this->getTransactionCostCenter() . '>';
-        $data[1] = $this->getTransactionDate()->format('d/m/Y H:i:s');
-        $data[2] = $this->getVehiclePlate();
-        $data[3] = $this->getTransactionVehicle() ? $this->getTransactionVehicle()->getDescription() : $this->getVehicleDescription();
-        $data[4] = $this->getSupplierNif();
-        $data[5] = $this->getSupplierName();
-        $data[6] = $this->supplierCity;
-        $data[7]= $this->supplierUF;
-        $data[8]= $this->getTransactionFixtype();
-        if (! $short) {
-            $data[9] = $this->getItemType() == ImportTransactionFix::TYPE_PRODUCT ? 'Produto' : 'Serviço';
-        }
-        $data[10-$short]= $this->getItemDescription();
-        $data[11-$short]= number_format($this->getItemQuantity(), 2, ',', '.');
-        $data[12-$short]= 'R$ ' . number_format($this->getItemPrice(), 2, ',', '.');
-        $data[13-$short]= 'R$ ' . number_format($this->getItemPriceLabor(), 2, ',', '.');
-        $data[14-$short]= 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
+        if ($this->isModelDetailed()) {
+            $data[] = $this->getItemType();
+            $data[] = $this->getItemDescription();
+            $data[]= number_format($this->getItemQuantity(), 2, ',', '.');
+            $data[]= 'R$ ' . number_format($this->getItemPrice(), 2, ',', '.');
+        } elseif($this->isModelDiscriminated()) {
+            $data[] = 'R$ ' . number_format($this->getItemPriceParts(), 2, ',', '.');
+            $data[] = 'R$ ' . number_format($this->getItemPriceLabor(), 2, ',', '.');
+        } 
+        $data[] = 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
+        
         return $data;
     }
-
+    
+    /**
+     * @return boolean
+     */
+    public function isModelSummarized() 
+    {
+        return count($this->transactionImport->getHeader()) == 11;
+    }
+    
+    /**
+     * @return boolean
+     */
+    public function isModelDiscriminated() 
+    {
+        return count($this->transactionImport->getHeader()) == 13;
+    }
+    
+    /**
+     * @return boolean
+     */
+    public function isModelDetailed() 
+    {
+        return count($this->transactionImport->getHeader()) == 15;
+    }
     
 }
 ?>

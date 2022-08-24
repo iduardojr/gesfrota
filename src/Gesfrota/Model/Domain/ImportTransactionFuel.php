@@ -35,14 +35,6 @@ class ImportTransactionFuel extends ImportTransactionItem {
     protected $driverNif;
     
     /**
-     * @see ImportTransactionItem::setItemType()
-     */
-    public function setItemType($itemType) 
-    {
-        throw new \BadMethodCallException('method ' . __METHOD__ . ' not is callback');
-    }
-    
-    /**
      * @return number
      */
     public function getVehicleDistance()
@@ -159,8 +151,6 @@ class ImportTransactionFuel extends ImportTransactionItem {
         $data[13-$short]= 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
         $data[15-$short]= number_format($this->getVehicleDistance(), 0, '', '.');
         $data[16-$short]= number_format($this->getVehicleEfficiency(), 2, ',', '.');
-        var_dump($data);
-        exit;
         return $data;
     }
 

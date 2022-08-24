@@ -67,10 +67,10 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'transactionFixtype', 'transactionParent', 'transactionId', 'transactionDate', 'transactionAgency', 'transactionCostCenter', 'transactionVehicle', 'transactionImport', 'vehiclePlate', 'vehicleDescription', 'supplierName', 'supplierNif', 'supplierCity', 'supplierUF', 'itemType', 'itemDescription', 'itemQuantity', 'itemPrice', 'itemTotal'];
+            return ['__isInitialized__', 'transactionParent', 'transactionFixtype', 'supplierType', 'itemType', 'transactionId', 'transactionDate', 'transactionAgency', 'transactionCostCenter', 'transactionVehicle', 'transactionImport', 'vehiclePlate', 'vehicleDescription', 'supplierName', 'supplierNif', 'supplierCity', 'supplierUF', 'itemDescription', 'itemQuantity', 'itemPrice', 'itemTotal'];
         }
 
-        return ['__isInitialized__', 'transactionFixtype', 'transactionParent', 'transactionId', 'transactionDate', 'transactionAgency', 'transactionCostCenter', 'transactionVehicle', 'transactionImport', 'vehiclePlate', 'vehicleDescription', 'supplierName', 'supplierNif', 'supplierCity', 'supplierUF', 'itemType', 'itemDescription', 'itemQuantity', 'itemPrice', 'itemTotal'];
+        return ['__isInitialized__', 'transactionParent', 'transactionFixtype', 'supplierType', 'itemType', 'transactionId', 'transactionDate', 'transactionAgency', 'transactionCostCenter', 'transactionVehicle', 'transactionImport', 'vehiclePlate', 'vehicleDescription', 'supplierName', 'supplierNif', 'supplierCity', 'supplierUF', 'itemDescription', 'itemQuantity', 'itemPrice', 'itemTotal'];
     }
 
     /**
@@ -180,17 +180,6 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
     /**
      * {@inheritDoc}
      */
-    public function getTransactionFixtype()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getTransactionFixtype', []);
-
-        return parent::getTransactionFixtype();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getTransactionParent()
     {
 
@@ -202,23 +191,34 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
     /**
      * {@inheritDoc}
      */
-    public function setTransactionParent(\Gesfrota\Model\Domain\ImportTransactionFix $parent)
+    public function getTransactionFixtype()
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setTransactionParent', [$parent]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getTransactionFixtype', []);
 
-        return parent::setTransactionParent($parent);
+        return parent::getTransactionFixtype();
     }
 
     /**
      * {@inheritDoc}
      */
-    public function setTransactionFixtype($transactionFixtype)
+    public function getSupplierType()
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setTransactionFixtype', [$transactionFixtype]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getSupplierType', []);
 
-        return parent::setTransactionFixtype($transactionFixtype);
+        return parent::getSupplierType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getItemType()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getItemType', []);
+
+        return parent::getItemType();
     }
 
     /**
@@ -235,12 +235,45 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
     /**
      * {@inheritDoc}
      */
-    public function setItemTotal($total)
+    public function setTransactionParent(\Gesfrota\Model\Domain\ImportTransactionFix $parent)
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItemTotal', [$total]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setTransactionParent', [$parent]);
 
-        return parent::setItemTotal($total);
+        return parent::setTransactionParent($parent);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setTransactionFixtype($type)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setTransactionFixtype', [$type]);
+
+        return parent::setTransactionFixtype($type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSupplierType($type)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setSupplierType', [$type]);
+
+        return parent::setSupplierType($type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setItemType($type)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItemType', [$type]);
+
+        return parent::setItemType($type);
     }
 
     /**
@@ -252,6 +285,17 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getItemPriceLabor', []);
 
         return parent::getItemPriceLabor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getItemPriceParts()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getItemPriceParts', []);
+
+        return parent::getItemPriceParts();
     }
 
     /**
@@ -285,6 +329,39 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getData', []);
 
         return parent::getData();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isModelSummarized()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'isModelSummarized', []);
+
+        return parent::isModelSummarized();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isModelDiscriminated()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'isModelDiscriminated', []);
+
+        return parent::isModelDiscriminated();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isModelDetailed()
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'isModelDetailed', []);
+
+        return parent::isModelDetailed();
     }
 
     /**
@@ -410,17 +487,6 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getSupplierPlace', []);
 
         return parent::getSupplierPlace();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getItemType()
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getItemType', []);
-
-        return parent::getItemType();
     }
 
     /**
@@ -569,17 +635,6 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
     /**
      * {@inheritDoc}
      */
-    public function setItemType($itemType)
-    {
-
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItemType', [$itemType]);
-
-        return parent::setItemType($itemType);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function setItemDescription($description)
     {
 
@@ -608,6 +663,17 @@ class ImportTransactionFix extends \Gesfrota\Model\Domain\ImportTransactionFix i
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItemPrice', [$price]);
 
         return parent::setItemPrice($price);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setItemTotal($total)
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItemTotal', [$total]);
+
+        return parent::setItemTotal($total);
     }
 
 }

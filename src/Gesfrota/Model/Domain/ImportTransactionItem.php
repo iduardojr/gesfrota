@@ -14,16 +14,6 @@ namespace Gesfrota\Model\Domain;
 abstract class ImportTransactionItem {
     
     /**
-     * Produto
-     */
-    const TYPE_PRODUCT = 'P';
-    
-    /**
-     * Serviço
-     */
-    const TYPE_SERVICE = 'S';
-    
-    /**
      * @Id
      * @GeneratedValue
      * @Column(name="transaction_id", type="integer")
@@ -101,12 +91,6 @@ abstract class ImportTransactionItem {
     protected $supplierUF;
     
     /**
-     * @Column(name="item_type")
-     * @var string
-     */
-    protected $itemType;
-    
-    /**
      * @Column(name="item_description")
      * @var string
      */
@@ -136,7 +120,6 @@ abstract class ImportTransactionItem {
      */
     public function __construct(ImportTransaction $import, array $data = null) {
         $this->setTransactionImport($import);
-        $this->setItemType(self::TYPE_PRODUCT);
         if ($data !== null ) {
             $this->toTransform($data);
         }
@@ -231,14 +214,6 @@ abstract class ImportTransactionItem {
     }
     
     
-    /**
-     * @return string
-     */
-    public function getItemType()
-    {
-        return $this->itemType;
-    }
-
     /**
      * @return string
      */
@@ -360,18 +335,6 @@ abstract class ImportTransactionItem {
     {
         $this->supplierCity = $city;
         $this->supplierUF = $uf;
-    }
-    
-    /**
-     * @param string $itemType
-     * @throws \InvalidArgumentException
-     */
-    public function setItemType($itemType)
-    {
-        if (! in_array($itemType, [self::TYPE_PRODUCT, self::TYPE_SERVICE]) ) {
-            throw new \InvalidArgumentException('Item type [' . $itemType . '] not is allowed');
-        }
-        $this->itemType = $itemType;
     }
     
     /**
