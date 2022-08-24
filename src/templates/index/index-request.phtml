@@ -72,8 +72,8 @@ use Gesfrota\Util\Format;
 		<div id="trips-x-freight"></div>
 		<script>
 			var options = {
-          		series: <?php echo json_encode(array_values($this->trips_x_freight));?>,
-          		labels: <?php echo json_encode(array_keys($this->trips_x_freight));?>,
+          		series: <?php echo json_encode(array_values($this->request_trips_x_freight));?>,
+          		labels: <?php echo json_encode(array_keys($this->request_trips_x_freight));?>,
           		chart: {
           			type: 'donut',
           			height: 300,

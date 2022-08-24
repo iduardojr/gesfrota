@@ -399,7 +399,7 @@ use Gesfrota\Util\Format;
 <div class="row-fluid">
 	<div class="span6">
 		<h3><span class="header">Distribuição de Gasto por Combustível<small>Distribuição de Gastos com Abastecimento por Combustível</small></span></h3>
-		<div id="fuel_per_type"></div>
+		<div id="fuel-per-type"></div>
 		<script>
 			var options = {
 				series: [{
@@ -450,13 +450,13 @@ use Gesfrota\Util\Format;
  	 			}
 	        };
 	
-	        var chart = new ApexCharts(document.querySelector("#fuel_per_type"), options);
+	        var chart = new ApexCharts(document.querySelector("#fuel-per-type"), options);
 	        chart.render();
 		</script>
 	</div>
 	<div class="span6">
 		<h3><span class="header">Distribuição de Consumo por Combustível<small>Distribuição de Consumo com Abastecimento por Combustível</small></span></h3>
-		<div id="fuel_per_consume"></div>
+		<div id="fuel-per-consume"></div>
 		<script>
 			var options = {
 				series: [{
@@ -507,7 +507,7 @@ use Gesfrota\Util\Format;
  	 			}
 	        };
 	
-	        var chart = new ApexCharts(document.querySelector("#fuel_per_consume"), options);
+	        var chart = new ApexCharts(document.querySelector("#fuel-per-consume"), options);
 	        chart.render();
 		</script>
 	</div>

@@ -62,8 +62,8 @@
 		<div id="vehicle-x-equipament"></div>
 		<script>
 			var options = {
-          		series: <?php echo json_encode(array_values($this->vehicle_x_equipament));?>,
-          		labels: <?php echo json_encode(array_keys($this->vehicle_x_equipament));?>,
+          		series: <?php echo json_encode(array_values($this->fleet_vehicle_x_equipament));?>,
+          		labels: <?php echo json_encode(array_keys($this->fleet_vehicle_x_equipament));?>,
           		chart: {
           			type: 'donut',
           			height: 300,
@@ -282,7 +282,7 @@
 <hr>
 <div class="row-fluid">
 	<div class="span12">
-		<h3><span class="header">Frota Atual x Frota Esperada por Órgão<small>Compara o quantitivo da frota cadastrada atualmente e a expectativa baseada na frota abastecida por órgão <span class="label">Real Time</span></small></span></h3>
+		<h3><span class="header">Frota Atual x Frota Esperada por Órgão<small>Compara o quantitivo da frota cadastrada atualmente e a expectativa baseada na frota abastecida e realizada manutenção por órgão <span class="label">Real Time</span></small></span></h3>
 		<div id="fleet-current-x-expected"></div>
 		<script type="text/javascript">
 			var options = {
