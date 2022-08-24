@@ -10,12 +10,14 @@ class Format {
 	}
 	
 	public static function CNPJ($nif) {
+	    $nif = str_replace(['.', '/', '-'], '', $nif);
 	    $multiplier = 14-strlen($nif);
 	    $nif = str_repeat('0', $multiplier > 0 ? $multiplier : 0) . $nif;
 	    return  preg_replace("/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/", "\$1.\$2.\$3/\$4-\$5", $nif);
 	}
 	
 	public static function CPF($nif) {
+	    $nif = str_replace(['.', '-'], '', $nif);
 	    $multiplier = 11-strlen($nif);
 	    $nif = str_repeat('0', $multiplier > 0 ? $multiplier : 0) . $nif;
 	    return  preg_replace("/(\d{3})(\d{3})(\d{3})(\d{2})/", "\$1.\$2.\$3-\$4", $nif);

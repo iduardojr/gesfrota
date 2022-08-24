@@ -1,13 +1,14 @@
 <?php
 namespace Gesfrota\Model\Domain;
 
+use Doctrine\Common\Collections\Criteria;
+
 /**
  * Importação de Transações
  * 
  * @Entity
  */
 abstract class ImportTransaction extends Import {
-
     
     /**
      * @ManyToOne(targetEntity="ServiceProvider")
@@ -71,6 +72,36 @@ abstract class ImportTransaction extends Import {
         $this->dateInitial = $initial;
         $this->dateFinal = $final;
     }
+    
+    /**
+     * @return string
+     */
+    public function getTransactionType() 
+    {
+        return constant(get_class($this) . '::SERVICE_TYPE');
+    }
+    
+    /**
+     * @return integer
+     */
+    public function getAmountImported() {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('transactionAgency', null));
+        return $this->items->matching($criteria)->count();
+    }
+    
+    /**
+     * @return integer
+     */
+    public function getAmountAppraised() {
+        $this->getAmountImported();
+    }
+    
+    /**
+     * @param array $data
+     * @return ImportTransactionItem
+     */
+    abstract public function create(array $data = null);
     
     
 }

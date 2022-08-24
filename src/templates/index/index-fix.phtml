@@ -1,0 +1,418 @@
+<?php
+use Gesfrota\Util\Format;
+?>
+<div class="row-fluid">
+	<div class="span4">
+		<div class="card">
+  			<div class="header">
+  				<strong><?php echo Format::financial($this->KPIs['fix_total']); ?></strong>
+  				<small>Total de Gastos de Manutenção</small>
+  			</div>
+  		</div>
+  	</div>
+  	<div class="span4">
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo Format::financial($this->KPIs['fix_avg']); ?>/mês</strong>
+				<small>Média de Gastos de Manutenção</small>
+	  		</div>
+	  	</div>
+	</div>
+  	<div class="span4">
+	  	<div class="card">
+			<div class="header">
+		  		<strong><?php echo number_format($this->KPIs['fix_amount'], 0, '', '.'); ?></strong>
+				<small>Veículos em Manutenção</small>
+	  		</div>
+	  	</div>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span4">
+		<h3><span class="header">Peças X Mão de Obra<small>Distribuição dos gastos com aquisição de peças e mão de obra</small></span></h3>
+		<div id="parts-x-labor"></div>
+		<script>
+			var options = {
+          		series: <?php echo json_encode(array_values($this->fix_parts_x_labor));?>,
+          		labels: <?php echo json_encode(array_keys($this->fix_parts_x_labor));?>,
+          		chart: {
+          			type: 'donut',
+          			height: 400,
+        		},
+        		plotOptions: {
+				    pie: {
+					    dataLabels : { offset: -15 },
+				      	donut: { 
+				      		size: '80%',
+				      		labels: {
+        						show: true,
+					        	name: {
+					          		show: true,
+					          		fontSize: '22px',
+					          		fontWeight: 'bold',
+					        	},
+					        	value: {
+					          		show: true,
+					          		fontSize: '18px',
+					          		offsetY: 0,
+					          		color: '#777',
+					          		formatter: function(val, index) {
+            		            		if (val == null ) {
+            		            			return null;
+            		            		} 
+            		            		var multiples = [
+                                	        ["Milhões",  Math.pow(1000, 2)],
+                                	        ["Mil", 	 Math.pow(1000, 1)],
+                                	    ];
+                                	    val = val*1;
+            							var result = val.toFixed(2);
+            							for (var i = 0; i < multiples.length; ++i) {
+                                	        if(val >= multiples[i][1]) {
+                                	            result = val / multiples[i][1];
+                                	            result = result.toFixed(2) + " " + multiples[i][0];
+                                	            break;
+                                	        }
+                                	    };
+                                    	return 'R$ ' + result;
+                                  	}
+					        	},
+					      	}, 
+				      	}
+					}
+				},
+				dataLabels : {
+				 	style: {
+				      	fontSize: '16px',
+				      	fontWeight: 'bold',
+				  	},
+				},
+				tooltip: { enabled: false },
+				legend: {
+			      	show: true,
+			      	position: 'bottom',
+			      	horizontalAlign: 'center', 
+      			},
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#parts-x-labor"), options);
+        	chart.render();
+		</script>
+	</div>
+	<div class="span8">
+		<h3><span class="header">Gasto de Manutenção X Veículos<small>Comparativo entre o gasto de manutenção e a quantidade de veículos <?php if (! $this->isDashboardFleetManager) { ?> somente da Administração Direta, Autarquica e Fundacional <?php } ?></small></span></h3>
+		<div id="fix-x-vehicles"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Gasto de Manutenção',
+						data: <?php echo json_encode(array_values($this->fix_x_vehicles['score']));?>
+					}, 
+					{
+						name: 'Veículos em Manutenção',
+						data: <?php echo json_encode(array_values($this->fix_x_vehicles['vehicles']));?>
+        			}
+        		],
+				chart: {
+					type: 'bar',
+					height: 450,
+				},
+                tooltip: {
+                	shared: true,
+                	intersect: false,
+                },
+				dataLabels: { enabled: false },
+				xaxis: { 
+					categories: <?php echo json_encode($this->fix_x_vehicles['label']);?>,
+			    },
+			    yaxis: [
+		          {
+		            seriesName: 'Gasto de Manutenção',
+		            axisTicks: { show: true },
+		            axisBorder: {
+              			show: true,
+            		},
+		            title: { 
+		            	text: "Gasto de Manutenção (R$)",
+		            },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		if (val == null ) {
+		            			return null;
+		            		} 
+		            		var multiples = [
+                    	        ["Milhões",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		          {
+		            seriesName: 'Veículos em Manutenção',
+		            opposite: true,
+		            axisTicks: { show: true },
+		            axisBorder: {
+              			show: true,
+            		},
+		            title: { 
+		            	text: "Quantidade de Veículos",
+		            },
+		            labels: {
+		            	formatter: function(val, index) {
+							return (val == null ) ? null : val.toFixed(0);
+                      	}
+                    }
+		          },
+		        ],
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fix-x-vehicles"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<hr>
+<div class="row-fluid">
+	<div class="span5">
+		<h3><span class="header">Gastos por Tipo de Manutenção<small>Distribuição de gastos com manutenção por tipo de manutenção</small></span></h3>
+		<div id="fix-per-type"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Gastos',
+						data: <?php echo json_encode(array_values($this->fix_per_type));?>
+					}, 
+        		],
+				chart: {
+					type: 'bar',
+					height: 450,
+				},
+				xaxis: { 
+					categories: <?php echo json_encode(array_keys($this->fix_per_type));?>,
+			    },
+			    dataLabels: { enabled: false },
+			    yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Gasto com Manutenção (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fix-per-type"), options);
+	        chart.render();
+		</script>
+	</div>
+	<div class="span7">
+		<h3><span class="header">Gastos por Tipo de Estabelecimento<small>Distribuição de gastos com manutenção por tipo de estabelecimento</small></span></h3>
+		<div id="fix-per-supplier-type"></div>
+		<script>
+			var options = {
+				series: [{
+						name: 'Gastos',
+						data: <?php echo json_encode(array_values($this->fix_per_supplier_type));?>
+					}, 
+        		],
+				chart: {
+					type: 'bar',
+					height: 450,
+				},
+				xaxis: { 
+					categories: <?php echo json_encode(array_keys($this->fix_per_supplier_type));?>,
+			    },
+			    dataLabels: { enabled: false },
+			    yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Gasto com Manutenção (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		        ],
+				tooltip: {
+		          	shared: true,
+		          	intersect: false
+		        },
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			}
+	        };
+	
+	        var chart = new ApexCharts(document.querySelector("#fix-per-supplier-type"), options);
+	        chart.render();
+		</script>
+	</div>
+</div>
+<?php if (! $this->isDashboardFleetManager) { ?>
+<hr>
+<div class="row-fluid">
+	<div class="span12">
+		<h3><span class="header">Distribuição de Gastos de Manutenção por Órgão<small>Distribuição de gastos com manutenção por órgão</small></span></h3>
+		<div id="fix-per-agency"></div>
+		<script type="text/javascript">
+			var options = {
+          		series: [
+          		<?php foreach ($this->fix_per_agency as $serie => $data) { ?>
+          		{
+          			name: '<?php echo $serie; ?>',
+          			data: <?php echo json_encode(array_values($data));?>,
+          		},
+          		<?php } ?>
+          		],
+          		chart: {
+          			type: 'bar',
+          			height: 500,
+          			stacked: true,
+        		},
+				tooltip: {
+					enabled: true,
+					shared: true,
+        			intersect: false,
+					y: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				      		if (value > 0 ) {
+				      			var multiples = [
+                        	        ["Tri", Math.pow(1000, 4)],
+                        	        ["Bi",  Math.pow(1000, 3)],
+                        	        ["Mi",  Math.pow(1000, 2)],
+                        	        ["Mil", Math.pow(1000, 1)],
+                        	    ];
+								var result = value.toFixed(2);
+								for (var i = 0; i < multiples.length; ++i) {
+                        	        if(value >= multiples[i][1]) {
+                        	            result = value / multiples[i][1];
+                        	            result = result.toFixed(2) + " " + multiples[i][0];
+                        	            break;
+                        	        }
+                        	    };
+                        	    return result;
+				      		}
+				      		return null;
+				    	}
+  					},
+  					x: {
+				    	formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+				    		var total = 0;
+				    		series.forEach(function(data, index) {
+				    			total+= data[dataPointIndex];
+				    		});
+				    		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = total.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(total >= multiples[i][1]) {
+                    	            result = total / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+				      		return value + ': <strong>' + result + '</strong>';
+				    	}
+  					},
+		        },
+		        yaxis: [
+		          {
+		            axisTicks: { show: true },
+		            title: { text: "Gasto de Manutenção (R$)" },
+		            labels: {
+		            	formatter: function(val, index) {
+		            		var multiples = [
+                    	        ["Tri", Math.pow(1000, 4)],
+                    	        ["Bi",  Math.pow(1000, 3)],
+                    	        ["Mi",  Math.pow(1000, 2)],
+                    	        ["Mil", Math.pow(1000, 1)],
+                    	    ];
+							var result = val.toFixed(2);
+							for (var i = 0; i < multiples.length; ++i) {
+                    	        if(val >= multiples[i][1]) {
+                    	            result = val / multiples[i][1];
+                    	            result = result.toFixed(2) + " " + multiples[i][0];
+                    	            break;
+                    	        }
+                    	    };
+                        	return 'R$ ' + result;
+                      	}
+		            }
+		          },
+		        ],
+				dataLabels : {  enabled: false }, 
+		        noData: {
+ 	 				text: 'Não há dados disponíveis para o período informado.',
+ 	 				verticalAlign: 'top'
+ 	 			},
+ 	 			legend: {
+                    position: 'top',
+                    offsetX: 600,
+                    width: 500,
+                }
+        	};
+
+        	var chart = new ApexCharts(document.querySelector("#fix-per-agency"), options);
+        	chart.render();
+		</script>
+	</div>
+</div>
+<?php } ?>
+<p></p>

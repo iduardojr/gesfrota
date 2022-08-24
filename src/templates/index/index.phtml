@@ -20,7 +20,7 @@ use Gesfrota\Util\Format;
         <li<?php echo $this->tab_active == 'request' ? ' class="active"' : ''; ?>><a href="#tab-request" data-toggle="pill">Requisições</a></li>
         <li<?php echo $this->tab_active == 'fleet' ? ' class="active"' : ''; ?>><a href="#tab-fleet" data-toggle="pill">Frota</a></li>
         <li<?php echo $this->tab_active == 'fuel' ? ' class="active"' : ''; ?>><a href="#tab-fuel" data-toggle="pill">Abastecimento</a></li>
-        <li class="disabled"><a href="#">Manutenção</a></li>
+        <li<?php echo $this->tab_active == 'fix' ? ' class="active"' : ''; ?>><a href="#tab-fix" data-toggle="pill">Manutenção</a></li>
     </ul>
 </div>
 <div id="dashboard" class="tabbable">
@@ -33,6 +33,9 @@ use Gesfrota\Util\Format;
         </div>
         <div class="tab-pane<?php echo $this->tab_active == 'fuel' ? ' active' : ''; ?>" id="tab-fuel">
           	<?php include 'index-fuel.phtml'; ?>
+        </div>
+        <div class="tab-pane<?php echo $this->tab_active == 'fix' ? ' active' : ''; ?>" id="tab-fix">
+          	<?php include 'index-fix.phtml'; ?>
         </div>
   	</div>
 </div>

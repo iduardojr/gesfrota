@@ -12,7 +12,7 @@ use Gesfrota\Model\Entity;
  * @EntityListeners({"Gesfrota\Model\Listener\ImportListener"})
  * @InheritanceType("SINGLE_TABLE")
  * @DiscriminatorColumn(name="type", type="string")
- * @DiscriminatorMap({"F" = "ImportFleet", "S" = "ImportSupply"})
+ * @DiscriminatorMap({"F" = "ImportFleet", "S" = "ImportSupply", "M" = "ImportMaintenance"})
  */
 abstract class Import extends Entity {
 

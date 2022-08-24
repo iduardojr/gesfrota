@@ -6,36 +6,31 @@ use Gesfrota\Controller\Helper\Crud;
 use Gesfrota\Controller\Helper\InvalidRequestDataException;
 use Gesfrota\Controller\Helper\NotFoundEntityException;
 use Gesfrota\Model\Domain\Agency;
-use Gesfrota\Model\Domain\Equipment;
-use Gesfrota\Model\Domain\FleetItem;
 use Gesfrota\Model\Domain\ImportFleet;
+use Gesfrota\Model\Domain\ImportMaintenance;
 use Gesfrota\Model\Domain\ImportSupply;
 use Gesfrota\Model\Domain\ImportTransaction;
-use Gesfrota\Model\Domain\ImportTransactionFuel;
-use Gesfrota\Model\Domain\ResultCenter;
+use Gesfrota\Model\Domain\ImportTransactionFix;
+use Gesfrota\Model\Domain\ImportTransactionItem;
 use Gesfrota\Model\Domain\ServiceProvider;
-use Gesfrota\Model\Domain\Vehicle;
 use Gesfrota\Util\Format;
-use Gesfrota\View\FleetEquipmentForm;
-use Gesfrota\View\FleetVehicleForm;
-use Gesfrota\View\ImportTransactionFuelPreProcessForm;
-use Gesfrota\View\ImportTransactionFuelUploadForm;
 use Gesfrota\View\ImportTransactionItemsList;
 use Gesfrota\View\ImportTransactionList;
+use Gesfrota\View\ImportTransactionPreProcessForm;
+use Gesfrota\View\ImportTransactionUploadForm;
 use Gesfrota\View\Layout;
-use Gesfrota\View\Widget\BuilderForm;
 use Gesfrota\View\Widget\EntityDatasource;
+use PHPBootstrap\Mvc\View\FileView;
 use PHPBootstrap\Widget\Action\Action;
 use PHPBootstrap\Widget\Misc\Alert;
-use PHPBootstrap\Mvc\View\FileView;
-use PHPBootstrap\Common\Mimetype;
 
 class ImportTransactionController extends AbstractController {
 	
 	public function indexAction() {
 		try {
 		    $filter = new Action($this);
-		    $upload = new Action($this, 'new');
+		    $upload1 = new Action($this, 'new-supply');
+		    $upload2 = new Action($this, 'new-maintenance');
 		    $preProcess = new Action($this, 'pre-process');
 		    $listItems = new Action($this, 'list-items');
 		    $download = new Action($this, 'download');
@@ -43,7 +38,7 @@ class ImportTransactionController extends AbstractController {
 		    
 		    $providers = $this->getOptionsProviders();
 		    
-		    $list = new ImportTransactionList($filter, $upload, $preProcess, $listItems, $download, $remove, $providers);
+		    $list = new ImportTransactionList($filter, $upload1, $upload2, $preProcess, $listItems, $download, $remove, $providers);
 		    
 		    $helper = $this->createHelperCrud();
 		    $query = $this->getEntityManager()->getRepository(ImportTransaction::getClass())->createQueryBuilder('u');
@@ -74,16 +69,16 @@ class ImportTransactionController extends AbstractController {
 		return new Layout($list);
 	}
 	
-	public function newAction() {
+	public function newSupplyAction() {
 	    try {
 	        set_time_limit(0);
 	        ini_set('memory_limit', -1);
-	        $submit = new Action($this, 'new');
+	        $submit = new Action($this, 'new-supply');
 	        $cancel = new Action($this);
-	        $providers = $this->getOptionsProviders(false);
-	        
 	        $entity = new ImportSupply();
-	        $form = new ImportTransactionFuelUploadForm($submit, $cancel,  $providers);
+	        $providers = $this->getOptionsProviders($entity, false);
+	        
+	        $form = new ImportTransactionUploadForm($entity, $submit, $cancel,  $providers);
 	        $form->extract($entity);
 	        $this->getEntityManager()->beginTransaction();
 	        if ( $this->request->isPost() ) {
@@ -105,6 +100,38 @@ class ImportTransactionController extends AbstractController {
 	    return new Layout($form);
 	}
 	
+	public function newMaintenanceAction() {
+	    try {
+	        set_time_limit(0);
+	        ini_set('memory_limit', -1);
+	        $submit = new Action($this, 'new-maintenance');
+	        $cancel = new Action($this);
+	        $entity = new ImportMaintenance();
+	        $providers = $this->getOptionsProviders($entity, false);
+	        
+	        $form = new ImportTransactionUploadForm($entity, $submit, $cancel,  $providers);
+	        $form->extract($entity);
+	        $this->getEntityManager()->beginTransaction();
+	        if ( $this->request->isPost() ) {
+	            $form->bind($this->request->getPost());
+	            if ( ! $form->valid() ) {
+	                throw new InvalidRequestDataException();
+	            }
+	            $form->hydrate($entity, $this->getEntityManager());
+	            $this->getEntityManager()->commit();
+	            $this->setAlert(new Alert('<strong>Ok! </strong>Importação <em>#' . $entity->code . ' ' . $entity->description . '</em> realizada com sucesso!', Alert::Success));
+	            $this->forward('/pre-process/' . $entity->id);
+	        }
+	    } catch ( InvalidRequestDataException $e ){
+	        $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+	    } catch ( \Exception $e ) {
+	        $this->getEntityManager()->rollback();
+	        $form->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
+	        throw $e;
+	    }
+	    return new Layout($form);
+	}
+	
 	public function preProcessAction() {
 	    try {
 	        $key = $this->request->getQuery('key');
@@ -119,7 +146,7 @@ class ImportTransactionController extends AbstractController {
 	        $costCenters = $this->getOptionsCostCenters($entity);
 	        $optAgencies = $this->getOptionsAgencies();
 	        
-	        $form = new ImportTransactionFuelPreProcessForm($submit, $remove, $download, $cancel, $entity, $costCenters, $optAgencies);
+	        $form = new ImportTransactionPreProcessForm($entity, $submit, $remove, $download, $cancel, $costCenters, $optAgencies);
 	        
 	        if ( $this->request->isPost() ) {
 	            if ( $entity->getFinished() ) {
@@ -131,7 +158,7 @@ class ImportTransactionController extends AbstractController {
 	            }
 	            foreach ($this->request->getPost() as $key => $value) {
 	                $query = $this->getEntityManager()->createQueryBuilder();
-	                $query->update(ImportTransactionFuel::class, 'u');
+	                $query->update(get_class($entity->create()), 'u');
 	                $query->set('u.transactionAgency', $value);
 	                $query->where('u.transactionCostCenter = :costCenter AND u.transactionImport = :import');
 	                $query->setParameter('costCenter', $costCenters[$key]);
@@ -169,8 +196,18 @@ class ImportTransactionController extends AbstractController {
 	        
 	        $form = new ImportTransactionItemsList($submit, $remove, $download, $cancel, $entity);
 	        
-	        $query = $this->getEntityManager()->getRepository(ImportTransactionFuel::class)->createQueryBuilder('u');
-	        $query->where('u.transactionImport = :key ');
+	        if ($entity instanceof ImportMaintenance) {
+	            $subquery = $this->getEntityManager()->getRepository(ImportTransactionFix::class)->createQueryBuilder('u1');
+	            $subquery->select('DISTINCT p1.transactionId');
+	            $subquery->join('u1.transactionParent', 'p1');
+	            $subquery->where('u1.transactionParent > 0');
+	            
+	            $query = $this->getEntityManager()->getRepository(ImportTransactionFix::class)->createQueryBuilder('u');
+	            $query->where('u.transactionImport = :key AND u.transactionId NOT IN (' .  $subquery->getDQL() . ')');
+	        } else {
+	            $query = $this->getEntityManager()->getRepository(ImportTransactionItem::class)->createQueryBuilder('u');
+	            $query->where('u.transactionImport = :key');
+	        }
 	        $query->setParameter('key', $entity);
 	        
 	        $ds = new EntityDatasource($query, ['limit' => 15, 'identify' => 'transactionId']);
@@ -181,6 +218,7 @@ class ImportTransactionController extends AbstractController {
 	        }
 	        $form->setAlert($this->getAlert());
 	    } catch ( \Exception $e ) {
+	        throw $e;
 	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Error));
 	        $this->forward('/');
 	    }
@@ -221,45 +259,6 @@ class ImportTransactionController extends AbstractController {
 	    $this->forward('/');
 	}
 	
-	/**
-	 * @param FleetItem $item
-	 * @param Action $submit
-	 * @return BuilderForm
-	 */
-	private function createForm ( FleetItem $item, Action $submit, Action $cancel ) {
-	    $seek['agency'] =  new Action(FleetController::getClass(), 'seekAgency');
-	    $find['agency'] = new Action(FleetController::getClass(), 'searchAgency');
-	    $showAgencies = $this->getAgencyActive()->isGovernment();
-	    
-	    $optResultCenter = [];
-	    $criteria = ['active' => true, 'agency' => $item->getResponsibleUnit()];
-	    $rs = $this->getEntityManager()->getRepository(ResultCenter::getClass())->findBy($criteria);
-	    foreach ($rs as $result) {
-	        $optResultCenter[$result->id] = $result->description;
-	    }
-	    
-	    switch (get_class($item)) {
-	        case Vehicle::getClass():
-	            $seek['vehicle-plate'] =  new Action(FleetController::getClass(), 'seekVehiclePlate');
-	            $seek['vehicle'] = new Action(FleetController::getClass(), 'seekVehicle');
-	            $seek['owner'] = new Action(FleetController::getClass(), 'seekOwner');
-	            $find['vehicle'] = new Action(FleetController::getClass(), 'searchVehicle');
-	            $find['owner'] = new Action(FleetController::getClass(), 'searchOwner');
-	            $newOwnerPerson = new Action(FleetController::getClass(), 'newOwnerPerson');
-	            $newOwnerCompany = new Action(FleetController::getClass(), 'newOwnerCompany');
-	            return new FleetVehicleForm($submit, $seek['vehicle-plate'], $seek['vehicle'], $find['vehicle'], $seek['agency'], $find['agency'], $seek['owner'], $find['owner'], $newOwnerPerson, $newOwnerCompany, $cancel, $optResultCenter, $showAgencies);
-	            break;
-	            
-	        case Equipment::getClass():
-	            return new FleetEquipmentForm($submit, $cancel, $seek['agency'], $find['agency'], $optResultCenter, $showAgencies);
-	            break;
-	            
-	        default:
-	            throw new \InvalidArgumentException('Form not implements for '.$item);
-	            break;
-	    }
-	    
-	}
 	
 	/**
 	 * @return Crud
@@ -269,12 +268,16 @@ class ImportTransactionController extends AbstractController {
 	}
 	
 	/**
-	 * 
+	 * @param ImportTransaction import
 	 * @param boolean $includeAll
 	 * @return string[]
 	 */
-	private function getOptionsProviders($includeAll = true) {
+	private function getOptionsProviders(ImportTransaction $import = null, $includeAll = true) {
 	    $query = $this->getEntityManager()->getRepository(ServiceProvider::getClass())->createQueryBuilder('u');
+	    if ( $import ) {
+	       $query->where('u.services LIKE :service AND u.active = true');
+	       $query->setParameter('service', '%' . ( $import instanceof ImportSupply ? ServiceProvider::SERVICE_SUPPLY : ServiceProvider::SERVICE_MAINTENANCE ) . '%');
+	    }
 	    $result = $query->getQuery()->getResult();
 	    $options = $includeAll ? ['' => 'Todos'] : [];
 	    foreach($result as $item) {
@@ -306,7 +309,7 @@ class ImportTransactionController extends AbstractController {
 	 * @return string[]
 	 */
 	private function getOptionsCostCenters(ImportTransaction $import) {
-	    $query = $this->getEntityManager()->getRepository(ImportTransactionFuel::class)->createQueryBuilder('u');
+	    $query = $this->getEntityManager()->getRepository(ImportTransactionItem::class)->createQueryBuilder('u');
 	    $query->select('DISTINCT u.transactionCostCenter');
 	    $query->where('u.transactionImport = :import');
 	    $query->setParameter('import', $import);
