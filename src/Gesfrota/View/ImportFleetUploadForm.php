@@ -93,8 +93,8 @@ class ImportFleetUploadForm extends AbstractForm {
                      <dt>Ano Fabricação</dt>        <dd>9999</dd>
                      <dt>Ano Modelo</dt>            <dd>9999</dd>
                      <dt>Hodômetro</dt>             <dd><i>numérico</i></dd>
-                     <dt>CNPJ Proprietário</dt>     <dd><i>numérico</i></dd>
-                     <dt>Razão Social</dt>          <dd><i>alfanumérico</i></dd>
+                     <dt>CNPJ/CPF Proprietário</dt> <dd>999.999.999-99|99.999.999/9999-99</dd>
+                     <dt>Nome Proprietário</dt>     <dd><i>alfanumérico</i></dd>
                   </dl>';
 		$text[]= '<p>As seguintes definições representam um caractere 
                      alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>. 
