@@ -183,7 +183,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Gasolina",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_g['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['G']['data']));?>
 					},
         		],
 				chart: {
@@ -195,21 +195,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
     					{
-                            x: "<?php echo $this->fuel_outlier_g['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_g['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['G']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['G']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_g['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['G']['avg']; ?>",
                             borderColor: '#aaa',
                         },
                     ],
                      texts: [{
-                        x: "<?php echo (($this->fuel_outlier_g['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['G']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_g['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['G']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,
@@ -256,7 +256,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Etanol",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_e['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['E']['data']));?>
 					}, 
         		],
 				chart: {
@@ -268,21 +268,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
 						{
-                            x: "<?php echo $this->fuel_outlier_e['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_e['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['E']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['E']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_e['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['E']['avg']; ?>",
                             borderColor: '#666',
                         },
                     ],
                     texts: [{
-                        x: "<?php echo (($this->fuel_outlier_e['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['E']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_e['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['E']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,
@@ -329,7 +329,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Diesel",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_d['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['D']['data']));?>
 					}, 
         		],
 				chart: {
@@ -341,21 +341,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
 						{
-                            x: "<?php echo $this->fuel_outlier_d['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_d['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['D']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['D']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_d['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['D']['avg']; ?>",
                             borderColor: '#666',
                         },
                     ],
                     texts: [{
-                        x: "<?php echo (($this->fuel_outlier_d['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['D']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_d['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['D']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,

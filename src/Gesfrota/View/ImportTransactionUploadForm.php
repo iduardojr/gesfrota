@@ -81,9 +81,9 @@ class ImportTransactionUploadForm extends AbstractForm {
                          <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>   
                          <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
                          <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
-                         <dt>[CPF do Motorista]</dt>        <dd><i>numérico</i></dd>
+                         <dt>[CPF do Motorista]</dt>        <dd>999.999.999-99</dd>
                          <dt>Nome do Motorista</dt>         <dd><i>alfanumérico</i></dd>
-                         <dt>[CNPJ do Estabelecimento]</dt> <dd><i>numérico</i></dd>
+                         <dt>[CNPJ do Estabelecimento]</dt> <dd>99.999.999/9999-99</dd>
                          <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
                          <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
                          <dt>UF</dt>                        <dd>AA</dd>
@@ -104,7 +104,7 @@ class ImportTransactionUploadForm extends AbstractForm {
                          <dt>Tipo da Manutenção</dt>        <dd>CORRETIVA | PREVENTIVA | EMERGENCIAL | GUINCHO | LAVAGEM</dd>
                          <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
                          <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
-                         <dt>CNPJ do Estabelecimento</dt>   <dd><i>99.999.999/9999-99</i></dd>
+                         <dt>CNPJ do Estabelecimento</dt>   <dd>99.999.999/9999-99</dd>
                          <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
                          <dt>Tipo do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
                          <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>

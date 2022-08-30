@@ -189,10 +189,19 @@
 					type: 'bar',
 					height: 450,
 				},
+				plotOptions: {
+                  bar: {
+                    dataLabels: {
+                      position: 'top',
+                    },
+                  }
+                },
 				dataLabels : {
 				 	style: {
 				      	fontSize: '12px',
+				      	colors: ["#304758"]
 				  	},
+				  	offsetY: -20,
 				},
 				xaxis: { 
 					categories: <?php echo json_encode(array_keys($this->fleet_per_age));?>,
