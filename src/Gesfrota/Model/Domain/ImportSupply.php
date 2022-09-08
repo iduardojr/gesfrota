@@ -2,7 +2,6 @@
 namespace Gesfrota\Model\Domain;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * Importação de Transações de Abastecimento
