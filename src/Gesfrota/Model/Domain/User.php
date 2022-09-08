@@ -72,7 +72,7 @@ abstract class User extends AbstractActivable {
 	protected $password;
 	
 	/**
-	 * @Column(name="change_password", type="string")
+	 * @Column(name="change_password", type="boolean")
 	 * @var boolean
 	 */
 	protected $changePassword;

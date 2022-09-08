@@ -96,11 +96,12 @@ class Logger implements Plugin {
 	 * @return Log
 	 */
 	public function register( $newValue, $oldValue) {
-		if ( $this->initiated && $this->user && $this->agency) {
-			$log = new Log($this->request->getUri(), $this->user, $this->agency, $newValue, $oldValue);
+		if ( $this->initiated && $this->agency) {
+		    $isUserSelf = $newValue instanceof User && ($this->user === $newValue || $this->user->getId() === $newValue->getId());
+		    $log = new Log($newValue, $oldValue, $this->request->getUri(), $this->agency, $isUserSelf ? null : $this->user);
 			$this->em->persist($log);
 			$this->em->flush();
-			if ($log->getUser() == null) {
+			if ($isUserSelf) {
 				$this->posted[] = $log;
 			}
 			return $log;
@@ -113,7 +114,10 @@ class Logger implements Plugin {
 	 * @param Entity $object
 	 * @return Log
 	 */
-	public function create( $object) {
+	public function create($object) {
+	    if ($object instanceof User && $this->user == null) {
+	        $this->user = $object;
+	    }
 		return $this->register($object, null);
 	}
 	
@@ -168,6 +172,7 @@ class Logger implements Plugin {
 					$ref = new \ReflectionProperty($log, 'user');
 					$ref->setAccessible(true);
 					$ref->setValue($log, $that->user);
+					var_dump($that->user);
 					$that->em->flush();
 				}
 				return true;

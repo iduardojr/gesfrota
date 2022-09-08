@@ -76,19 +76,17 @@ class Log {
 	
 	
 	/**
-	 * @param string $referer
-	 * @param User $user
-	 * @param Agency $agency
 	 * @param Entity $newValue
 	 * @param Entity $oldValue
+	 * @param string $referer
+	 * @param Agency $agency
+	 * @param User $user
 	 */
-	public function __construct($referer, User $user, Agency $agency, $newValue, $oldValue) {
+	public function __construct($newValue, $oldValue, $referer, Agency $agency, User $user = null) {
 		$this->created = new \DateTime('now');
 		$this->referer = $referer;
-		if ($newValue instanceof User && $user->getId() !== $newValue->getId()) {
-			$this->user = $user;
-		}
 		$this->agency = $agency;
+		$this->user = $user;
 		$this->oldValue = $oldValue;
 		$this->newValue = $newValue;
 		$this->className = str_replace('DoctrineProxies\\__CG__\\', '', get_class(is_object($oldValue) ? $oldValue : $newValue));

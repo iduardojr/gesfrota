@@ -1,18 +1,37 @@
 <form class="form-signin" method="post" action="/auth">
-	<h1 class="form-signin-heading">
-		<span class="brand">Entrar no Gesfrota</span>
-		<img src="/images/brand.png" alt="Governo de Goiás">
-	</h1>
-	<?php if ($this->message) { ?>
-	<p class="text-left"><?php echo $this->message; ?></p>
-	<?php } ?>
-	<input type="text" class="input-block-level" name="login" placeholder="Digite seu CPF" data-mask="999.999.999-99">
-	<input type="password" class="input-block-level" name="password" placeholder="Digite sua senha">
-	<label class="checkbox">
-		<input type="checkbox" value="remember-me"> Continuar conectado
-	</label>
-	<a class="btn btn-link" href="/auth/reset-password">Esqueci minha senha</a>
-	<button class="btn btn-large btn-success" type="submit">Entrar</button>
+	<div class="form-signin-container">
+		<div class="row-fluid">
+    		<div class="span8"><h1 class="form-signin-heading">Entrar no Gesfrota</h1></div>
+    		<div class="span4 text-right"><img class="form-signin-brand" src="/images/brand.png" alt="Governo de Goiás"></div>
+    	</div>
+    	<?php if ($this->message) { ?>
+    	<p class="text-left"><?php echo $this->message; ?></p>
+    	<?php } ?>
+    	<div class="control-group">
+    		<div class="controls">
+    			<input type="text" class="input-block-level" name="login" placeholder="Digite seu CPF" data-mask="999.999.999-99">
+			</div>
+		</div>
+		<div class="control-group">
+    		<div class="controls">
+    		<input type="password" class="input-block-level" name="password" placeholder="Digite sua senha">
+    		</div>
+    	</div>	
+    	<label class="form-signin-remember">
+    		<input type="checkbox" value="remember-me"> Continuar conectado
+    	</label>
+    	<div class="row-fluid">
+    		<div class="span6"><a class="form-signin-forgot" href="/auth/reset-password">Esqueci minha senha</a></div>
+    		<div class="span6"><button class="btn btn-large btn-block btn-success form-signin-submit" type="submit">Entrar</button></div>
+    	</div>
+    	<div class="form-signin-footer">
+    		<hr>
+    		<p class="text-center lead">
+    			Ainda não tem uma conta?<br>
+    			<a class="form-signin-signup" href="/auth/signup">Cadastre-se!</a>
+    		</p>
+    	</div>
+	</div>	
 </form>
 <style type="text/css">
 body {
