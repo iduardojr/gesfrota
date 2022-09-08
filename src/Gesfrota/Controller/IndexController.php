@@ -25,6 +25,8 @@ class IndexController extends AbstractController {
 	public function indexAction() {
 		$layout = new Layout('index/index.phtml');
 		
+		$tabActive = $this->request->getQuery('tab-active') ? $this->request->getQuery('tab-active') : 'fleet';
+		
 		if ($this->request->isPost()) {
 			$data = $this->request->getPost();
 			if (! empty($data['initial'])) {
@@ -35,60 +37,69 @@ class IndexController extends AbstractController {
 				$final = new \DateTime('last day of ' . \DateTime::createFromFormat('m/Y', $data['final'])->format('M Y'));
 				$final->setTime(23, 59, 59);
 			}
-			$tab = $data['tab-active'];
+			$tabActive = $data['tab-active'];
 		} elseif ( $this->session->period ) {
 	        $initial = $this->session->period[0];
 	        $final = $this->session->period[1];
-	        $tab = $this->session->tab_active;
 	    } else {
 	        $initial = new \DateTime('first day of Jan ' .date('Y') .' today');
 	        $final = new \DateTime("now");
-	        $tab = 'request';
 		}
+		$agency = $this->getAgencyActive()->isGovernment() ? null : $this->getAgencyActive();
 		$this->session->period = [$initial, $final];
-		$this->session->tab_active = $tab;
-		
+		$this->session->tab_active = $tabActive;
 		$layout->initial = $initial;
 		$layout->final = $final;
-		$layout->tab_active = $tab;
+		$layout->tab_active = $tabActive;
+		$layout->notice = $this->getLastNotification();
+		$layout->isDashboardFleetManager = (bool) $agency;
 		
-		$layout->isDashboardFleetManager = false;
-		$agency = $this->getAgencyActive();
-		if ( ! $agency->isGovernment() ) {
-		    $layout->isDashboardFleetManager = true;
-		    $layout->request_x_driver = $this->getRequestsPerDriver($initial, $final, $agency);
-		    $layout->activities = $this->getActivitiesRecent($agency);
-		} else {
-		    $agency = null;
-		    $layout->request_per_agency = $this->getRequestPerAgency($initial, $final);
-		    $layout->fleet_per_agency = $this->getFleetPerAgency();
-		    $layout->fleet_current_x_expected = $this->getFleetCurrentXExpected($initial, $final);
-		    $layout->fuel_per_agency = $this->getFuelPerAgency($initial, $final);
-		    $layout->fix_per_agency = $this->getFixPerAgency($initial, $final);
+		switch ($tabActive) {
+		    case 'request':
+		        if ( ! $agency ) {
+		            $layout->request_x_driver = $this->getRequestsPerDriver(clone $initial, clone $final, $agency);
+		        } else {
+		            $layout->request_per_agency = $this->getRequestPerAgency(clone $initial, clone $final);
+		        }
+		        $layout->KPIs = $this->getRequestKPIs(clone $initial, clone $final, $agency);
+		        $layout->request_x_distance = $this->getRequestsXDistance(clone $initial, clone $final, $agency);
+		        $layout->request_trips_x_freight = $this->getRequestTripsXFreight(clone $initial, clone $final, $agency);
+		        break;
+		        
+		    case 'fuel':
+		        if ( $agency == null) {
+		            $layout->fuel_per_agency = $this->getFuelPerAgency(clone $initial, clone $final);
+		        }
+		        $layout->KPIs = $this->getFuelKPIs(clone $initial, clone $final, $agency);
+		        $layout->fuel_x_distance = $this->getFuelXDistance(clone $initial, clone $final, $agency);
+		        $layout->fuel_outlier = $this->getFuelOutlier(clone $initial, clone $final, $agency);
+		        $layout->fuel_per_type = $this->getFuelPerType(clone $initial, clone $final, $agency);
+		        break;
+		        
+		    case 'fix':
+		        if ( $agency == null) {
+		            $layout->fix_per_agency = $this->getFixPerAgency(clone $initial, clone $final);
+		        }
+		        $layout->KPIs= $this->getFixKPIs(clone $initial, clone $final, $agency);
+		        $layout->fix_x_vehicles = $this->getFixXVehicles(clone $initial, clone $final, $agency);
+		        $layout->fix_parts_x_labor = $this->getFixPartsXLabor(clone $initial, clone $final, $agency);
+		        $layout->fix_per_type = $this->getFixPerType(clone $initial, clone $final, $agency);
+		        $layout->fix_per_supplier_type = $this->getFixPerSupplierType(clone $initial, clone $final, $agency);
+		        break;
+		        
+		    case 'fleet':
+		    default:
+		        if ( $agency == null) {
+		            $layout->fleet_per_agency = $this->getFleetPerAgency();
+		            $layout->fleet_current_x_expected = $this->getFleetCurrentXExpected(clone $initial, clone $final);
+		        }
+		        $layout->fleet_per_type = $this->getFleetPerType($agency);
+		        $layout->fleet_per_family = $this->getFleetPerFamily($agency);
+		        $layout->fleet_per_age = $this->getFleetPerAge($agency);
+		        $layout->fleet_vehicle_x_equipament = $this->getFleetVehicleXEquipament($agency);
+		        break;
 		}
 		
-		$layout->KPIs = $this->getRequestKPIs($initial, $final, $agency);
-		$layout->request_x_distance = $this->getRequestsXDistance(clone $initial, clone $final, $agency);
-		$layout->request_trips_x_freight = $this->getRequestTripsXFreight($initial, $final, $agency);
-		
-		$layout->fleet_per_type = $this->getFleetPerType($agency);
-		$layout->fleet_per_family = $this->getFleetPerFamily($agency);
-		$layout->fleet_per_age = $this->getFleetPerAge($agency);
-		$layout->fleet_vehicle_x_equipament = $this->getFleetVehicleXEquipament($agency);
-		
-		$layout->KPIs+= $this->getFuelKPIs($initial, $final, $agency);
-		$layout->fuel_x_distance = $this->getFuelXDistance(clone $initial, clone $final, $agency);
-		$layout->fuel_outlier = $this->getFuelOutlier(clone $initial, clone $final, $agency);
-		$layout->fuel_per_type = $this->getFuelPerType($initial, $final, $agency);
-		
-		$layout->KPIs+= $this->getFixKPIs($initial, $final, $agency);
-		$layout->fix_x_vehicles = $this->getFixXVehicles(clone $initial, clone $final, $agency);
-		$layout->fix_parts_x_labor = $this->getFixPartsXLabor($initial, $final, $agency);
-		$layout->fix_per_type = $this->getFixPerType($initial, $final, $agency);
-		$layout->fix_per_supplier_type = $this->getFixPerSupplierType($initial, $final, $agency);
-		
-		
-		$layout->notice = $this->getLastNotification();
 		return $layout;
 	}
 	

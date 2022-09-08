@@ -83,7 +83,7 @@ class AuthController extends AbstractController {
         	         $entity->setActive(false);
         	         $entity->setPassword(Crypt::suggest(10));
         	         $this->requester = $entity;
-                     $form->hydrate($entity, $this->getEntityManager());
+        	         $form->hydrate($entity, $this->getEntityManager());
         	         $this->getEntityManager()->persist($entity);
         	         $this->getEntityManager()->flush();
         	         $layout->message = new Alert('<strong>Ok! </strong>Conta de Usuário cadastrada com sucesso! <br>Seu cadastro está em análise e em breve você receberá sua senha por e-mail.', Alert::Success);
