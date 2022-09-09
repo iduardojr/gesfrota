@@ -172,7 +172,6 @@ class Logger implements Plugin {
 					$ref = new \ReflectionProperty($log, 'user');
 					$ref->setAccessible(true);
 					$ref->setValue($log, $that->user);
-					var_dump($that->user);
 					$that->em->flush();
 				}
 				return true;

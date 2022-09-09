@@ -8,6 +8,7 @@ use Gesfrota\Model\Entity;
  * Modelo de Veículo
  * @Entity
  * @Table(name="vehicle_models")
+ * @EntityListeners({"Gesfrota\Model\Listener\VehicleModelListener","Gesfrota\Model\Listener\LoggerListener"})
  */
 class VehicleModel extends AbstractActivable {
 
@@ -71,9 +72,6 @@ class VehicleModel extends AbstractActivable {
 	 * @return string
 	 */
 	public function getDescription() {
-	    if ($this->fullName) {
-	       return (string) $this->fullName;
-	    }
 	    return $this->maker . ' ' . $this->name;
 	}
 	
