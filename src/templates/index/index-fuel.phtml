@@ -40,12 +40,20 @@ use Gesfrota\Util\Format;
 					{
 						name: 'Distância Percorrida',
 						data: <?php echo json_encode(array_values($this->fuel_x_distance['distance']));?>
+        			}, 
+					{
+						name: 'Veículos Abastecidos',
+						data: <?php echo json_encode(array_values($this->fuel_x_distance['vehicles']));?>
         			}
         		],
 				chart: {
 					type: 'bar',
 					height: 450,
 				},
+                tooltip: {
+                	shared: true,
+                	intersect: false,
+                },
 				dataLabels: { enabled: false },
 				xaxis: { 
 					categories: <?php echo json_encode($this->fuel_x_distance['label']);?>,
@@ -54,9 +62,24 @@ use Gesfrota\Util\Format;
 		          {
 		            seriesName: 'Gasto de Abastecimento',
 		            axisTicks: { show: true },
-		            title: { text: "Gasto de Abastecimento (R$)" },
+		            axisBorder: {
+              			show: true,
+              			color: '#008FFB'
+            		},
+		            title: { 
+		            	text: "Gasto de Abastecimento (R$)",
+		            	style: {
+                			color: '#008FFB',
+              			}
+		            },
 		            labels: {
+		            	style: {
+                        	colors: '#008FFB',
+                        },
 		            	formatter: function(val, index) {
+		            		if (val == null ) {
+		            			return null;
+		            		} 
 		            		var multiples = [
                     	        ["Tri", Math.pow(1000, 4)],
                     	        ["Bi",  Math.pow(1000, 3)],
@@ -79,9 +102,24 @@ use Gesfrota\Util\Format;
 		            seriesName: 'Distância Percorrida',
 		            opposite: true,
 		            axisTicks: { show: true },
-		            title: { text: "Km Rodados" },
+		            axisBorder: {
+              			show: true,
+              			color: '#00E396'
+            		},
+		            title: { 
+		            	text: "Km Rodados",
+		            	style: {
+                			color: '#00E396',
+              			}
+		            },
 		            labels: {
+		            	style: {
+                        	colors: '#00E396',
+                        },
 		            	formatter: function(val, index) {
+		            		if (val == null ) {
+		            			return null;
+		            		} 
 		            		var multiples = [
                     	        ["Tri", Math.pow(1000, 4)],
                     	        ["Bi",  Math.pow(1000, 3)],
@@ -100,11 +138,30 @@ use Gesfrota\Util\Format;
                       	}
 		            }
 		          },
+		          {
+		            seriesName: 'Veículos Abastecidos',
+		            opposite: true,
+		            axisTicks: { show: true },
+		            axisBorder: {
+              			show: true,
+              			color: '#FEB019'
+            		},
+		            title: { 
+		            	text: "Quantidade de Veículos",
+		            	style: {
+                			color: '#FEB019',
+              			}
+		            },
+		            labels: {
+		            	style: {
+                        	colors: '#FEB019',
+                        },
+		            	formatter: function(val, index) {
+							return (val == null ) ? null : val.toFixed(0);
+                      	}
+                    }
+		          },
 		        ],
-				tooltip: {
-		          	shared: true,
-		          	intersect: false
-		        },
 		        noData: {
  	 				text: 'Não há dados disponíveis para o período informado.',
  	 				verticalAlign: 'top'
@@ -126,7 +183,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Gasolina",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_g['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['G']['data']));?>
 					},
         		],
 				chart: {
@@ -138,21 +195,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
     					{
-                            x: "<?php echo $this->fuel_outlier_g['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_g['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['G']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['G']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_g['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['G']['avg']; ?>",
                             borderColor: '#aaa',
                         },
                     ],
                      texts: [{
-                        x: "<?php echo (($this->fuel_outlier_g['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['G']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_g['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['G']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,
@@ -199,7 +256,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Etanol",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_e['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['E']['data']));?>
 					}, 
         		],
 				chart: {
@@ -211,21 +268,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
 						{
-                            x: "<?php echo $this->fuel_outlier_e['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_e['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['E']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['E']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_e['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['E']['avg']; ?>",
                             borderColor: '#666',
                         },
                     ],
                     texts: [{
-                        x: "<?php echo (($this->fuel_outlier_e['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['E']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_e['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['E']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,
@@ -272,7 +329,7 @@ use Gesfrota\Util\Format;
 				series: [
 					{
 						name: "Diesel",
-						data: <?php echo json_encode(array_values($this->fuel_outlier_d['data']));?>
+						data: <?php echo json_encode(array_values($this->fuel_outlier['D']['data']));?>
 					}, 
         		],
 				chart: {
@@ -284,21 +341,21 @@ use Gesfrota\Util\Format;
 					position: 'back',
 					xaxis: [
 						{
-                            x: "<?php echo $this->fuel_outlier_d['min']; ?>",
-                            x2: "<?php echo $this->fuel_outlier_d['max']; ?>",
+                            x: "<?php echo $this->fuel_outlier['D']['min']; ?>",
+                            x2: "<?php echo $this->fuel_outlier['D']['max']; ?>",
                             fillColor: '#dedede',
                             strokeDashArray: 1,
       						borderColor: '#c2c2c2',
                         },
                         {
-                            x: "<?php echo $this->fuel_outlier_d['avg']; ?>",
+                            x: "<?php echo $this->fuel_outlier['D']['avg']; ?>",
                             borderColor: '#666',
                         },
                     ],
                     texts: [{
-                        x: "<?php echo (($this->fuel_outlier_d['avg']+1)/20*100)+4; ?>%",
+                        x: "<?php echo (($this->fuel_outlier['D']['avg']+1)/20*100)+4; ?>%",
                         y: 280,
-                        text: '<?php echo number_format($this->fuel_outlier_d['percent'], 1, ',', ''); ?>%',
+                        text: '<?php echo number_format($this->fuel_outlier['D']['percent'], 1, ',', ''); ?>%',
                         textAnchor: 'middle',
                         backgroundColor: '#dedede',
                         borderRadius: 5,
@@ -342,7 +399,7 @@ use Gesfrota\Util\Format;
 <div class="row-fluid">
 	<div class="span6">
 		<h3><span class="header">Distribuição de Gasto por Combustível<small>Distribuição de Gastos com Abastecimento por Combustível</small></span></h3>
-		<div id="fuel_per_type"></div>
+		<div id="fuel-per-type"></div>
 		<script>
 			var options = {
 				series: [{
@@ -393,13 +450,13 @@ use Gesfrota\Util\Format;
  	 			}
 	        };
 	
-	        var chart = new ApexCharts(document.querySelector("#fuel_per_type"), options);
+	        var chart = new ApexCharts(document.querySelector("#fuel-per-type"), options);
 	        chart.render();
 		</script>
 	</div>
 	<div class="span6">
 		<h3><span class="header">Distribuição de Consumo por Combustível<small>Distribuição de Consumo com Abastecimento por Combustível</small></span></h3>
-		<div id="fuel_per_consume"></div>
+		<div id="fuel-per-consume"></div>
 		<script>
 			var options = {
 				series: [{
@@ -450,7 +507,7 @@ use Gesfrota\Util\Format;
  	 			}
 	        };
 	
-	        var chart = new ApexCharts(document.querySelector("#fuel_per_consume"), options);
+	        var chart = new ApexCharts(document.querySelector("#fuel-per-consume"), options);
 	        chart.render();
 		</script>
 	</div>

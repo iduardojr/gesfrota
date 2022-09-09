@@ -12,15 +12,15 @@ class ServiceProvider extends AbstractActivable {
     
     /**
      * Serviço de Abastecimento
-     * @var integer
+     * @var string
      */
-    const SERVICE_SUPPLY = 1;
+    const SERVICE_SUPPLY = 'S';
     
     /**
      * Serviço de Manutenção
-     * @var integer
+     * @var string
      */
-    const SERVICE_MAINTENANCE = 2;
+    const SERVICE_MAINTENANCE = 'M';
 
 	/**
 	 * @Column(type="string")
@@ -41,7 +41,7 @@ class ServiceProvider extends AbstractActivable {
 	protected $nif;
 	
 	/**
-	 * @Column(type="array")
+	 * @Column(type="simple_array")
 	 * @var array
 	 */
 	protected $services;
@@ -166,7 +166,7 @@ class ServiceProvider extends AbstractActivable {
 	/**
 	 * Atribui $services
 	 *
-	 * @param array|integer $services
+	 * @param array|string $services
 	 * @exception \DomainException
 	 */
 	public function setServices( $services ) {
@@ -210,7 +210,7 @@ class ServiceProvider extends AbstractActivable {
 	
 	/**
 	 * Verifica se o serviço é permitido
-	 * @param integer $service
+	 * @param string $service
 	 * @return bool
 	 */
 	public static function isServiceAllowed( $service ) {

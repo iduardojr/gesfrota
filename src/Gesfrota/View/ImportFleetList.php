@@ -80,7 +80,7 @@ class ImportFleetList extends AbstractList {
 		$table->buildColumnText('amountAppraised', '% Concluído', null, 50, null, function ($value, Import $import) {
 	        return round($value / $import->getAmountItems()*100, 1) . '%';
 	    });
-		$table->buildColumnText('fileSize', null, null, 50, null, function( $bytes ) {
+		$table->buildColumnText('fileSize', null, null, 70, null, function( $bytes ) {
 		        return Format::byte($bytes);
 		});
 		

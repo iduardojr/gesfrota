@@ -17,23 +17,36 @@ use Gesfrota\Util\Format;
 	</form>
 	<h1>Dashboard <small>KIP's</small></h1>
 	<ul class="nav nav-pills">
-        <li<?php echo $this->tab_active == 'request' ? ' class="active"' : ''; ?>><a href="#tab-request" data-toggle="pill">Requisições</a></li>
-        <li<?php echo $this->tab_active == 'fleet' ? ' class="active"' : ''; ?>><a href="#tab-fleet" data-toggle="pill">Frota</a></li>
-        <li<?php echo $this->tab_active == 'fuel' ? ' class="active"' : ''; ?>><a href="#tab-fuel" data-toggle="pill">Abastecimento</a></li>
-        <li class="disabled"><a href="#">Manutenção</a></li>
+		<li<?php echo $this->tab_active == 'fleet' ? ' class="active"' : ''; ?>><a href="?tab-active=fleet">Frota</a></li>
+        <li<?php echo $this->tab_active == 'request' ? ' class="active"' : ''; ?>><a href="?tab-active=request">Requisições</a></li>
+        <li<?php echo $this->tab_active == 'fuel' ? ' class="active"' : ''; ?>><a href="?tab-active=fuel">Abastecimento</a></li>
+        <li<?php echo $this->tab_active == 'fix' ? ' class="active"' : ''; ?>><a href="?tab-active=fix">Manutenção</a></li>
     </ul>
 </div>
 <div id="dashboard" class="tabbable">
   	<div class="tab-content">
-    	<div class="tab-pane<?php echo $this->tab_active == 'request' ? ' active' : ''; ?>" id="tab-request">
-          	<?php include 'index-request.phtml'; ?>
+    	<div class="tab-pane active">
+      	<?php 
+      	switch ($this->tab_active) {
+      	    case 'request':
+      	        include 'index-request.phtml';
+      	        break;
+      	        
+      	    case 'fuel':
+      	        include 'index-fuel.phtml';
+      	        break;
+      	        
+      	    case 'fix':
+      	        include 'index-fix.phtml';
+      	        break;
+      	      
+      	    case 'fleet':
+      	    default:
+      	        include 'index-fleet.phtml';
+      	        break;
+      	}
+      	?>
     	</div>
-        <div class="tab-pane<?php echo $this->tab_active == 'fleet' ? ' active' : ''; ?>" id="tab-fleet">
-        	<?php include 'index-fleet.phtml'; ?>
-        </div>
-        <div class="tab-pane<?php echo $this->tab_active == 'fuel' ? ' active' : ''; ?>" id="tab-fuel">
-          	<?php include 'index-fuel.phtml'; ?>
-        </div>
   	</div>
 </div>
 <script>

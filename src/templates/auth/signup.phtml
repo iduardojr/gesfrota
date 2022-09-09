@@ -1,0 +1,29 @@
+<?php 
+$options['placeholder_text_single'] = 'Selecione o Órgão da sua Lotação';
+$options['no_results_text'] = 'Nenhum órgão encontrado para:';
+?>
+<div class="form-signin form-signin-block" name="signup" method="post" action="/auth/signup">
+	<div class="form-signin-container">
+		<div class="row-fluid">
+    		<div class="span8"><h1 class="form-signin-heading">Criar Conta no Gesfrota</h1></div>
+    		<div class="span4 text-right"><img class="form-signin-brand" src="/images/brand.png" alt="Governo de Goiás"></div>
+    	</div>
+    	<?php if ($this->message) { ?>
+    	<p class="text-left"><?php echo $this->message->render(); ?></p>
+    	<?php } else { ?>
+    		<p>Crie uma conta e <strong>requisite suas viagens</strong> de forma mais fácil e rápida.</p>
+    		<?php $this->form->render(); ?>
+    	<?php } ?>
+    	<div class="form-signin-footer">
+    		<hr>
+    		<p class="text-center lead">Já tem uma conta?<br><a class="form-signin-signup" href="/auth">Entrar</a></p>
+    	</div>
+	</div>	
+</div>
+<style type="text/css">
+body {
+	padding-top: 40px;
+	padding-bottom: 40px;
+	background-color: #f5f5f5;
+}
+</style>

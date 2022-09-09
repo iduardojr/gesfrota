@@ -154,10 +154,10 @@ class ImportFleetItem extends Entity {
             $item->setYear($this->data[10-$short], $this->data[11-$short]);
             $item->setOdometer( $this->data[12-$short]);
             if (!empty($this->data[13-$short]) && $em) {
-                $nif = Format::CNPJ($this->data[13-$short]);
-                $owner = $em->getRepository(OwnerCompany::getClass())->findOneBy(['nif' => $nif]);
+                $nif = strlen($this->data[13-$short]) == 14 ? Format::CPF($this->data[13-$short]) : Format::CNPJ($this->data[13-$short]);
+                $owner = $em->getRepository(Owner::getClass())->findOneBy(['nif' => $nif]);
                 if ($owner == null && !empty($this->data[14-$short])) {
-                    $owner = new OwnerCompany();
+                    $owner = strlen($this->data[13-$short]) == 14 ? new OwnerPerson() : new OwnerCompany();
                     $owner->setNif($nif);
                     $owner->setName($this->data[14-$short]);
                 }
@@ -228,7 +228,7 @@ class ImportFleetItem extends Entity {
     /**
      * @return boolean
      */
-    private function isVehicle() {
+    public function isVehicle() {
         $short = 15-count($this->import->getHeader());
         return stripos($this->data[4-$short], 'EQUIPAMENTO') === false;
     }

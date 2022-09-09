@@ -2,7 +2,6 @@
 namespace Gesfrota\Model\Domain;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * Importação de Transações de Abastecimento
@@ -10,6 +9,11 @@ use Doctrine\Common\Collections\Criteria;
  * @Entity
  */
 class ImportSupply extends ImportTransaction {
+    
+    /**
+     * @var string
+     */
+    const SERVICE_TYPE = 'Abastecimento';
 
     /**
      * @OneToMany(targetEntity="ImportTransactionFuel", mappedBy="transactionImport", fetch="EXTRA_LAZY", cascade={"persist"})
@@ -18,21 +22,11 @@ class ImportSupply extends ImportTransaction {
     protected $items;
     
     /**
-     * @return integer
+     * @see ImportTransaction::create()
      */
-    public function getAmountImported() {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->neq('reference', null));
-        return $this->items->matching($criteria)->count();
-    }
-    
-    /**
-     * @return integer
-     */
-    public function getAmountAppraised() {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->neq('status', null));
-        return $this->items->matching($criteria)->count();
+    public function create(array $data = null)
+    {
+        return new ImportTransactionFuel($this, $data);
     }
     
 }

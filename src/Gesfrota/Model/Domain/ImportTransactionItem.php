@@ -4,14 +4,19 @@ namespace Gesfrota\Model\Domain;
 /**
  * Item de uma transação
  * 
- * @MappedSuperclass
+ * @Entity
+ * @Table(name="import_transaction_items")
+ * @EntityListeners({"Gesfrota\Model\Listener\ImportItemListener"})
+ * @InheritanceType("SINGLE_TABLE")
+ * @DiscriminatorColumn(name="transaction_service", type="string")
+ * @DiscriminatorMap({"S" = "ImportTransactionFuel", "M" = "ImportTransactionFix"})
  */
 abstract class ImportTransactionItem {
     
     /**
      * @Id
-     * @Column(name="transaction_id", type="integer")
      * @GeneratedValue
+     * @Column(name="transaction_id", type="integer")
      * @var integer
      */
     protected $transactionId;
@@ -43,7 +48,7 @@ abstract class ImportTransactionItem {
     protected $transactionVehicle;
     
     /**
-     * @ManyToOne(targetEntity="ImportSupply", inversedBy="items")
+     * @ManyToOne(targetEntity="ImportTransaction", inversedBy="items")
      * @JoinColumn(name="transaction_import_id", referencedColumnName="id")
      * @var ImportSupply
      */
@@ -62,12 +67,62 @@ abstract class ImportTransactionItem {
     protected $vehicleDescription;
     
     /**
+     * @Column(name="supplier_name")
+     * @var string
+     */
+    protected $supplierName;
+    
+    /**
+     * @Column(name="supplier_nif")
+     * @var string
+     */
+    protected $supplierNif;
+    
+    /**
+     * @Column(name="supplier_city")
+     * @var string
+     */
+    protected $supplierCity;
+    
+    /**
+     * @Column(name="supplier_uf")
+     * @var string
+     */
+    protected $supplierUF;
+    
+    /**
+     * @Column(name="item_description")
+     * @var string
+     */
+    protected $itemDescription;
+    
+    /**
+     * @Column(name="item_quantity", type="float")
+     * @var float
+     */
+    protected $itemQuantity;
+    
+    /**
+     * @Column(name="item_price", type="float")
+     * @var float
+     */
+    protected $itemPrice;
+    
+    /**
+     * @Column(name="item_total", type="float")
+     * @var float
+     */
+    protected $itemTotal;
+    
+    /**
      * @param ImportTransaction $import
      * @param array $data
      */
-    public function __construct(ImportTransaction $import, array $data) {
+    public function __construct(ImportTransaction $import, array $data = null) {
         $this->setTransactionImport($import);
-        $this->toTransform($data);
+        if ($data !== null ) {
+            $this->toTransform($data);
+        }
     }
 
     /**
@@ -132,6 +187,63 @@ abstract class ImportTransactionItem {
     public function getVehicleDescription()
     {
         return $this->vehicleDescription;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getSupplierName()
+    {
+        return $this->supplierName;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getSupplierNif()
+    {
+        return $this->supplierNif;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getSupplierPlace()
+    {
+        return $this->supplierCity . '/' . $this->supplierUF;
+    }
+    
+    
+    /**
+     * @return string
+     */
+    public function getItemDescription()
+    {
+        return $this->itemDescription;
+    }
+    
+    /**
+     * @return number
+     */
+    public function getItemQuantity()
+    {
+        return $this->itemQuantity;
+    }
+    
+    /**
+     * @return number
+     */
+    public function getItemPrice()
+    {
+        return $this->itemPrice;
+    }
+    
+    /**
+     * @return number
+     */
+    public function getItemTotal()
+    {
+        return $this->itemTotal;
     }
     
     /**
@@ -200,27 +312,72 @@ abstract class ImportTransactionItem {
     }
     
     /**
+     * @param string $name
+     */
+    public function setSupplierName($name)
+    {
+        $this->supplierName = $name;
+    }
+    
+    /**
+     * @param string $nif
+     */
+    public function setSupplierNif($nif)
+    {
+        $this->supplierNif = $nif;
+    }
+    
+    /**
+     * @param string $city
+     * @param string $uf
+     */
+    public function setSupplierPlace($city, $uf)
+    {
+        $this->supplierCity = $city;
+        $this->supplierUF = $uf;
+    }
+    
+    /**
+     * @param string $description
+     */
+    public function setItemDescription($description)
+    {
+        $this->itemDescription = $description;
+    }
+    
+    /**
+     * @param number $quantity
+     */
+    public function setItemQuantity($quantity)
+    {
+        $this->itemQuantity = $quantity;
+    }
+    
+    /**
+     * @param number $price
+     */
+    public function setItemPrice($price)
+    {
+        $this->itemPrice = $price;
+    }
+    
+    /**
+     * @param number $total
+     */
+    public function setItemTotal($total)
+    {
+        $this->itemTotal = $total;
+    }
+    
+    /**
      * @param array $data
      */
-    public function toTransform(array $data) 
-    {
-        $this->setTransactionCostCenter($data[0]);
-        $this->setTransactionDate(new \DateTime($data[1]));
-        $this->setVehiclePlate($data[2]);
-        $this->setVehicleDescription($data[3]);
-    }
+    abstract public function toTransform(array $data);
     
     /**
      * @return array
      */
-    public function getData()
-    {
-        $data = [];
-        $data[0] = $this->getTransactionAgency() . '<' . $this->getTransactionCostCenter() . '>';
-        $data[1] = $this->getTransactionDate()->format('d/m/Y H:i:s');
-        $data[2] = $this->getVehiclePlate();
-        $data[3] = $this->getTransactionVehicle() ? $this->getTransactionVehicle()->getDescription() : $this->getVehicleDescription();
-        return $data;
-    }
+    abstract public function getData();
+    
 }
 ?>

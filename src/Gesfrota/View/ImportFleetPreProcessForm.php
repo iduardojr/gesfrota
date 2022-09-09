@@ -115,7 +115,7 @@ class ImportFleetPreProcessForm extends AbstractForm {
 	/**
 	 * @see AbstractForm::hydrate()
 	 */
-	public function hydrate( ImportFleetItem $object ) {
+	public function hydrate( ImportFleet $object ) {
 	    foreach ($object->getItems() as $item) {
 	        if ($item->getStatus() === null) {
 	            $item->setReference(null);
