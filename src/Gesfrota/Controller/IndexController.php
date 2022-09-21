@@ -19,6 +19,8 @@ use Gesfrota\View\Layout;
 use Gesfrota\Model\Domain\ImportTransactionFuel;
 use Gesfrota\Model\Domain\ImportTransactionFix;
 use Gesfrota\Model\Domain\ImportTransactionItem;
+use Gesfrota\Model\Domain\Disposal;
+use Gesfrota\Model\Domain\DisposalItem;
 
 class IndexController extends AbstractController {
 	
@@ -93,15 +95,16 @@ class IndexController extends AbstractController {
 		            $layout->fleet_per_agency = $this->getFleetPerAgency();
 		            $layout->fleet_current_x_expected = $this->getFleetCurrentXExpected(clone $initial, clone $final);
 		        }
+		        $layout->KPIs= $this->getFleetKPIs($agency);
 		        $layout->fleet_per_type = $this->getFleetPerType($agency);
 		        $layout->fleet_per_family = $this->getFleetPerFamily($agency);
 		        $layout->fleet_per_age = $this->getFleetPerAge($agency);
-		        $layout->fleet_vehicle_x_equipament = $this->getFleetVehicleXEquipament($agency);
 		        break;
 		}
 		
 		return $layout;
 	}
+	
 	
 	/**
 	 * @return Notice
@@ -380,6 +383,46 @@ class IndexController extends AbstractController {
 	    return $data;
 	}
 	
+	private function getFleetKPIs( Agency $agency = null ) {
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('COUNT(u.id) AS score');
+	    $builder->from(DisposalItem::getClass(), 'u');
+	    $builder->join('u.disposal', 'd');
+	    $builder->where('d.status = :confirmed');
+	    $builder->setParameter('confirmed', Disposal::CONFIRMED);
+	    if ( $agency ) {
+	        $builder->andWhere('d.requesterUnit = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    $data['disposal_partial'] = (int) $builder->getQuery()->getSingleScalarResult();
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('COUNT(u.id) AS score');
+	    $builder->from(DisposalItem::getClass(), 'u');
+	    $builder->join('u.disposal', 'd');
+	    $builder->where('d.status NOT IN (:status)');
+	    $builder->setParameter('status', [Disposal::DECLINED]);
+	    if ( $agency ) {
+	        $builder->andWhere('d.requesterUnit = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    $data['disposal_total'] = (int) $builder->getQuery()->getSingleScalarResult();
+	    
+	    $builder = $this->getEntityManager()->createQueryBuilder();
+	    $builder->select('SUM(u.value) AS score');
+	    $builder->from(DisposalItem::getClass(), 'u');
+	    $builder->join('u.disposal', 'd');
+	    $builder->where('d.status = :confirmed');
+	    $builder->setParameter('confirmed', Disposal::CONFIRMED);
+	    if ( $agency ) {
+	        $builder->andWhere('d.requesterUnit = :agency');
+	        $builder->setParameter('agency', $agency->getId());
+	    }
+	    $data['disposal_value'] = (int) $builder->getQuery()->getSingleScalarResult();
+	    
+	    return $data;
+	}
+	
 	private function getFleetPerType(Agency $agency = null) {
 		$builder = $this->getEntityManager()->createQueryBuilder();
 		$builder->select('u.fleet, COUNT(u.id) AS score');
@@ -420,6 +463,19 @@ class IndexController extends AbstractController {
 		$data = [];
 		foreach ($result as $item) {
 			$data[$item['label']] = $item['score'];
+		}
+		
+		$builder = $this->getEntityManager()->createQueryBuilder();
+		$builder->select('COUNT(u.id) AS score');
+		$builder->from(Equipment::getClass(), 'u');
+		$builder->where('u.active = true');
+		
+		if ( $agency ) {
+		    $builder->andWhere('u.responsibleUnit = :agency');
+		    $builder->setParameter('agency', $agency->getId());
+		}
+		if ($builder->getQuery()->getSingleScalarResult() > 0 ) {
+		    $data['Equipamentos'] = (int) $builder->getQuery()->getSingleScalarResult();
 		}
 		return $data;
 	}
