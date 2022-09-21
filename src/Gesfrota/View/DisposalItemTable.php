@@ -8,6 +8,7 @@ use PHPBootstrap\Widget\Action\TgAjax;
 use PHPBootstrap\Widget\Action\TgWindows;
 use PHPBootstrap\Widget\Misc\Icon;
 use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Misc\Paragraph;
 
 class DisposalItemTable extends BuilderTable {
 	
@@ -16,7 +17,7 @@ class DisposalItemTable extends BuilderTable {
 	 * @param Action $print
 	 * @param Action $remove
 	 */
-    public function __construct(Action $survey, Action $print, Action $remove) {
+    public function __construct(Action $print, Action $survey = null, Action $remove = null) {
 		parent::__construct('disposal-items-table');
 
 		$this->buildColumnText('code', '#', null, 80);
@@ -44,9 +45,14 @@ class DisposalItemTable extends BuilderTable {
 			return '-';
 		});
 		
-		$this->buildColumnAction('survey', new Icon('icon-list-alt'), $survey);
-		$this->buildColumnAction('remove', new Icon('icon-remove'), new TgAjax($remove, 'flash-message', TgAjax::Json));
+		if ($survey) {
+		    $this->buildColumnAction('survey', new Icon('icon-list-alt'), $survey);
+		}
+		if ($remove) {
+		    $this->buildColumnAction('remove', new Icon('icon-remove'), new TgAjax($remove, 'flash-message', TgAjax::Json));
+		}
 		$this->buildColumnAction('print', new Icon('icon-print'), new TgWindows($print, 1024, 720));
+		
 	}
 	
 }
