@@ -70,13 +70,6 @@ class DisposalController extends AbstractController {
 		        }
 		    } else {
     		    switch ($obj->getStatus()) {
-    		        case Disposal::DECLINED:
-    		        case Disposal::CONFIRMED: 
-    		        	$for = 'devolve';
-    		        	$button->setTooltip(new Tooltip('Devolver Disposição'));
-    		        	$button->setIcon(new Icon('icon-backward'));
-    		        	break;
-    		            
     		        case Disposal::REQUESTED:
     		            $for = 'confirm';
     		            $button->setTooltip(new Tooltip('Confirmar Disposição'));
@@ -88,7 +81,9 @@ class DisposalController extends AbstractController {
     		            $button->setTooltip(new Tooltip('Avaliar Disposição'));
     		            $button->setIcon(new Icon('icon-pencil'));
     		            break;
-    		            
+    		        
+    		        case Disposal::DECLINED:
+    		        case Disposal::CONFIRMED: 
     		        default:
     		        	$for = 'view';
     		        	$button->setTooltip(new Tooltip('Visualizar Disposição'));
@@ -203,7 +198,11 @@ class DisposalController extends AbstractController {
 	        if (! $entity instanceof Disposal) {
 	            throw new NotFoundEntityException('Não foi possível editar a Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
 	        }
-	        $form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'print-asset'), new Action($this, 'print', ['key' => $id]));
+	        $cancel = new Action($this);
+	        $printAsset = new Action($this, 'print-asset');
+	        $print = new Action($this, 'print', ['key' => $id]);
+	        $devolve = $entity->getStatus() == Disposal::DECLINED || $this->getUserActive() instanceof Manager ? new Action($this, 'devolve', ['key' => $id]) : null;
+	        $form = new DisposalConfirmForm($entity, $cancel, $printAsset, $print, null, null, $devolve);
 	    } catch (NotFoundEntityException $e) {
 	        $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 	        $this->forward('/');
@@ -218,8 +217,13 @@ class DisposalController extends AbstractController {
 	        if (! $entity instanceof Disposal) {
 	            throw new NotFoundEntityException('Não foi possível confirmar a Disposição. Disposição <em>#' . $id . '</em> não encontrada.');
 	        }
-	        
-	        $form = new DisposalConfirmForm($entity, new Action($this), new Action($this, 'print-asset'), new Action($this, 'print', ['key' => $id]), new Action($this, 'confirm', ['key' => $id, 'do' => 'confirmed']), new Action($this, 'confirm', ['key' => $id, 'do' => 'declined']));
+	        $cancel = new Action($this);
+	        $printAsset = new Action($this, 'print-asset');
+	        $print = new Action($this, 'print', ['key' => $id]);
+	        $devolve =  new Action($this, 'devolve', ['key' => $id]);
+	        $confirm =  new Action($this, 'confirm', ['key' => $id, 'do' => 'confirmed']);
+	        $decline = new Action($this, 'confirm', ['key' => $id, 'do' => 'declined']);
+	        $form = new DisposalConfirmForm($entity, $cancel, $printAsset, $print, $confirm, $decline, $devolve);
 	        
 	        if ( $this->request->isPost() ) {
 	            $do = $this->request->getQuery('do');

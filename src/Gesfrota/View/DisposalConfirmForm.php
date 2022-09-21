@@ -2,10 +2,8 @@
 namespace Gesfrota\View;
 
 use Gesfrota\Model\Domain\Disposal;
-use Gesfrota\Model\Domain\DisposalItem;
 use Gesfrota\View\Widget\AbstractForm;
 use Gesfrota\View\Widget\ArrayDatasource;
-use Gesfrota\View\Widget\BuilderTable;
 use PHPBootstrap\Validate\Measure\Max;
 use PHPBootstrap\Validate\Measure\Ruler\RulerLength;
 use PHPBootstrap\Validate\Required\Required;
@@ -27,7 +25,7 @@ use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Nav\NavLink;
 use PHPBootstrap\Widget\Nav\TabPane;
 use PHPBootstrap\Widget\Nav\Tabbable;
-use PHPBootstrap\Widget\Table\ColumnText;
+use PHPBootstrap\Widget\Misc\Paragraph;
 
 class DisposalConfirmForm extends AbstractForm {
 	
@@ -43,8 +41,9 @@ class DisposalConfirmForm extends AbstractForm {
 	 * @param Action $print
 	 * @param Action $confirm
 	 * @param Action $decline
+	 * @param Action $devolve
 	 */
-	public function __construct( Disposal $disposal, Action $cancel, Action $printAsset, Action $print, Action $confirm = null, Action $decline = null ) {
+	public function __construct( Disposal $disposal, Action $cancel, Action $printAsset, Action $print, Action $confirm = null, Action $decline = null, Action $devolve = null ) {
     	$this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		$form = $this->buildForm('disposal-confirm-form');
 		
@@ -79,39 +78,14 @@ class DisposalConfirmForm extends AbstractForm {
 			$form->unregister($input);
 		}
 		
-		$table = new BuilderTable('disposal-items-table');
-		
-		$table->buildColumnText('code', '#', null, 80);
-		$table->buildColumnText('description', 'Ativo', null, 500, ColumnText::Left);
-		$table->buildColumnText('classification', 'Classificação', null, 75, null, function ( $label ) {
-		    if ($label > 0) {
-		        return DisposalItem::getClassificationAllowed()[$label];
-		    }
-		    return '-';
-		});
-		    
-	    $table->buildColumnText('rating', null, null, 100);
-		        
-	    $table->buildColumnText('value', 'Valor', null, null, null, function ( $label ) {
-            if ($label > 0) {
-                return 'R$ ' . number_format($label, 2, ',', '.');
-            }
-            return '-';
-        });
-		            
-        $table->buildColumnText('debit', 'Débitos', null, null, null, function ( $label ) {
-            if ($label > 0) {
-                return 'R$ ' . number_format($label, 2, ',', '.');
-            }
-            return '-';
-        });
-        
-        $modalView = new Modal('disposal-survey-print', new Title('Avaliação do Ativo', 3));
-        
-        $table->buildColumnAction('print', new Icon('icon-print'), new TgWindows($printAsset, 1024, 720));
+		$table = new DisposalItemTable($printAsset);
         $table->setDataSource(new ArrayDatasource($disposal->getAllAssets(), 'id'));
+        $total = new Paragraph('<small>' . $disposal->getTotalAssets() . ' Ativo(s) </small>');
+        $total->setAlign(Paragraph::Right);
+        $table->setFooter($total);
         
         $foot = new Box(['offset' => 4]);
+        
         $input = new Output('requester-unit');
         $input->setValue($disposal->getRequesterUnit()->getAcronym());
         $form->buildField('Disponibilizado Por', $input, false, $foot);
@@ -143,7 +117,6 @@ class DisposalConfirmForm extends AbstractForm {
         
         $general->append($table);
         $general->append($foot);
-        $general->append($modalView);
         
 		$tab = new Tabbable('disposal-tabs');
 		$tab->setPlacement(Tabbable::Left);
@@ -160,6 +133,9 @@ class DisposalConfirmForm extends AbstractForm {
 		
 		$form->append($tab);
         $style = true;
+        if ($confirm) {
+            $form->buildButton('confirm', [new Icon('icon-thumbs-up', true), 'Confirmar Disposição'], new TgFormSubmit($confirm, $form, false), Button::Primary);
+        } 
 		if ($decline) {
 			$body = new Box();
 			
@@ -180,11 +156,13 @@ class DisposalConfirmForm extends AbstractForm {
 			
 			$general->append($modalDecline);
 			
-			$form->buildButton('confirm', [new Icon('icon-thumbs-up', true), 'Confirmar Disposição'], new TgFormSubmit($confirm, $form, false), Button::Primary);
 			$form->buildButton('decline', [new Icon('icon-thumbs-down', true),'Recusar Disposição'], new TgModalOpen($modalDecline), Button::Danger);
 			$style = false;
 		}
 		$form->buildButton('print', [new Icon('icon-print', $style), 'Imprimir Disposição'], new TgWindows($print, 1024, 762), $style ? Button::Primary : null);
+		if ( $devolve ) {
+		    $form->buildButton('devolve', [new Icon('icon-backward', $style), 'Retornar Disposição'], $devolve, $style ? Button::Danger : null);
+		}
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	

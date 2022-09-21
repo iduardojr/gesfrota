@@ -1,3 +1,6 @@
+<?php
+use Gesfrota\Util\Format;
+?>
 <div class="row-fluid">
 	<div class="span4">
 		<h3><span class="header">Distribuição da Frota por Tipo<small>Distribuição percentual e quantitiva da frota por tipo <span class="label">Real Time</span></small></span></h3>
@@ -58,64 +61,6 @@
 		</script>
 	</div>
 	<div class="span4">
-		<h3><span class="header">Veículos X Equipamentos<small>Distribuição percentual e quantitiva da frota por classe <span class="label">Real Time</span></small></span></h3>
-		<div id="vehicle-x-equipament"></div>
-		<script>
-			var options = {
-          		series: <?php echo json_encode(array_values($this->fleet_vehicle_x_equipament));?>,
-          		labels: <?php echo json_encode(array_keys($this->fleet_vehicle_x_equipament));?>,
-          		chart: {
-          			type: 'donut',
-          			height: 300,
-        		},
-        		plotOptions: {
-				    pie: {
-					    dataLabels : { offset: -15 },
-				      	donut: { 
-				      		size: '75%',
-				      		labels: {
-        						show: true,
-					        	name: {
-					          		show: true,
-					          		fontSize: '22px',
-					          		fontWeight: 'bold',
-					        	},
-					        	value: {
-					          		show: true,
-					          		fontSize: '18px',
-					          		offsetY: 0,
-					          		color: '#777',
-					        	},
-					        	total: {
-					          		show: true,
-					          		label: 'Total',
-					          		fontSize: '22px',
-					          		fontWeight: 'bold',
-					          		color: '#777',
-					        	}
-					      	},
-					    }
-					}
-				},
-				dataLabels : {
-				 	style: {
-				      	fontSize: '16px',
-				      	fontWeight: 'bold',
-				  	},
-				},
-				tooltip: { enabled: false },
-				legend: {
-			      	show: true,
-			      	position: 'bottom',
-			      	horizontalAlign: 'center', 
-      			}
-        	};
-
-        	var chart = new ApexCharts(document.querySelector("#vehicle-x-equipament"), options);
-        	chart.render();
-		</script>
-	</div>
-	<div class="span4">
 		<h3><span class="header">Distribuição da Frota por Família <small>Distribuição perc. e quant. dos veículos por família <span class="label">Real Time</span></small></span></h3>
 		<div id="fleet-per-family"></div>
 		<script>
@@ -124,7 +69,7 @@
           		labels: <?php echo json_encode(array_keys($this->fleet_per_family));?>,
           		chart: {
           			type: 'donut',
-          			height: 300,
+          			height: 320,
         		},
         		plotOptions: {
 				    pie: {
@@ -172,6 +117,27 @@
         	var chart = new ApexCharts(document.querySelector("#fleet-per-family"), options);
         	chart.render();
 		</script>
+	</div>
+	<div class="span4">
+		<div class="card">
+  			<div class="header">
+  				<strong><?php echo $this->KPIs['disposal_partial']; ?></strong>
+  				<small>Veículos Confirmados para Alienação</small>
+  			</div>
+  		</div>
+  		<div class="card">
+  			<div class="header">
+  				<strong><?php echo $this->KPIs['disposal_total']; ?></strong>
+  				<small>Veículos Disponíveis para Alienação</small>
+  			</div>
+  		</div>
+  		<div class="card">
+  			<div class="header">
+  				<strong><?php echo Format::financial($this->KPIs['disposal_value']) ; ?></strong>
+  				<small>Arrecadação Estimada para Alienação</small>
+  			</div>
+  		</div>
+    	</div>
 	</div>
 </div>
 <hr>

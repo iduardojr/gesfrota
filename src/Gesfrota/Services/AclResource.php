@@ -76,7 +76,7 @@ class AclResource implements Plugin {
 			self::Account,
 		];
 		$this->acl->allow(FleetManager::getClass(), $resource);
-		$this->acl->deny(FleetManager::getClass(), self::Disposal, ['confirm', 'devolve']);
+		$this->acl->deny(FleetManager::getClass(), self::Disposal, ['confirm']);
 		
 		$resource = [
 			self::Request,
