@@ -18,6 +18,7 @@ use PHPBootstrap\Widget\Layout\Box;
 use PHPBootstrap\Widget\Form\Controls\Decorator\InputContext;
 use PHPBootstrap\Widget\Action\TgWindows;
 use PHPBootstrap\Widget\Misc\Icon;
+use PHPBootstrap\Widget\Layout\Row;
 
 class DisposalAppraisalForm extends AbstractForm {
 	
@@ -28,11 +29,13 @@ class DisposalAppraisalForm extends AbstractForm {
 	
 	/**
 	 * @param Disposal $disposal
-	 * @param Action $next
-	 * @param Action $cancel
 	 * @param DisposalItemTable $table
+	 * @param Action $appraise
+	 * @param Action $print
+	 * @param Action $export
+	 * @param Action $cancel
 	 */
-	public function __construct( Disposal $disposal, Action $next, Action $print, Action $cancel, DisposalItemTable $table ) {
+	public function __construct( Disposal $disposal, DisposalItemTable $table, Action $appraise, Action $print, Action $export, Action $cancel) {
 	    $this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		$form = $this->buildForm('disposal-appraisal-form');
 		
@@ -44,26 +47,38 @@ class DisposalAppraisalForm extends AbstractForm {
 		$general->append($this->flashMessage);
 		$general->append($table);
 		
+		$footer = new Box(['offset'=> 8]);
 		
-		$foot = new Box(['offset'=> 7]);
 		$input[0] = new Uneditable('assets-count');
-		$input[0]->setSpan(1);
-		$input[0]->setValue($disposal->getTotalAssetsValued() . ' / ' . $disposal->getTotalAssets());
+		$input[0]->setSpan(2);
+		$input[0]->setValue($disposal->getAmountAssetsAppraise() . ' / ' . $disposal->getAmountAssets());
 		
-		$input[1] = new Hidden('assets-total');
-		$input[1]->setValue($disposal->getTotalAssets());
+		$input[1] = new Hidden('assets-amount');
+		$input[1]->setValue($disposal->getAmountAssets());
 		
-		
-		$input[2] = new Hidden('assets-value');
+		$input[2] = new Hidden('assets-appraise');
 		$input[2]->addFilter(function($value) {
 			return (int) $value;
 		});
-		$input[2]->setValue($disposal->getTotalAssetsValued());
+		$input[2]->setValue($disposal->getAmountAssetsAppraise());
 		$input[2]->setLength(new Min(1, 'Sem ativo(s) para serem encaminhados.'));
 		$input[2]->setRequired(new EqualTo(new InputContext($input[1]), 'Todos os ativos devem ser avaliados'));
 		
-		$form->buildField('Ativos Avaliados', $input, false, $foot);
-		$general->append($foot);
+		$form->buildField('Ativos Avaliados', $input, false, $footer);
+		
+		$input = new Uneditable('assets-value');
+		$input->setSpan(2);
+		$input->setValue('R$ ' . number_format($disposal->getTotalValue(), 2, ',', '.'));
+		
+	    $form->buildField('Arrecadação Estimada', $input, false, $footer);
+	    
+	    $input = new Uneditable('assets-debit');
+	    $input->setSpan(2);
+	    $input->setValue('R$ ' . number_format($disposal->getTotalDebit(), 2, ',', '.'));
+	    
+	    $form->buildField('Total de Débitos', $input, false, $footer);
+	    
+	    $table->setFooter(new Row(true, $footer));
 		
 		$tab = new Tabbable('disposal-tabs');
 		$tab->setPlacement(Tabbable::Left);
@@ -80,8 +95,9 @@ class DisposalAppraisalForm extends AbstractForm {
 		
 		$form->append($tab);
 
-		$form->buildButton('submit', 'Encaminhar Disposição', $next);
+		$form->buildButton('submit', [new Icon('icon-ok-sign', true), 'Finalizar Avaliação'], $appraise);
 		$form->buildButton('print', [new Icon('icon-print'), 'Imprimir Disposição'], new TgWindows($print, 1024, 762));
+		$form->buildButton('export', [new Icon('icon-share-alt'), 'Exportar CSV'], $export);
 		$form->buildButton('cancel', 'Cancelar', $cancel);
 	}
 	
