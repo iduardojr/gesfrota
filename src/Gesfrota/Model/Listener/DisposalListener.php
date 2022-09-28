@@ -13,7 +13,7 @@ class DisposalListener {
     }
     
     public function prePersist(Disposal $disposal, LifecycleEventArgs $event) { 
-    	if ($disposal->getRequesterUnit()->isGovernment()) {
+        if ($disposal->getAgency() && $disposal->getAgency()->isGovernment()) {
     		throw new \DomainException('Not allowed to persist Discard because the requesting unit is Government.');
     	}
     }

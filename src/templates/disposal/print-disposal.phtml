@@ -1,0 +1,67 @@
+<?php
+use Gesfrota\View\DisposalItemTable;
+use Gesfrota\View\Widget\ArrayDatasource;
+use PHPBootstrap\Widget\Layout\Box;
+use PHPBootstrap\Widget\Layout\Panel;
+use PHPBootstrap\Widget\Layout\Row;
+use Gesfrota\Model\Domain\DisposalLot;
+
+$disposal = $this->disposal;
+$isDisposalLot = $disposal instanceof DisposalLot;
+$lotation = $disposal->getForwardedBy()->getLotation();
+?>
+<div class="page">
+	<div class="page-header">
+		<img src="/images/brasao-go.png" class="pull-left">
+		<h1>
+			Estado de Goiás <br>
+			<?php echo $lotation->getAgency()->getName(); ?> <br>
+			<?php foreach ($lotation->getAncestors() as $unit) { ?>
+			    <?php echo $unit->getName(); ?> <br>
+			<?php }?>
+		</h1>
+	</div>
+    <fieldset>
+    	<legend>ESPELHO <?php echo $isDisposalLot ? 'DO LOTE DE DISPOSIÇÕES' : 'DA DISPOSIÇÃO'; ?> #<?php echo $disposal->getCode(); ?></legend>
+		<?php 
+		$table = new DisposalItemTable(null, null, null, $isDisposalLot);
+		$table->setDataSource(new ArrayDatasource($disposal->getAllAssets(), 'id'));
+		$table->render(); 
+		?>
+		<table id="disposal-lot-resume">
+			<tr class="text-center">
+				<th span="8">AUTORIZAÇÃO PARA ALIENAÇÃO</th>
+				<th span="4">RESUMO DA DISPOSIÇÃO</th>
+			</tr>
+			<tr class="text-center">
+				<td class="sign">
+				<?php  if ($disposal->getForwardedAt()) { ?>
+					<em><small>Assinado eletronicamente por</small></em> <br>
+					<?php echo $disposal->getForwardedBy()->getName(); ?>, CPF <?php echo $disposal->getForwardedBy()->getNif(); ?><br>
+					em <?php echo $disposal->getForwardedAt()->format('d/m/Y H:i:s'); ?>
+				<?php } ?>
+				</td>
+				<td>
+					<?php if (! $isDisposalLot) { ?> 
+					<div class="row-fluid">
+						<div class="span7"><strong>Disponibilizado Por</strong></div>
+						<div class="span5"><?php echo $disposal->getAgency()->getAcronym(); ?></div>
+					</div>
+					<?php } ?>
+					<div class="row-fluid">
+						<div class="span7"><strong>Total de Ativos</strong></div>
+						<div class="span5"><?php echo $disposal->getAmountAssets(); ?></div>
+					</div>
+					<div class="row-fluid">
+						<div class="span7"><strong>Arrecadação Estimada</strong></div>
+						<div class="span5">R$ <?php echo number_format($disposal->getTotalValue(), 2, ',', '.'); ?></div>
+					</div>
+					<div class="row-fluid">
+						<div class="span7"><strong>Total de Débitos</strong></div>
+						<div class="span5">R$ <?php echo number_format($disposal->getTotalDebit(), 2, ',', '.'); ?></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+    </fieldset>
+</div>

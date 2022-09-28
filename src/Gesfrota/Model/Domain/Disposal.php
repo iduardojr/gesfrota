@@ -3,15 +3,18 @@ namespace Gesfrota\Model\Domain;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Gesfrota\Model\Entity;
+use Gesfrota\Model\NestedSet\Node;
 
 /**
  * Alienação
  * @Entity
  * @Table(name="disposals")
- * @EntityListeners({"Gesfrota\Model\Listener\DisposalListener", "Gesfrota\Model\Listener\LoggerListener"})
+ * @InheritanceType("SINGLE_TABLE")
+ * @DiscriminatorColumn(name="type", type="string")
+ * @DiscriminatorMap({"D" = "Gesfrota\Model\Domain\Disposal", "L" = "Gesfrota\Model\Domain\DisposalLot"})
+ * @EntityListeners({"Gesfrota\Model\NestedSet\NodeListener", "Gesfrota\Model\Listener\DisposalListener", "Gesfrota\Model\Listener\LoggerListener"})
  */
-class Disposal extends Entity {
+class Disposal extends Node {
 	
 	/**
 	 * Rascunhada
@@ -20,10 +23,10 @@ class Disposal extends Entity {
 	const DRAFTED = 0;
 	
 	/**
-	 * Requisitada
+	 * Avaliada
 	 * @var integer
 	 */
-	const REQUESTED = 1;
+	const APPRAISED = 1;
 	
 	/**
 	 * Confirmada
@@ -38,6 +41,12 @@ class Disposal extends Entity {
 	const DECLINED = 4;
 	
 	/**
+	 * Encaminhada
+	 * @var integer
+	 */
+	const FORWARDED = 8;
+	
+	/**
 	 * @Column(type="string")
 	 * @var string
 	 */
@@ -48,6 +57,13 @@ class Disposal extends Entity {
 	 * @var integer
 	 */
 	protected $status;
+	
+	/**
+	 * @OneToOne(targetEntity="DisposalLot", fetch="EAGER")
+	 * @JoinColumn(name="parent_id", referencedColumnName="id")
+	 * @var DisposalLot
+	 */
+	protected $parent;
 	
 	/**
 	 * @Column(type="string")
@@ -63,17 +79,17 @@ class Disposal extends Entity {
 	
 	/**
 	 * @ManyToOne(targetEntity="Agency")
-	 * @JoinColumn(name="requester_unit_id", referencedColumnName="id")
+	 * @JoinColumn(name="agency_id", referencedColumnName="id")
 	 * @var Agency
 	 */
-	protected $requesterUnit;
+	protected $agency;
 	
 	/**
 	 * @ManyToOne(targetEntity="User")
-	 * @JoinColumn(name="requested_by", referencedColumnName="id")
+	 * @JoinColumn(name="appraised_by", referencedColumnName="id")
 	 * @var User
 	 */
-	protected $requestedBy;
+	protected $appraisedBy;
 	
 	/**
 	 * @ManyToOne(targetEntity="User")
@@ -90,10 +106,23 @@ class Disposal extends Entity {
 	protected $declinedBy;
 	
 	/**
-	 * @Column(name="requested_at", type="datetime")
+	 * @ManyToOne(targetEntity="User")
+	 * @JoinColumn(name="forwarded_by", referencedColumnName="id")
+	 * @var User
+	 */
+	protected $forwardedBy;
+	
+	/**
+	 * @Column(name="opened_at", type="datetime")
 	 * @var \DateTime
 	 */
-	protected $requestedAt;
+	protected $openedAt;
+	
+	/**
+	 * @Column(name="appraised_at", type="datetime")
+	 * @var \DateTime
+	 */
+	protected $appraisedAt;
 	
 	/**
 	 * @Column(name="confirmed_at", type="datetime")
@@ -108,13 +137,21 @@ class Disposal extends Entity {
 	protected $declinedAt;
 	
 	/**
-	 * @param Agency $agency
+	 * @Column(name="forwarded_at", type="datetime")
+	 * @var \DateTime
 	 */
-	public function __construct( Agency $agency ) {
+	protected $forwardedAt;
+	
+	/**
+	 * @param Agency $agency
+	 * @param DisposalLot $disposalLot
+	 */
+	public function __construct( Agency $agency, DisposalLot $disposalLot ) {
 		$this->status = self::DRAFTED;
-		$this->requesterUnit = $agency;
-		$this->requestedAt = new \DateTime();
+		$this->agency = $agency;
+		$this->openedAt = new \DateTime();
 		$this->assets = new ArrayCollection();
+		$this->setParent($disposalLot);
 	}
 	
 	/**
@@ -166,7 +203,21 @@ class Disposal extends Entity {
     }
     
     /**
-     * @param integer|DisposalItem $card
+     * @param DisposalLot $parent
+     */
+    public function setParent(DisposalLot $parent) {
+        $this->parent = $parent;
+    }
+    
+    /**
+     * @return DisposalLot
+     */
+    public function getParent() {
+        return $this->parent;
+    }
+    
+    /**
+     * @param integer|DisposalItem $item
      * @return false|DisposalItem
      */
     public function removeAsset($item) {
@@ -187,30 +238,55 @@ class Disposal extends Entity {
     /**
      * @return integer
      */
-    public function getTotalAssets() {
+    public function getAmountAssets() {
     	return $this->assets->count();
     }
     
     /**
      * @return integer
      */
-    public function getTotalAssetsValued() {
+    public function getAmountAssetsAppraise() {
     	$criteria = Criteria::create()->where(Criteria::expr()->gt('value', 0));
     	return $this->assets->matching($criteria)->count();
+    }
+    
+    /**
+     * @return number
+     */
+    public function getTotalValue() {
+        $total = 0;
+        $assets = $this->getAllAssets();
+        foreach ($assets as $asset) {
+            $total+= $asset->getValue();
+        }
+        return $total;
+    }
+    
+    /**
+     * @return number
+     */
+    public function getTotalDebit() {
+        $total = 0;
+        $assets = $this->getAllAssets();
+        foreach ($assets as $asset) {
+            $asset instanceof DisposalItem;
+            $total+= $asset->getDebit();
+        }
+        return $total;
     }
 
 	/**
 	 * @return Agency
 	 */
-	public function getRequesterUnit() {
-		return $this->requesterUnit;
+	public function getAgency() {
+		return $this->agency;
 	}
 	
 	/**
 	 * @return User
 	 */
-	public function getRequestedBy() {
-		return $this->requestedBy;
+	public function getAppraisedBy() {
+	    return $this->appraisedBy;
 	}
 
 	/**
@@ -226,12 +302,27 @@ class Disposal extends Entity {
 	public function getDeclinedBy() {
 		return $this->declinedBy;
 	}
+	
 
 	/**
+     * @return User
+     */
+    public function getForwardedBy() {
+        return $this->forwardedBy;
+    }
+    
+    /**
+     * @return \DateTime
+     */
+    public function getOpenedAt() {
+        return $this->openedAt;
+    }
+
+    /**
 	 * @return \DateTime
 	 */
-	public function getRequestedAt() {
-		return $this->requestedAt;
+    public function getAppraisedAt() {
+        return $this->appraisedAt;
 	}
 	
 	/**
@@ -249,19 +340,26 @@ class Disposal extends Entity {
 	}
 	
 	/**
+	 * @return \DateTime
+	 */
+	public function getForwardedAt() {
+	    return $this->forwardedAt;
+	}
+	
+	/**
 	 * @param User $user
 	 * @throws \DomainException
 	 */
-	public function toRequest(User $user) {
+	public function toAppraise(User $user) {
 		if ($this->status != self::DRAFTED) {
 			throw new \DomainException('Unable to request disposition of assets for disposal.');
 		}
-		$this->status = self::REQUESTED;
+		$this->status = self::APPRAISED;
 		foreach ($this->assets as $item) {
 			$item->getAsset()->setActive(false);
 		}
-		$this->requestedBy = $user;
-		$this->requestedAt = new \DateTime();
+		$this->appraisedBy = $user;
+		$this->appraisedAt = new \DateTime();
 	}
 	
 	/**
@@ -269,7 +367,7 @@ class Disposal extends Entity {
 	 * @throws \DomainException
 	 */
 	public function toConfirm(User $user) {
-		if ($this->status != self::REQUESTED) {
+		if ($this->status != self::APPRAISED) {
 			throw new \DomainException('Unable to confirm disposition of assets for disposal.');
 		}
 		$this->status = self::CONFIRMED;
@@ -283,7 +381,7 @@ class Disposal extends Entity {
 	 * @throws \DomainException
 	 */
 	public function toDecline(User $user, $justify) {
-		if ($this->status < self::REQUESTED) {
+		if ($this->status < self::APPRAISED) {
 			throw new \DomainException('Unable to decline disposition of assets for disposal.');
 		}
 		$this->status = self::DECLINED;
@@ -296,15 +394,30 @@ class Disposal extends Entity {
 	 * @throws \DomainException
 	 */
 	public function toDevolve() {
-		if ($this->status == self::DRAFTED) {
+	    if ($this->status == self::DRAFTED || $this->status == self::FORWARDED) {
 			throw new \DomainException('Unable to devolve disposition of assets for disposal.');
 		}
 		$this->status = self::DRAFTED;
 		$this->justify = null;
+		$this->appraisedAt = null;
+		$this->appraisedBy = null;
 		$this->confirmedBy = null;
 		$this->confirmedAt = null;
 		$this->declinedBy = null;
 		$this->declinedAt = null;
+	}
+	
+	/**
+	 * @param User $user
+	 * @throws \DomainException
+	 */
+	public function toForward(User $user) {
+	    if ($this->status != self::CONFIRMED) {
+	        throw new \DomainException('Unable to forward disposition of assets for disposal.');
+	    }
+	    $this->status = self::FORWARDED;
+	    $this->forwardedBy = $user;
+	    $this->forwardedAt = new \DateTime();
 	}
 
 	/**
@@ -314,9 +427,10 @@ class Disposal extends Entity {
 	 */
 	public static function getStatusAllowed() {
 		return [self::DRAFTED => 'Rascunho',
-				self::REQUESTED => 'Requisitada',
+				self::APPRAISED => 'Avaliada',
 				self::CONFIRMED => 'Confirmada',
-				self::DECLINED => 'Recusada'
+				self::DECLINED => 'Recusada',
+		        self::FORWARDED => 'Encaminhada'
 		];
 	}
 	

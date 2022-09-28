@@ -406,6 +406,24 @@ fieldset > legend {
 #disposal-items-table {
 	margin: 20px 0;
 }
+#disposal-items-table .table-footer td {
+	text-align: left;
+	padding-top: 20px;
+}
+#disposal-items-table .table-footer .row-fluid {
+	width: 99.5%;
+}
+#disposal-items-table .table-footer .controls-row [class*="span"] {
+	float: none;
+} 
+#disposal-appraisal-form #disposal-items-table .table-footer td {
+	text-align: right;
+}
+#disposal-items-table #declined-jusfify {
+	height: 70px;
+	white-space: normal;
+	overflow-y:auto;
+}
 #fleet-vehicle-form .span1 {
 	width: 78px !important;
 }

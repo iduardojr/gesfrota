@@ -401,7 +401,7 @@ class IndexController extends AbstractController {
 	    $builder->from(DisposalItem::getClass(), 'u');
 	    $builder->join('u.disposal', 'd');
 	    $builder->where('d.status NOT IN (:status)');
-	    $builder->setParameter('status', [Disposal::DECLINED]);
+	    $builder->setParameter('status', [Disposal::DECLINED, Disposal::FORWARDED]);
 	    if ( $agency ) {
 	        $builder->andWhere('d.requesterUnit = :agency');
 	        $builder->setParameter('agency', $agency->getId());

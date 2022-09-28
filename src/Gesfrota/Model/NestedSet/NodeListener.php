@@ -125,18 +125,21 @@ class NodeListener {
 	 */
 	protected function appendNode( Node $node, Node $parent = null ) {
 		$className = $this->getClassName($node);
+		$this->em->refresh($node);
+		if ($parent) {
+		    $this->em->refresh($parent);
+		}
 		$left = $node->getLft();
         $right = $node->getRgt();
         $size = $right - $left + 1;
         $position = $this->getPosition($className, $parent);
-
+        
         if ( $left >= $position ) {
         	$left += $size;
         	$right += $size;
         }
         
         $this->updateRange($className, $position, 0, $size);
-        
         $this->updateRange($className, $left, $right, $position - $left);
         $this->updateRange($className, $right + 1, 0, -$size);
 	}
