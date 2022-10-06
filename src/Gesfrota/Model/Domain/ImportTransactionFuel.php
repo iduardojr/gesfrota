@@ -112,7 +112,7 @@ class ImportTransactionFuel extends ImportTransactionItem {
         $this->setVehicleDescription($data[3]);
         $this->setDriverNif($expanded ? Format::CPF($data[4]) : '');
         $this->setDriverName( $data[5-($expanded ? 0 : 1)] );
-        $this->setSupplierNif($expanded ? Format::CNPJ($data[6-($expanded ? 0 : 1)]) : '');
+        $this->setSupplierNif($expanded ? Format::CNPJ($data[6]) : '');
         $this->setSupplierName($data[7-$short]);
         $this->setSupplierPlace($data[8-$short], $data[9-$short]);
         $this->setItemDescription(ucwords(strtolower(str_ireplace(' comum', '', $data[10-$short]))));
@@ -141,7 +141,9 @@ class ImportTransactionFuel extends ImportTransactionItem {
             $data[4] = $this->getDriverNif();
         }
         $data[5-($expanded ? 0 : 1)] = $this->getDriverName();
-        $data[6-($expanded ? 0 : 1)] = $this->getSupplierNif();
+        if ($expanded) {
+            $data[6] = $this->getSupplierNif();
+        }
         $data[7-$short] = $this->getSupplierName();
         $data[8-$short] = $this->supplierCity;
         $data[9-$short]= $this->supplierUF;
@@ -149,8 +151,8 @@ class ImportTransactionFuel extends ImportTransactionItem {
         $data[11-$short]= number_format($this->getItemQuantity(), 2, ',', '.');
         $data[12-$short]= 'R$ ' . number_format($this->getItemPrice(), 3, ',', '.');
         $data[13-$short]= 'R$ ' . number_format($this->getItemTotal(), 2, ',', '.');
-        $data[15-$short]= number_format($this->getVehicleDistance(), 0, '', '.');
-        $data[16-$short]= number_format($this->getVehicleEfficiency(), 2, ',', '.');
+        $data[14-$short]= number_format($this->getVehicleDistance(), 0, '', '.');
+        $data[15-$short]= number_format($this->getVehicleEfficiency(), 2, ',', '.');
         return $data;
     }
 

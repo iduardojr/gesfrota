@@ -120,9 +120,9 @@ class AclResource implements Plugin {
 	public function preDispatch(HttpRequest $request, HttpResponse $response, Dispatcher $dispatcher = null) {
 		$controller = $dispatcher ? $dispatcher->getController() : null;
 		if ( $controller ) {
-		    $agenciesLicensed = ['SEDI'];
+		    $agenciesLicensed = ['SEDI', 'SECC', 'DETRAN'];
 			$user = $controller->getUserActive();
-			$isNotLicenced = array_search($controller->getAgencyActive()->getAcronym(), $agenciesLicensed) === false;
+			$isNotLicenced = DEV_MODE ? false : array_search($controller->getAgencyActive()->getAcronym(), $agenciesLicensed) === false;
 			if ( $isNotLicenced ) {
 			    $this->acl->deny([FleetManager::getClass(), TrafficController::getClass(), Driver::getClass(), Requester::getClass()], [self::Request, self::Requester]);
 			}
