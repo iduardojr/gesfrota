@@ -117,11 +117,12 @@ class ImportTransactionUploadForm extends AbstractForm {
                          <dt>[Valor MDO]</dt>               <dd>999,99</dd>
                          <dt>Valor Total</dt>               <dd>999,99</dd>
                       </dl>';
-		}
-		$text[]= '<p>As seguintes definições representam um caractere 
-                     alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>. 
-                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ser: 
+		    $text[]= '<p>As seguintes definições representam um caractere
+                     alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>.
+                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ser:
                      Resumido (11 colunas), Discriminado (13 colunas, incluso Valor Peças e Valor MDO), Detalhado (15 colunas, exceto Valor Peças e Valor MDO).</p>';
+		}
+		
 
 		$form->buildField(null, new Well('info', new Panel(implode('', $text))), null, $fieldset);
 		

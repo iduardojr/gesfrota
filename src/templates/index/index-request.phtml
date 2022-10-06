@@ -132,7 +132,7 @@ use Gesfrota\Util\Format;
 			var options = {
 				series: [{
 					name: 'Quant. de Requisições',
-					data: <?php echo json_encode(array_values($this->request_x_distance['request']));?>
+					data: <?php echo json_encode(array_values($this->request_x_distance['requests']));?>
 				}, {
 					name: 'Distância percorrida',
 					data: <?php echo json_encode(array_values($this->request_x_distance['distance']));?>
@@ -198,7 +198,7 @@ use Gesfrota\Util\Format;
           			height: 500,
           			stacked: true,
         		},
-				tooltip: { enabled: false },
+				tooltip: { enabled: true },
 				dataLabels : {
 				 	style: {
 				      	fontSize: '12px',
@@ -227,7 +227,7 @@ use Gesfrota\Util\Format;
 					<h1><?php echo $i+1;?>º<small>Lugar</small></h1>
 					<?php if (isset($this->request_x_driver[$i])) { ?>
 					<p style="text-overflow: ellipsis; overflow: hidden;"><strong style="white-space: nowrap;"><?php echo $this->request_x_driver[$i]['driver']?></strong></p>
-					<p><span class="label"><?php echo number_format($this->request_x_driver[$i]['request'], 0, '', '.'); ?> Requisições</span> <span class="label"><?php echo number_format($this->request_x_driver[$i]['distance'], 0, '', '.'); ?> Km</span></p>
+					<p><span class="label"><?php echo number_format($this->request_x_driver[$i]['requests'], 0, '', '.'); ?> Requisições</span> <span class="label"><?php echo number_format($this->request_x_driver[$i]['distance'], 0, '', '.'); ?> Km</span></p>
 					<?php } else { ?>
 					<p><em class="muted">Não identificado</em></p>
 					<p>&nbsp;</p>
