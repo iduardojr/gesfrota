@@ -28,7 +28,7 @@ use PHPBootstrap\Widget\Pagination\Pagination;
 use Gesfrota\View\Render\Html5\RendererPagination;
 
 // MODE
-$isDevMode = getenv('APPLICATION_ENV') == 'development' || stripos($_SERVER['HTTP_HOST'], 'homo') !== false;
+define('DEV_MODE' , getenv('APPLICATION_ENV') == 'development' || stripos($_SERVER['HTTP_HOST'], 'homo') !== false);
 
 // LOADER
 if ( file_exists('../vendor/autoload.php') ) {
@@ -43,7 +43,7 @@ if ( file_exists('../vendor/autoload.php') ) {
 }
 
 // ERROR REPORTING
-if ( $isDevMode ) {
+if ( DEV_MODE ) {
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
 	ini_set('log_errors', 0);
@@ -72,14 +72,14 @@ if ( PATH_SEPARATOR === ';' ) {
 
 // CONFIGURE
 $config = include '../src/config/application.config.php';
-if ( $isDevMode ) { 
+if ( DEV_MODE ) { 
 	$config = array_replace_recursive($config, include '../src/config/local.config.php');
 }
 $paths = explode(PATH_SEPARATOR, get_include_path());
 $paths = array_merge($paths, $config['paths'], array(dirname(__DIR__), dirname(__DIR__) . DIRECTORY_SEPARATOR .'src'));
 set_include_path(implode(PATH_SEPARATOR, $paths)); 
 
-$doctrine = Setup::createAnnotationMetadataConfiguration($config['doctrine']['paths'], $isDevMode, $config['doctrine']['proxies']);
+$doctrine = Setup::createAnnotationMetadataConfiguration($config['doctrine']['paths'], DEV_MODE, $config['doctrine']['proxies']);
 $doctrine->addCustomStringFunction('MATCH', MatchAgainst::class);
 $paths = explode(PATH_SEPARATOR, get_include_path());
 

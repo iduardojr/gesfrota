@@ -136,6 +136,9 @@ class Logger implements Plugin {
 	 * @return Log
 	 */
 	public function update( $object ) {
+	    if ($object instanceof User && $this->user == null) {
+	        $this->user = $object;
+	    }
 		return $this->register($object, $this->em->find(get_class($object), $object->getId()));
 	}
 	

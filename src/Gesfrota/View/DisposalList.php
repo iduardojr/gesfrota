@@ -23,6 +23,8 @@ use PHPBootstrap\Widget\Modal\TgModalConfirm;
 use PHPBootstrap\Widget\Modal\TgModalOpen;
 use PHPBootstrap\Widget\Table\ColumnText;
 use PHPBootstrap\Widget\Action\TgWindows;
+use Gesfrota\Model\Entity;
+use Gesfrota\Model\Domain\DisposalLot;
 
 class DisposalList extends AbstractList {
 	
@@ -33,9 +35,11 @@ class DisposalList extends AbstractList {
 	 * @param Action $do
 	 * @param \Closure $doClosure
 	 * @param Action $print
-	 * @param boolean $showAgencies
+	 * @param Action $export
+	 * @param Action $lot
+	 * @param array $showAgencies
 	 */
-	public function __construct( Action $filter, Action $new, Action $remove, Action $do, \Closure $doClosure, Action $print, array $showAgencies = null  ) {
+    public function __construct( Action $filter, Action $new, Action $remove, Action $do, \Closure $doClosure, Action $print, Action $export, Action $lot = null, array $showAgencies = null  ) {
 		$this->buildPanel('Minha Frota', 'Gerenciar Disposições para Alienação');
 		
 		$reset = clone $filter;
@@ -71,20 +75,39 @@ class DisposalList extends AbstractList {
 		$btnFilter = new Button(array('Remover Filtros', new Icon('icon-remove')), new TgLink($reset), array(Button::Link, Button::Mini));
 		$btnFilter->setName('remove-filter');
 		
-		$this->buildToolbar([new Button('Nova', new TgLink($new), Button::Primary)],
-							[new Button(['Filtrar', new Icon('icon-filter')], new TgModalOpen($modalFilter), [Button::Link, Button::Mini], $btnFilter)]);
+		if ($lot) {
+    		$this->buildToolbar([new Button('Nova', new TgLink($new), Button::Primary)],
+    		                    [new Button('Fechar Lote', new TgLink($lot), Button::Success)],
+    							[new Button(['Filtrar', new Icon('icon-filter')], new TgModalOpen($modalFilter), [Button::Link, Button::Mini], $btnFilter)]);
+		} else {
+		    $this->buildToolbar([new Button('Nova', new TgLink($new), Button::Primary)],
+		                        [new Button(['Filtrar', new Icon('icon-filter')], new TgModalOpen($modalFilter), [Button::Link, Button::Mini], $btnFilter)]);
+		}
 		
 		$table = $this->buildTable('disposal-list');
 		$table->buildPagination(clone $filter);
 		
-		$table->buildColumnTextId(null, clone $filter);
-		$table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left);
+		$table->setContextRow(function (Disposal $object) {
+		   return $object instanceof DisposalLot ? 'success' : ''; 
+		});
+		$table->buildColumnText('lft', '#', clone $filter, 80, null, function ( $value, Entity $object ) {
+		    return $object->getCode();
+		});
+	    $table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left, function ($value, Disposal $object) use ($table) {
+	        if ($table->getDataSource()->getSort() == 'u.lft') {
+	            return '<div' . ( $object->getParent() && $object->getParent()->getId() > 0 ? ' style="text-indent: 10px;"> |- ' : '>' ) . $value . '</div>';
+	        }
+	        return $value;
+	    });
+        $table->buildColumnText('parent', null, null, 50, null, function ($value) {
+            return $value && $value->getId() > 0 ? '<small>Lote #'. $value->getId() . '</small>' : '';
+        });
 		
 		if ($showAgencies) {
-			$table->buildColumnText('requesterUnit', 'Órgão', clone $filter, 70);
+			$table->buildColumnText('agency', 'Órgão', clone $filter, 70);
 		}
 		
-		$table->buildColumnText('requestedAt', 'Aberto em', clone $filter, 150, null, function ($value) {
+		$table->buildColumnText('openedAt', 'Aberto em', clone $filter, 150, null, function ($value) {
 			return $value->format('d/m/Y H:i');
 		});
 		
@@ -92,7 +115,7 @@ class DisposalList extends AbstractList {
 			$status = Disposal::getStatusAllowed();
 			$label = new Label($status[$value]);
 			switch ( $value ) {
-				case Disposal::REQUESTED:
+				case Disposal::APPRAISED:
 					$label->setStyle(Label::Warning);
 					break;
 					
@@ -102,8 +125,11 @@ class DisposalList extends AbstractList {
 				
 				case Disposal::DECLINED:
 					$label->setStyle(Label::Important);
-					
 					break;
+					
+				case Disposal::FORWARDED:
+				    $label->setStyle(Label::Info);
+				    break;
 			}
 			return $label;
 		});
@@ -125,6 +151,7 @@ class DisposalList extends AbstractList {
 		});
 		
 	   $table->buildColumnAction('print', new Icon('icon-print'), new TgWindows($print, 1024, 762));
+	   $table->buildColumnAction('exprot', new Icon('icon-share-alt'), $export);
 	}
 	
 }

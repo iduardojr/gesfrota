@@ -200,7 +200,17 @@ footer hr {
 .page .sign {
     height: 60px;
     vertical-align: middle;
-}   
+}  
+#disposal-items-table tfoot {
+	display: none;
+} 
+#disposal-lot-resume .row-fluid {
+	margin: 5px 0;
+	text-align: right;
+}
+#disposal-lot-resume .row-fluid div {
+	min-height: auto;
+}
 @media print {
 	@page {
 		margin: 1.5cm;
@@ -218,9 +228,7 @@ footer hr {
    	.page {
 	   margin: 0 !important;
 	   font-size: 14px !important;
-	}
-	.page + .page {
-		page-break-after: always;
+	   page-break-before: always;
 	}
 	.page .page-header {
 		margin: 0;

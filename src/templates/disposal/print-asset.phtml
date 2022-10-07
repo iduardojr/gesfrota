@@ -13,7 +13,7 @@ $survey = $object->getSurvey();
 <div class="page">
 	<div class="page-header">
 		<img src="/images/brasao-go.png" class="pull-left">
-		<h1>Estado de Goiás <br/><?php echo $disposal->getRequesterUnit()->getName(); ?></h1>
+		<h1>Estado de Goiás <br/><?php echo $disposal->getAgency()->getName(); ?></h1>
 		<h2>Disposição #<?php echo $disposal->getCode();?> <small><?php echo $disposal->getDescription(); ?></small></h2>
 	</div>
 	<h3 class="asset-code">CÓDIGO PATRIMONIAL Nº <?php echo $asset->getAssetCode(); ?></h3>
@@ -539,14 +539,14 @@ $survey = $object->getSurvey();
 		<table>
 			<tr class="text-center">
 				<th class="span6">AVALIADOR RESPONSÁVEL</th>
-				<th class="span6">AUTORIZAÇÃO PARA ALIENAÇÃO</th>
+				<th class="span6">APROVAÇÃO PARA ALIENAÇÃO</th>
 			</tr>
 			<tr class="text-center">
 				<td class="sign">
-				<?php  if ($disposal->getRequestedBy()) { ?>
+				<?php  if ($disposal->getAppraisedBy()) { ?>
 					<em><small>Assinado eletronicamente por</small></em><br>
-					<?php echo $disposal->getRequestedBy()->getName(); ?>, CPF <?php echo $disposal->getRequestedBy()->getNif(); ?><br>
-					em <?php echo $disposal->getRequestedAt()->format('d/m/Y H:i:s'); ?>
+					<?php echo $disposal->getAppraisedBy()->getName(); ?>, CPF <?php echo $disposal->getAppraisedBy()->getNif(); ?><br>
+					em <?php echo $disposal->getAppraisedAt()->format('d/m/Y H:i:s'); ?>
 				<?php } ?>
 				</td>
 				<td class="sign">
