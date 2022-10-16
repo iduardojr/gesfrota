@@ -51,9 +51,8 @@ class DisposalController extends AbstractController {
 		$query->where('u.id > 0');
 		
 		if (! $showAgencies ) {
-			$query->join('u.requesterUnit', 'r');
-			$query->andWhere('r.id = :unit');
-			$query->setParameter('unit', $this->getAgencyActive()->getId());
+		    $query->andWhere('u.agency = :agency');
+		    $query->setParameter('agency', $this->getAgencyActive()->getId());
 		}
 
 		$filter = new Action($this);
@@ -61,7 +60,7 @@ class DisposalController extends AbstractController {
 		$remove = new Action($this, 'delete');
 		$print = new Action($this, 'print');
 		$export = new Action($this, 'export');
-		$lot = $isManager ? new Action($this, 'make-lot') : null;
+		$lot = $isManager && $showAgencies ? new Action($this, 'make-lot') : null;
 		$do = new Action($this);
 		$doClosure = function( Button $button, Disposal $obj ) use ($isManager) {
 		    if (! $isManager ) {
@@ -163,7 +162,7 @@ class DisposalController extends AbstractController {
 			if ($helper->create($form, new Disposal($agency, $lotNull))) {
 				$entity = $helper->getEntity();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Disposição <em>#' . $entity->code . ' ' . $entity->description . '</em> criado com sucesso!', Alert::Success));
-				$this->forward('/edit/' . $entity->id);
+				$this->forward('/appraise/' . $entity->id);
 			}
 		} catch (NotFoundEntityException $e) {
 			$this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
@@ -212,6 +211,7 @@ class DisposalController extends AbstractController {
 			$printAsset =  new Action($this, 'print-asset');
 			$table = new DisposalItemTable($surveyAsset, $removeAsset, $printAsset);
 			$table->setDataSource(new ArrayDatasource($entity->getAllAssets(), 'id'));
+			$table->setFooter($entity);
 			
 			$appraise = new Action($this, 'appraise', ['key' => $id]);
 			$print = new Action($this, 'print', ['key' => $id]);
@@ -220,8 +220,8 @@ class DisposalController extends AbstractController {
 			$form = new DisposalAppraisalForm($entity, $table, $appraise, $print, $export, $cancel);
 			
 			if ( $this->request->isPost() ) {
-				if ( ! $form->valid() ) {
-					throw new InvalidRequestDataException();
+				if ( $entity->getAmountAssets() > $entity->getAmountAssetsAppraise() ) {
+				    throw new InvalidRequestDataException('Todos os ativos da disposição devem ser avaliados: apenas <em>'. $entity->getAmountAssetsAppraise() . '/' . $entity->getAmountAssets() . ' ativos </em> foram avaliados.');
 				}
 				$entity->toAppraise($this->getUserActive());
 				$this->getEntityManager()->flush();
@@ -231,7 +231,7 @@ class DisposalController extends AbstractController {
 			$form->setAlert($this->getAlert());
 			
 		} catch (InvalidRequestDataException $e) {
-			$form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
+		    $form->setAlert(new Alert('<strong>Ops! </strong>' . $e->getMessage()));
 		} catch (NotFoundEntityException $e) {
 		    $this->setAlert(new Alert('<strong>Error: </strong>' . $e->getMessage(), Alert::Danger));
 		    $this->forward('/');
@@ -251,6 +251,7 @@ class DisposalController extends AbstractController {
 	        $printAsset =  new Action($this, 'print-asset');
 	        $table = new DisposalItemTable($surveyAsset, $removeAsset, $printAsset);
 	        $table->setDataSource(new ArrayDatasource($entity->getAllAssets(), 'id'));
+	        $table->setFooter($entity);
 	        
 	        $allowDevolve = $entity->getStatus() == Disposal::DECLINED || $this->getUserActive() instanceof Manager && $entity->getStatus() != Disposal::FORWARDED;
 	        $print = new Action($this, 'print', ['key' => $id]);
@@ -279,6 +280,7 @@ class DisposalController extends AbstractController {
 	        $printAsset =  new Action($this, 'print-asset');
 	        $table = new DisposalItemTable($surveyAsset, $removeAsset, $printAsset);
 	        $table->setDataSource(new ArrayDatasource($entity->getAllAssets(), 'id'));
+	        $table->setFooter($entity);
 	        
 	        $print = new Action($this, 'print', ['key' => $id]);
 	        $export = new Action($this, 'export', ['key' => $id]);
@@ -471,9 +473,9 @@ class DisposalController extends AbstractController {
 				throw new NotFoundEntityException('Não foi possível avaliar o Ativo. Ativo <em>#' . $id . '</em> não encontrado.');
 			}
 			if ($entity->getAsset() instanceof Vehicle) {
-				$form = new DisposalSurveyVehicleForm($entity, new Action($this, 'survey-asset', ['key' => $id]), new Action($this, 'edit', ['key' => $entity->getDisposal()->getId()]), new Action($this, 'location'));
+				$form = new DisposalSurveyVehicleForm($entity, new Action($this, 'survey-asset', ['key' => $id]), new Action($this, 'appraise', ['key' => $entity->getDisposal()->getId()]), new Action($this, 'location'));
 			} else {
-				$form = new DisposalSurveyEquipamentForm($entity, new Action($this, 'survey-asset', ['key' => $id]), new Action($this, 'edit', ['key' => $entity->getDisposal()->getId()]), new Action($this, 'location'));
+				$form = new DisposalSurveyEquipamentForm($entity, new Action($this, 'survey-asset', ['key' => $id]), new Action($this, 'appraise', ['key' => $entity->getDisposal()->getId()]), new Action($this, 'location'));
 			}
 			if ( $this->request->isPost() ) {
 				$form->bind($this->request->getPost());
@@ -483,7 +485,7 @@ class DisposalController extends AbstractController {
 				$form->hydrate($entity, $this->getEntityManager());
 				$this->getEntityManager()->flush();
 				$this->setAlert(new Alert('<strong>Ok! </strong>Ativo <em>' . $entity->code . ' ' . $entity->description . '</em> avaliado com sucesso!', Alert::Success));
-				$this->forward('/edit/' . $entity->getDisposal()->getId());
+				$this->forward('/appraise/' . $entity->getDisposal()->getId());
 			} 
 			$form->extract($entity);
 		} catch (NotFoundEntityException $e) {
@@ -504,19 +506,19 @@ class DisposalController extends AbstractController {
 	        if ( ! $entity instanceof DisposalItem ) {
         	    throw new NotFoundEntityException('Não foi possível remover o Ativo. Ativo <em>#' . $id . '</em> não encontrado.');
         	}
+        	$disposal = $entity->getDisposal();
         	$this->getEntityManager()->remove($entity);
         	$this->getentitymanager()->flush();
         	
-        	$disposal = $entity->getDisposal();
-        	
-        	$table = new DisposalItemTable(new Action($this, 'survey-asset'), new Action($this, 'remove-asset'));
+        	$surveyAsset = new Action($this, 'survey-asset');
+        	$removeAsset = new Action($this, 'remove-asset');
+        	$printAsset =  new Action($this, 'print-asset');
+        	$table = new DisposalItemTable($surveyAsset, $removeAsset, $printAsset);
         	$table->setDataSource(new ArrayDatasource($disposal->getAllAssets(), 'id'));
+        	$table->setFooter($disposal);
         	
         	$data[$table->getName()] = $table;
         	$data['alert-message'] = new Alert('<strong>Ok! </strong>Ativo <em>' . $entity->getAsset()->getCode() . ' ' . $entity->description . '</em> removido com sucesso!', Alert::Success);
-        	$data['assets-total'] = $disposal->getTotalAssets();
-        	$data['assets-value'] = $disposal->getTotalAssetsValued();
-        	$data['assets-count'] = $disposal->getTotalAssetsValued() . ' / ' . $disposal->getTotalAssets();
 	    } catch (NotFoundEntityException $e) {
 	    	$data['alert-message'] = new Alert('<strong>Ops! </strong>' . $e->getMessage());
 	    } catch (\Exception $e) {
