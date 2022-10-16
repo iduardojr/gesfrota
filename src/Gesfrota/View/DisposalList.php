@@ -93,8 +93,8 @@ class DisposalList extends AbstractList {
 		$table->buildColumnText('lft', '#', clone $filter, 80, null, function ( $value, Entity $object ) {
 		    return $object->getCode();
 		});
-	    $table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left, function ($value, Disposal $object) use ($table) {
-	        if ($table->getDataSource()->getSort() == 'u.lft') {
+	    $table->buildColumnText('description', 'Descrição', clone $filter, null, ColumnText::Left, function ($value, Disposal $object) use ($table, $showAgencies) {
+	        if ($table->getDataSource()->getSort() == 'u.lft' && $showAgencies) {
 	            return '<div' . ( $object->getParent() && $object->getParent()->getId() > 0 ? ' style="text-indent: 10px;"> |- ' : '>' ) . $value . '</div>';
 	        }
 	        return $value;

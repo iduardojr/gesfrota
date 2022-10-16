@@ -543,7 +543,7 @@ $survey = $object->getSurvey();
 			</tr>
 			<tr class="text-center">
 				<td class="sign">
-				<?php  if ($disposal->getAppraisedBy()) { ?>
+				<?php  if ($disposal->getAppraisedAt()) { ?>
 					<em><small>Assinado eletronicamente por</small></em><br>
 					<?php echo $disposal->getAppraisedBy()->getName(); ?>, CPF <?php echo $disposal->getAppraisedBy()->getNif(); ?><br>
 					em <?php echo $disposal->getAppraisedAt()->format('d/m/Y H:i:s'); ?>
