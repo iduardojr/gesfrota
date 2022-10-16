@@ -8,18 +8,22 @@ use Gesfrota\Model\Domain\DisposalLot;
 
 $disposal = $this->disposal;
 $isDisposalLot = $disposal instanceof DisposalLot;
-$lotation = $disposal->getForwardedBy()->getLotation();
+$forwardedBy = $disposal->getForwardedBy() ? $disposal->getForwardedBy()->getLotation() : null;
+$confirmedBy = $disposal->getConfirmedBy() ? $disposal->getConfirmedBy()->getLotation() : null;
+$lotation = $forwardedBy ? $forwardedBy : ($confirmedBy ? $confirmedBy : $disposal);
+$ancestors = $forwardedBy || $confirmedBy ? $lotation->getAncestors() : [];
 ?>
 <div class="page">
 	<div class="page-header">
 		<img src="/images/brasao-go.png" class="pull-left">
-		<h1>
+		<h1 class="pull-left">
 			Estado de Goiás <br>
 			<?php echo $lotation->getAgency()->getName(); ?> <br>
-			<?php foreach ($lotation->getAncestors() as $unit) { ?>
+			<?php foreach ($ancestors as $unit) { ?>
 			    <?php echo $unit->getName(); ?> <br>
 			<?php }?>
 		</h1>
+		<br clear="all">
 	</div>
     <fieldset>
     	<legend>ESPELHO <?php echo $isDisposalLot ? 'DO LOTE DE DISPOSIÇÕES' : 'DA DISPOSIÇÃO'; ?> #<?php echo $disposal->getCode(); ?></legend>
