@@ -47,39 +47,6 @@ class DisposalAppraisalForm extends AbstractForm {
 		$general->append($this->flashMessage);
 		$general->append($table);
 		
-		$footer = new Box(['offset'=> 8]);
-		
-		$input[0] = new Uneditable('assets-count');
-		$input[0]->setSpan(2);
-		$input[0]->setValue($disposal->getAmountAssetsAppraise() . ' / ' . $disposal->getAmountAssets());
-		
-		$input[1] = new Hidden('assets-amount');
-		$input[1]->setValue($disposal->getAmountAssets());
-		
-		$input[2] = new Hidden('assets-appraise');
-		$input[2]->addFilter(function($value) {
-			return (int) $value;
-		});
-		$input[2]->setValue($disposal->getAmountAssetsAppraise());
-		$input[2]->setLength(new Min(1, 'Sem ativo(s) para serem encaminhados.'));
-		$input[2]->setRequired(new EqualTo(new InputContext($input[1]), 'Todos os ativos devem ser avaliados'));
-		
-		$form->buildField('Ativos Avaliados', $input, false, $footer);
-		
-		$input = new Uneditable('assets-value');
-		$input->setSpan(2);
-		$input->setValue('R$ ' . number_format($disposal->getTotalValue(), 2, ',', '.'));
-		
-	    $form->buildField('Arrecadação Estimada', $input, false, $footer);
-	    
-	    $input = new Uneditable('assets-debit');
-	    $input->setSpan(2);
-	    $input->setValue('R$ ' . number_format($disposal->getTotalDebit(), 2, ',', '.'));
-	    
-	    $form->buildField('Total de Débitos', $input, false, $footer);
-	    
-	    $table->setFooter(new Row(true, $footer));
-		
 		$tab = new Tabbable('disposal-tabs');
 		$tab->setPlacement(Tabbable::Left);
 		
