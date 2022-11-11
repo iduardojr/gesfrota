@@ -96,8 +96,12 @@ class ImportTransactionUploadForm extends AbstractForm {
                       </dl>';
     		$text[]= '<p>As seguintes definições representam um caractere
                      alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>.
-                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ter 14 ou 16 colunas (arquivo reduzido ou expandido).</p>';
+                     Sendo possível o arquivo ter 14 ou 16 colunas (arquivo reduzido ou expandido).</p>';
 		} else {
+			$text[]= '<p>As seguintes definições representam um caractere
+                     alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>.
+					</p>';
+			$text[]= '<h3 class="text-info text-center">TICKET LOG</h3>';
 		    $text[]= '<dl class="dl-horizontal">
                          <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
                          <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>
@@ -109,18 +113,45 @@ class ImportTransactionUploadForm extends AbstractForm {
                          <dt>Tipo do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
                          <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
                          <dt>UF</dt>                        <dd>AA</dd>
-                         <dt>[Tipo do Item]</dt>            <dd>PRODUTO | SERVIÇO</dd>
-                         <dt>[Descrição do Item]</dt>       <dd><i>alfanumérico</i></dd>
-                         <dt>[Quant. do Item]</dt>          <dd>999,99</dd>
-                         <dt>[Valor Unitário]</dt>          <dd>999,99</dd>
-                         <dt>[Valor Peças]</dt>             <dd>999,99</dd>
-                         <dt>[Valor MDO]</dt>               <dd>999,99</dd>
+                         <dt>Valor Total</dt>               <dd>999,99</dd>
+                         
+                      </dl>';
+			$text[]= '<h3 class="text-info text-center">PRIME</h3>';		  
+			$text[]= '<dl class="dl-horizontal">
+				 <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
+				 <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>
+				 <dt>Tipo da Manutenção</dt>        <dd>CORRETIVA | PREVENTIVA | EMERGENCIAL | GUINCHO | LAVAGEM</dd>
+				 <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
+				 <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
+				 <dt>CNPJ do Estabelecimento</dt>   <dd>99.999.999/9999-99</dd>
+				 <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+				 <dt>Tipo do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+				 <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
+				 <dt>UF</dt>                        <dd>AA</dd>	   
+				 <dt>Valor Peças</dt>             <dd>999,99</dd>
+				 <dt>Valor MDO</dt>               <dd>999,99</dd>
+				 <dt>Valor Total</dt>               <dd>999,99</dd>
+			  </dl>';
+			  
+			  $text[]= '<h3 class="text-info text-center">CARLETTO  &  VOLUS</h3>';	
+			  $text[]= '<dl class="dl-horizontal">
+                         <dt>Órgão</dt>                     <dd><i>alfanumérico</i></dd>
+                         <dt>Data da Transação</dt>         <dd><i>aaaa-mm-dd hh:mm:ss</i></dd>
+                         <dt>Tipo da Manutenção</dt>        <dd>CORRETIVA | PREVENTIVA | EMERGENCIAL | GUINCHO | LAVAGEM</dd>
+                         <dt>Placa do Veículo</dt>          <dd>AAA9*999</dd>
+                         <dt>Descrição do Veículo</dt>      <dd><i>alfanumérico</i></dd>
+                         <dt>CNPJ do Estabelecimento</dt>   <dd>99.999.999/9999-99</dd>
+                         <dt>Nome do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+                         <dt>Tipo do Estabelecimento</dt>   <dd><i>alfanumérico</i></dd>
+                         <dt>Cidade</dt>                    <dd><i>alfanumérico</i></dd>
+                         <dt>UF</dt>                        <dd>AA</dd>
+                         <dt>Tipo do Item</dt>            <dd>PRODUTO | SERVIÇO</dd>
+                         <dt>Descrição do Item</dt>       <dd><i>alfanumérico</i></dd>
+                         <dt>Quant. do Item</dt>          <dd>999,99</dd>
+                         <dt>Valor Unitário</dt>          <dd>999,99</dd>
+
                          <dt>Valor Total</dt>               <dd>999,99</dd>
                       </dl>';
-		    $text[]= '<p>As seguintes definições representam um caractere
-                     alfabético <code>A</code>, numérico <code>9</code> e alfanumérico <code>*</code>.
-                     As colunas entre <code>[]</code> são opcionais, sendo possível o arquivo ser:
-                     Resumido (11 colunas), Discriminado (13 colunas, incluso Valor Peças e Valor MDO), Detalhado (15 colunas, exceto Valor Peças e Valor MDO).</p>';
 		}
 		
 
